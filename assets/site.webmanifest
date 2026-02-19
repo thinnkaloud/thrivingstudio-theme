@@ -1,0 +1,21 @@
+{
+    "name": "Thriving Studio",
+    "short_name": "ThrivingStudio",
+    "description": "A creative studio website",
+    "start_url": "https://thrivingstudio.xyz/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#4f46e5",
+    "icons": [
+        {
+            "src": "https://thrivingstudio.xyz/wp-content/themes/thrivingstudio/assets/images/favicon-32x32.webp",
+            "sizes": "32x32",
+            "type": "image/webp"
+        },
+        {
+            "src": "https://thrivingstudio.xyz/wp-content/themes/thrivingstudio/assets/images/favicon-16x16.webp",
+            "sizes": "16x16",
+            "type": "image/webp"
+        }
+    ]
+} 

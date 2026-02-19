@@ -1,0 +1,174 @@
+/*
+Theme Name: Thriving Studio
+Description: A modern, responsive WordPress theme with clean design, optimized performance, and SEO-friendly features. Features include custom post types, social media integration, newsletter signup, and mobile-first responsive design.
+Version: 1.0.0
+Author: Thriving Studio
+Author URI: https://thrivingstudio.xyz
+Requires at least: 5.0
+Tested up to: 6.4
+Requires PHP: 7.4
+License: GPL v2 or later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
+Text Domain: thrivingstudio
+Tags: custom-menu, custom-logo, featured-images, blog, portfolio, e-commerce, news, photography, responsive, one-column, two-columns, left-sidebar, custom-background, custom-colors, editor-style, featured-images, full-width-template, microformats, post-formats, rtl-language-support, sticky-post, theme-options, threaded-comments, translation-ready, block-styles, wide-blocks, accessibility-ready
+
+SFTP Test: Connection verified - Theme ready for real-time editing! [Updated: <?php echo date('Y-m-d H:i:s'); ?>]
+*/
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom styles */
+.site-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+}
+
+/* Light mode styles */
+.hero-section {
+    background-color: #ffffff;
+    color: #111827;
+}
+
+.social-section {
+    background-color: #ffffff;
+    border-color: #d1d5db;
+}
+
+.category-card {
+    background-color: #ffffff;
+    border-color: #d1d5db;
+}
+
+.subscribe-section {
+    background-color: #ffffff;
+    border-color: #d1d5db;
+}
+
+.blog-hero-section {
+    background-color: #ffffff;
+    color: #111827;
+}
+
+/* Navigation styles - Match Category Menu */
+.primary-menu a {
+    color: #6b7280 !important; /* text-gray-500 - same as category menu */
+    font-weight: 500 !important;
+    font-size: 1rem !important; /* text-base - slightly larger */
+    transition: color 0.2s !important;
+    display: block !important;
+    padding: 0.125rem 0 !important;
+}
+
+.primary-menu a:hover {
+    color: #111827 !important; /* same as category menu - no font weight change */
+}
+
+.primary-menu .current-menu-item a,
+.primary-menu .current_page_item a {
+    color: #000000 !important; /* black color for active state */
+    font-weight: 700 !important; /* bold for active state */
+}
+
+/* Footer menu hover effects */
+.footer-menu a {
+    transition: color 0.2s ease-in-out;
+    font-weight: 500 !important; /* Consistent font weight */
+    text-decoration: none !important; /* No underline */
+}
+
+.footer-menu a:hover {
+    color: #1f2937 !important;
+    font-weight: 500 !important; /* Keep same font weight on hover */
+    text-decoration: none !important; /* No underline on hover */
+}
+
+/* Social icons hover effects */
+.social-icon {
+    transition: color 0.2s ease-in-out;
+}
+
+/* Category tags */
+.post-category-link {
+    background-color: #f3f4f6;
+    color: #374151;
+    border: 1px solid #d1d5db;
+    transition: all 0.075s ease-in-out;
+}
+
+.post-category-link:hover {
+    background-color: #e5e7eb;
+}
+
+/* Quote card spacing */
+.quote-card-container {
+    padding-top: 0.5rem;
+    margin-top: 0;
+}
+
+/* Book page spacing */
+.book-page-main {
+    padding-bottom: 2rem;
+}
+
+/* Single quote card spacing */
+.single-quote-content {
+    padding-top: 0.5rem;
+    margin-top: 0;
+}
+
+/* Blog hero section */
+.blog-hero-section {
+    background-color: #ffffff;
+    color: #111827;
+}
+
+/* Archive hero section */
+.archive-hero-section {
+    background-color: #ffffff;
+    border-color: #d1d5db;
+}
+
+/* Subscribe button */
+.subscribe-button {
+    background-color: #ffffff;
+    color: #000000;
+}
+
+/* Blog page optimizations */
+.blog-card-image {
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    height: 200px;
+    object-fit: cover;
+}
+
+.blog-card-image[loading="lazy"] {
+    opacity: 0.8;
+}
+
+.blog-card-image[loading="lazy"]:not([data-loaded="true"]) {
+    filter: blur(2px);
+}
+
+.blog-card-image[data-loaded="true"] {
+    opacity: 1;
+    filter: none;
+}
+
+/* Optimize blog grid loading */
+.blog-grid {
+    contain: layout style paint;
+}
+
+.blog-card {
+    contain: layout style;
+}
+
+/* Ensure consistent image heights */
+.blog-card img {
+    height: 200px;
+    object-fit: cover;
+    width: 100%;
+} 

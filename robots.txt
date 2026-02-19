@@ -1,0 +1,27 @@
+User-agent: *
+Allow: /
+
+# Disallow admin and private areas
+Disallow: /wp-admin/
+Disallow: /wp-includes/
+Disallow: /wp-content/plugins/
+Disallow: /wp-content/themes/
+Disallow: /wp-content/uploads/
+Disallow: /wp-json/
+Disallow: /xmlrpc.php
+Disallow: /readme.html
+Disallow: /license.txt
+
+# Allow important files
+Allow: /wp-content/uploads/*.jpg
+Allow: /wp-content/uploads/*.jpeg
+Allow: /wp-content/uploads/*.gif
+Allow: /wp-content/uploads/*.png
+Allow: /wp-content/uploads/*.webp
+Allow: /wp-content/uploads/*.pdf
+
+# Sitemap - Update this URL with your actual domain
+Sitemap: https://thrivingstudio.xyz/sitemap.xml
+
+# Crawl-delay (optional - adjust based on server capacity)
+Crawl-delay: 1 

@@ -1,0 +1,88 @@
+name: Deploy Theme To Live
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: Type DEPLOY to continue.
+        required: true
+        type: string
+      ref:
+        description: Branch, tag, or commit SHA to deploy. Use this for rollback deploys.
+        required: false
+        default: main
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-live
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to Live
+    runs-on: ubuntu-latest
+    environment: live
+
+    steps:
+      - name: Validate main branch + confirmation gate
+        env:
+          CONFIRM_INPUT: ${{ inputs.confirm }}
+        run: |
+          if [ "${GITHUB_REF_NAME}" != "main" ]; then
+            echo "Live deploy must be triggered from main. Current branch: ${GITHUB_REF_NAME}" >&2
+            exit 1
+          fi
+          if [ "${CONFIRM_INPUT}" != "DEPLOY" ]; then
+            echo "Refusing deploy: set confirm to DEPLOY." >&2
+            exit 1
+          fi
+
+      - name: Checkout selected ref
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Preflight deploy checks
+        env:
+          LIVE_HOST: ${{ secrets.LIVE_HOST }}
+          LIVE_PORT: ${{ secrets.LIVE_PORT }}
+          LIVE_USER: ${{ secrets.LIVE_USER }}
+          LIVE_PATH: ${{ secrets.LIVE_PATH }}
+          THEME_SLUG: thrivingstudio
+        run: |
+          chmod +x scripts/deploy-check.sh
+          ./scripts/deploy-check.sh live
+
+      - name: Configure SSH key
+        env:
+          LIVE_SSH_KEY: ${{ secrets.LIVE_SSH_KEY }}
+          LIVE_HOST: ${{ secrets.LIVE_HOST }}
+          LIVE_PORT: ${{ secrets.LIVE_PORT }}
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$LIVE_SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -p "$LIVE_PORT" "$LIVE_HOST" >> ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Deploy theme via rsync
+        env:
+          LIVE_HOST: ${{ secrets.LIVE_HOST }}
+          LIVE_PORT: ${{ secrets.LIVE_PORT }}
+          LIVE_USER: ${{ secrets.LIVE_USER }}
+          LIVE_PATH: ${{ secrets.LIVE_PATH }}
+        run: |
+          rsync -az --delete \
+            --exclude-from='.deployignore' \
+            -e "ssh -i ~/.ssh/id_ed25519 -p ${LIVE_PORT} -o StrictHostKeyChecking=yes" \
+            ./ "${LIVE_USER}@${LIVE_HOST}:${LIVE_PATH%/}/"
+
+      - name: Deployment summary
+        env:
+          DEPLOY_REF: ${{ inputs.ref }}
+        run: |
+          echo "Live deploy completed for ref: ${DEPLOY_REF}"

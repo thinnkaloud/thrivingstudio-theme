@@ -1,0 +1,70 @@
+[04-Aug-2025 17:57:10 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function current_user_can() in /home/thritaqs/public_html/wp-content/themes/thrivingstudio/debug-live-site.php:8
+Stack trace:
+#0 {main}
+  thrown in /home/thritaqs/public_html/wp-content/themes/thrivingstudio/debug-live-site.php on line 8
+[04-Aug-2025 17:57:13 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function current_user_can() in /home/thritaqs/public_html/wp-content/themes/thrivingstudio/debug-live-site.php:8
+Stack trace:
+#0 {main}
+  thrown in /home/thritaqs/public_html/wp-content/themes/thrivingstudio/debug-live-site.php on line 8
+[04-Aug-2025 17:59:06 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function current_user_can() in /home/thritaqs/public_html/wp-content/themes/thrivingstudio/debug-live-site.php:8
+Stack trace:
+#0 {main}
+  thrown in /home/thritaqs/public_html/wp-content/themes/thrivingstudio/debug-live-site.php on line 8
+[04-Aug-2025 17:59:15 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function wp_die() in /home/thritaqs/public_html/wp-content/themes/thrivingstudio/simple-debug.php:9
+Stack trace:
+#0 {main}
+  thrown in /home/thritaqs/public_html/wp-content/themes/thrivingstudio/simple-debug.php on line 9
+[04-Aug-2025 18:15:04 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function get_template_directory() in /home/thritaqs/public_html/wp-content/themes/thrivingstudio/server-diagnostic.php:43
+Stack trace:
+#0 {main}
+  thrown in /home/thritaqs/public_html/wp-content/themes/thrivingstudio/server-diagnostic.php on line 43
+[04-Aug-2025 18:15:26 UTC] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home/thritaqs/public_html/wp-content/themes/thrivingstudio/check-htaccess.php:10
+Stack trace:
+#0 {main}
+  thrown in /home/thritaqs/public_html/wp-content/themes/thrivingstudio/check-htaccess.php on line 10
+[04-Aug-2025 18:15:40 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function get_template_directory() in /home/thritaqs/public_html/wp-content/themes/thrivingstudio/check-file-permissions.php:31
+Stack trace:
+#0 {main}
+  thrown in /home/thritaqs/public_html/wp-content/themes/thrivingstudio/check-file-permissions.php on line 31
+[04-Aug-2025 18:17:23 UTC] PHP Warning:  Constant WP_CACHE already defined in /home/thritaqs/public_html/wp-config.php on line 3
+[04-Aug-2025 18:17:23 UTC] PHP Warning:  include_once(/home/thritaqs/public_html/wp-content/mu-plugins/wp-nc-easywp.php): Failed to open stream: No such file or directory in /home/thritaqs/public_html/wp-settings.php on line 456
+[04-Aug-2025 18:17:23 UTC] PHP Warning:  include_once(): Failed opening '/home/thritaqs/public_html/wp-content/mu-plugins/wp-nc-easywp.php' for inclusion (include_path='.:/opt/alt/php81/usr/share/pear:/opt/alt/php81/usr/share/php:/usr/share/pear:/usr/share/php') in /home/thritaqs/public_html/wp-settings.php on line 456
+[04-Aug-2025 18:22:10 UTC] PHP Warning:  Constant WP_CACHE already defined in /home/thritaqs/public_html/wp-config.php on line 3
+[04-Aug-2025 18:22:10 UTC] PHP Warning:  include_once(/home/thritaqs/public_html/wp-content/mu-plugins/wp-nc-easywp.php): Failed to open stream: No such file or directory in /home/thritaqs/public_html/wp-settings.php on line 456
+[04-Aug-2025 18:22:10 UTC] PHP Warning:  include_once(): Failed opening '/home/thritaqs/public_html/wp-content/mu-plugins/wp-nc-easywp.php' for inclusion (include_path='.:/opt/alt/php81/usr/share/pear:/opt/alt/php81/usr/share/php:/usr/share/pear:/usr/share/php') in /home/thritaqs/public_html/wp-settings.php on line 456
+[04-Aug-2025 18:30:23 UTC] PHP Warning:  include_once(/home/thritaqs/public_html/wp-content/mu-plugins/wp-nc-easywp.php): failed to open stream: No such file or directory in /home/thritaqs/public_html/wp-settings.php on line 456
+[04-Aug-2025 18:30:23 UTC] PHP Warning:  include_once(): Failed opening '/home/thritaqs/public_html/wp-content/mu-plugins/wp-nc-easywp.php' for inclusion (include_path='.:/opt/cpanel/ea-php72/root/usr/share/pear') in /home/thritaqs/public_html/wp-settings.php on line 456
+[04-Aug-2025 18:37:59 UTC] PHP Warning:  include_once(/home/thritaqs/public_html/wp-content/mu-plugins/wp-nc-easywp.php): failed to open stream: No such file or directory in /home/thritaqs/public_html/wp-settings.php on line 456
+[04-Aug-2025 18:37:59 UTC] PHP Warning:  include_once(): Failed opening '/home/thritaqs/public_html/wp-content/mu-plugins/wp-nc-easywp.php' for inclusion (include_path='.:/opt/cpanel/ea-php72/root/usr/share/pear') in /home/thritaqs/public_html/wp-settings.php on line 456
+[04-Aug-2025 18:38:26 UTC] PHP Warning:  include_once(/home/thritaqs/public_html/wp-content/mu-plugins/wp-nc-easywp.php): failed to open stream: No such file or directory in /home/thritaqs/public_html/wp-settings.php on line 456
+[04-Aug-2025 18:38:26 UTC] PHP Warning:  include_once(): Failed opening '/home/thritaqs/public_html/wp-content/mu-plugins/wp-nc-easywp.php' for inclusion (include_path='.:/opt/cpanel/ea-php72/root/usr/share/pear') in /home/thritaqs/public_html/wp-settings.php on line 456
+[04-Aug-2025 18:44:01 UTC] PHP Warning:  include_once(/var/www/easywp-plugin/wp-nc-easywp.php): failed to open stream: No such file or directory in /home/thritaqs/public_html/wp-settings.php on line 456
+[04-Aug-2025 18:44:01 UTC] PHP Warning:  include_once(): Failed opening '/home/thritaqs/public_html/wp-content/mu-plugins/wp-nc-easywp.php' for inclusion (include_path='.:/opt/cpanel/ea-php72/root/usr/share/pear') in /home/thritaqs/public_html/wp-settings.php on line 456
+[04-Aug-2025 18:46:32 UTC] PHP Warning:  Constant WP_CACHE already defined in /home/thritaqs/public_html/wp-config.php on line 3
+[04-Aug-2025 18:46:32 UTC] PHP Warning:  include_once(/home/thritaqs/public_html/wp-content/mu-plugins/wp-nc-easywp.php): Failed to open stream: No such file or directory in /home/thritaqs/public_html/wp-settings.php on line 456
+[04-Aug-2025 18:46:32 UTC] PHP Warning:  include_once(): Failed opening '/home/thritaqs/public_html/wp-content/mu-plugins/wp-nc-easywp.php' for inclusion (include_path='.:/opt/alt/php81/usr/share/pear:/opt/alt/php81/usr/share/php:/usr/share/pear:/usr/share/php') in /home/thritaqs/public_html/wp-settings.php on line 456
+[04-Aug-2025 18:50:39 UTC] PHP Warning:  Constant WP_CACHE already defined in /home/thritaqs/public_html/wp-config.php on line 3
+[04-Aug-2025 18:50:39 UTC] PHP Warning:  include_once(/home/thritaqs/public_html/wp-content/mu-plugins/wp-nc-easywp.php): Failed to open stream: No such file or directory in /home/thritaqs/public_html/wp-settings.php on line 456
+[04-Aug-2025 18:50:39 UTC] PHP Warning:  include_once(): Failed opening '/home/thritaqs/public_html/wp-content/mu-plugins/wp-nc-easywp.php' for inclusion (include_path='.:/opt/alt/php81/usr/share/pear:/opt/alt/php81/usr/share/php:/usr/share/pear:/usr/share/php') in /home/thritaqs/public_html/wp-settings.php on line 456
+[04-Aug-2025 18:54:14 UTC] PHP Warning:  Constant WP_CACHE already defined in /home/thritaqs/public_html/wp-config.php on line 3
+[04-Aug-2025 18:54:14 UTC] PHP Warning:  include_once(/home/thritaqs/public_html/wp-content/mu-plugins/wp-nc-easywp.php): Failed to open stream: No such file or directory in /home/thritaqs/public_html/wp-settings.php on line 456
+[04-Aug-2025 18:54:14 UTC] PHP Warning:  include_once(): Failed opening '/home/thritaqs/public_html/wp-content/mu-plugins/wp-nc-easywp.php' for inclusion (include_path='.:/opt/alt/php81/usr/share/pear:/opt/alt/php81/usr/share/php:/usr/share/pear:/usr/share/php') in /home/thritaqs/public_html/wp-settings.php on line 456
+[05-Aug-2025 08:29:28 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function current_user_can() in /home/thritaqs/public_html/wp-content/themes/thrivingstudio/clear-cache.php:8
+Stack trace:
+#0 {main}
+  thrown in /home/thritaqs/public_html/wp-content/themes/thrivingstudio/clear-cache.php on line 8
+[08-Aug-2025 20:26:14 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function current_user_can() in /home/thritaqs/public_html/wp-content/themes/thrivingstudio/clear-cache.php:8
+Stack trace:
+#0 {main}
+  thrown in /home/thritaqs/public_html/wp-content/themes/thrivingstudio/clear-cache.php on line 8
+[08-Aug-2025 20:28:34 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function current_user_can() in /home/thritaqs/public_html/wp-content/themes/thrivingstudio/clear-cache.php:8
+Stack trace:
+#0 {main}
+  thrown in /home/thritaqs/public_html/wp-content/themes/thrivingstudio/clear-cache.php on line 8
+[03-Dec-2025 18:49:50 UTC] PHP Warning:  Constant WP_CACHE already defined in /home/thritaqs/public_html/wp-config.php on line 4
+[03-Dec-2025 18:49:50 UTC] PHP Warning:  include_once(/var/www/easywp-plugin/wp-nc-easywp.php): Failed to open stream: No such file or directory in /home/thritaqs/public_html/wp-settings.php on line 471
+[03-Dec-2025 18:49:50 UTC] PHP Warning:  include_once(): Failed opening '/home/thritaqs/public_html/wp-content/mu-plugins/wp-nc-easywp.php' for inclusion (include_path='.:/opt/alt/php81/usr/share/pear:/opt/alt/php81/usr/share/php:/usr/share/pear:/usr/share/php') in /home/thritaqs/public_html/wp-settings.php on line 471
+[14-Feb-2026 11:37:02 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function get_template_part() in /home/thritaqs/public_html/wp-content/themes/thrivingstudio/404.php:1
+Stack trace:
+#0 {main}
+  thrown in /home/thritaqs/public_html/wp-content/themes/thrivingstudio/404.php on line 1

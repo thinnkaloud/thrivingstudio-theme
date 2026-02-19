@@ -1,0 +1,341 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body.admin-bar header.sticky {
+    top: 32px;
+}
+
+/* Homepage hero section */
+.hero-gradient {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+}
+
+.hero-gradient::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to right, #3b82f6, #8b5cf6, #ec4899);
+    z-index: -1;
+    border-radius: 0.75rem;
+}
+
+/* Custom styles for comment form inputs to ensure visibility */
+#comments .comment-form-author input,
+#comments .comment-form-email input,
+#comments .comment-form-url input,
+#comments .comment-form-comment textarea {
+    background-color: #fff;
+    border: 1px solid #d1d5db; /* border-gray-300 */
+    color: #111827; /* text-gray-900 */
+    padding: 0.75rem;
+}
+
+/* Dark mode overrides for comment form inputs */
+.dark #comments .comment-form-author input,
+.dark #comments .comment-form-email input,
+.dark #comments .comment-form-url input,
+.dark #comments .comment-form-comment textarea {
+    background-color: #374151; /* bg-gray-700 */
+    border-color: #4b5563; /* border-gray-600 */
+    color: #fff; /* text-white */
+}
+
+/* Mobile Menu Styles */
+#mobile-menu .primary-menu {
+    display: block;
+}
+
+#mobile-menu .primary-menu li {
+    margin-right: 0;
+    margin-bottom: 0.25rem;
+}
+
+#mobile-menu .primary-menu a {
+    display: block;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    color: #d1d5db; /* text-gray-300 */
+}
+
+#mobile-menu .primary-menu a:hover {
+    background-color: #4b5563; /* bg-gray-700 */
+    color: #fff; /* text-white */
+}
+
+/* Header and layout styles - cleaned up */
+#site-wrapper {
+    padding-top: 56px !important;
+    min-height: 100vh !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+#site-content {
+    flex: 1 0 auto !important;
+    padding-bottom: 3rem !important;
+}
+
+/* Category Menu Styles - Preserved for functionality */
+.category-menu-list {
+  list-style: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  display: flex !important;
+  flex-direction: column !important; /* Mobile first */
+  align-items: flex-start !important;
+}
+
+.category-menu-list > li {
+  margin-bottom: 0 !important;
+}
+.category-menu-list > li:last-child {
+  margin-bottom: 0 !important;
+}
+
+.category-menu-list a {
+  color: #6b7280 !important; /* text-gray-500 */
+  font-weight: 500 !important;
+  font-size: 0.875rem !important; /* text-sm */
+  transition: color 0.2s !important;
+  display: block !important;
+  padding: 0 !important;
+}
+.dark .category-menu-list a {
+  color: #9ca3af !important; /* dark:text-gray-400 */
+}
+
+.category-menu-list a:hover,
+.category-menu-list .current-menu-item > a {
+  color: #111827 !important;
+}
+.dark .category-menu-list a:hover,
+.dark .category-menu-list .current-menu-item > a {
+  color: #fff !important;
+}
+
+/* Desktop layout */
+@media (min-width: 640px) {
+  .category-menu-list {
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+  }
+  .category-menu-list > li {
+    margin-bottom: 0 !important;
+    margin-right: 1rem !important;
+    display: flex !important;
+    align-items: center !important;
+    height: 100% !important;
+  }
+  .category-menu-list > li:last-child {
+    margin-right: 0 !important;
+  }
+  .category-menu-list a {
+    display: flex !important;
+    align-items: center !important;
+    line-height: 1.5 !important;
+    height: 100% !important;
+  }
+}
+
+/* Category Menu Dropdown Styles */
+.category-menu-list .has-dropdown {
+  position: relative;
+}
+
+.category-menu-list .dropdown-menu {
+  display: block !important;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-4px);
+  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+  pointer-events: none;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  padding-left: 0.25rem !important;
+  padding-right: 0.5rem !important;
+  padding-top: 0.5rem !important;
+}
+
+.category-menu-list .has-dropdown:hover .dropdown-menu,
+.category-menu-list .has-dropdown.active .dropdown-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.category-menu-list .dropdown-menu a {
+  padding-left: 0.75rem !important;
+}
+
+.category-menu-list .dropdown-menu li:first-child a {
+  border-top-left-radius: 0.375rem;
+  border-top-right-radius: 0.375rem;
+}
+
+.category-menu-list .dropdown-menu li:last-child a {
+  border-bottom-left-radius: 0.375rem;
+  border-bottom-right-radius: 0.375rem;
+}
+
+.category-menu-list .dropdown-menu li {
+  margin: 0;
+}
+
+/* Dark mode support for dropdown */
+.dark .category-menu-list .dropdown-menu {
+  background-color: #374151 !important; /* bg-gray-700 */
+  border-color: #4b5563 !important; /* border-gray-600 */
+}
+
+.dark .category-menu-list .dropdown-menu a {
+  color: #d1d5db !important; /* text-gray-300 */
+}
+
+.dark .category-menu-list .dropdown-menu a:hover {
+  background-color: #4b5563 !important; /* bg-gray-600 */
+  color: #fff !important;
+}
+
+.dark .category-menu-list .dropdown-menu li.bg-gray-100 {
+  background-color: #4b5563 !important;
+}
+
+/* Force category menu to be visible on desktop */
+@media (min-width: 768px) {
+  .hidden.md\:block {
+    display: block !important;
+  }
+  
+  /* Prevent dropdown from going off-screen on the right */
+  .category-menu-list > li:last-child .dropdown-menu,
+  .category-menu-list > li:nth-last-child(2) .dropdown-menu {
+    right: 0;
+    left: auto;
+  }
+}
+
+/* Primary Navigation Menu Styles - Match Category Menu */
+.primary-menu a {
+  color: #6b7280 !important; /* text-gray-500 - same as category menu */
+  font-weight: 500 !important;
+  font-size: 1rem !important; /* text-base - slightly larger */
+  transition: color 0.2s !important;
+  display: block !important; /* same as category menu */
+  padding: 0.125rem 0 !important; /* same as category menu */
+}
+.primary-menu a:hover,
+.primary-menu .current-menu-item > a,
+.primary-menu .current_page_item > a {
+  color: #111827 !important; /* same as category menu - no font weight change */
+  background: none !important;
+  border-radius: 0 !important;
+}
+.dark .primary-menu a {
+  color: #9ca3af !important; /* same as category menu */
+}
+.dark .primary-menu a:hover,
+.dark .primary-menu .current-menu-item > a,
+.dark .primary-menu .current_page_item > a {
+  color: #fff !important; /* same as category menu - no font weight change */
+  background: none !important;
+  border-radius: 0 !important;
+}
+
+/* Universal bottom spacing for all main content wrappers */
+.site-content {
+    padding-bottom: 3rem !important;
+} 
+
+/* Add your theme styles below */
+.post-featured-image { margin-top: 0 !important; }
+
+.text-base .post-category-link,
+.text-base .post-category-link:visited,
+.text-base .post-category-link:hover {
+  text-decoration: none !important;
+  border-bottom: none !important;
+}
+
+.text-base a.post-category-link:hover,
+.text-base a.post-category-link:focus {
+  color: #2563eb !important;
+  text-decoration: none !important;
+  border-bottom: none !important;
+}
+
+/* Scrollbar Hide Utility */
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+.scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
+/* Enhanced Mobile Menu Styles */
+#mobile-menu {
+    display: block !important;
+    position: relative !important;
+    z-index: 40 !important;
+    background: white !important;
+    border-top: 1px solid #e5e7eb !important;
+    min-height: 50px !important;
+}
+
+#mobile-menu.hidden {
+    display: none !important;
+}
+
+/* Ensure mobile menu is visible when not hidden */
+#mobile-menu:not(.hidden) {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Ensure mobile menu button is visible and clickable */
+#mobile-menu-button {
+    display: inline-flex !important;
+    z-index: 50 !important;
+    position: relative !important;
+}
+
+/* Hide hamburger on desktop, show on mobile */
+@media (min-width: 768px) {
+    #mobile-menu-button {
+        display: none !important;
+    }
+}
+
+@media (max-width: 767px) {
+    #mobile-menu-button {
+        display: inline-flex !important;
+    }
+}
+
+/* Mobile menu icons */
+.js-mobile-menu-open-icon,
+.js-mobile-menu-close-icon {
+    display: block;
+}
+
+.js-mobile-menu-open-icon.hidden,
+.js-mobile-menu-close-icon.hidden {
+    display: none !important;
+}
+
+/* Fix gap between category and title - Override prose h1 margin-top */
+/* Target h1 that comes after a div in prose container */
+.prose > div + h1,
+.prose > div.mb-1 + h1,
+.prose.prose-lg > div + h1 {
+    margin-top: 0.25rem !important;
+}
+
+/* Remove default prose margins from first h1 */
+.prose.prose-lg h1:first-of-type {
+    margin-top: 0.25rem !important;
+} 

@@ -1,0 +1,12 @@
+[09-Aug-2025 10:00:19 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function language_attributes() in /home/thritaqs/public_html/wp-content/themes/thrivingstudio/template-parts/header.php:2
+Stack trace:
+#0 {main}
+  thrown in /home/thritaqs/public_html/wp-content/themes/thrivingstudio/template-parts/header.php on line 2
+[09-Aug-2025 10:00:34 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function language_attributes() in /home/thritaqs/public_html/wp-content/themes/thrivingstudio/template-parts/header.php:2
+Stack trace:
+#0 {main}
+  thrown in /home/thritaqs/public_html/wp-content/themes/thrivingstudio/template-parts/header.php on line 2
+[09-Aug-2025 10:11:28 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function language_attributes() in /home/thritaqs/public_html/wp-content/themes/thrivingstudio/template-parts/header.php:2
+Stack trace:
+#0 {main}
+  thrown in /home/thritaqs/public_html/wp-content/themes/thrivingstudio/template-parts/header.php on line 2

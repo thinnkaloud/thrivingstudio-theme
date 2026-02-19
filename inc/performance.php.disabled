@@ -1,0 +1,761 @@
+<?php
+/**
+ * Performance optimization module for Thriving Studio theme
+ * Handles asset optimization, caching, and performance improvements
+ */
+
+namespace ThrivingStudio\Performance;
+
+/**
+ * Remove unnecessary WordPress scripts and styles
+ */
+function remove_unnecessary_assets() {
+    // Remove emoji scripts
+    remove_action('wp_head', 'print_emoji_detection_script', 7);
+    remove_action('wp_print_styles', 'print_emoji_styles');
+    remove_action('admin_print_scripts', 'print_emoji_detection_script');
+    remove_action('admin_print_styles', 'print_emoji_styles');
+    
+    // Remove embed script
+    wp_deregister_script('wp-embed');
+    
+    // Remove jQuery migrate if not needed
+    if (!is_admin() && !in_array($GLOBALS['pagenow'], ['wp-login.php', 'wp-register.php'])) {
+        wp_deregister_script('jquery-migrate');
+    }
+}
+add_action('init', __NAMESPACE__ . '\\remove_unnecessary_assets');
+
+/**
+ * Conditionally load comments script only when needed
+ */
+function conditional_comments_script() {
+    if (is_singular() && comments_open() && get_option('thread_comments')) {
+        wp_enqueue_script('comment-reply');
+    }
+}
+add_action('wp_enqueue_scripts', __NAMESPACE__ . '\\conditional_comments_script');
+
+/**
+ * Remove width and height attributes from images, but preserve aspect ratios
+ * Note: JPEG quality optimization is handled in functions.php
+ */
+function remove_image_dimensions($html) {
+    // Only remove dimensions for non-post thumbnails to preserve layout
+    if (strpos($html, 'wp-post-image') === false) {
+        return preg_replace('/\s+(width|height)="[^"]*"/', '', $html);
+    }
+    return $html;
+}
+
+// Apply dimension removal to post thumbnails and editor images
+add_filter('post_thumbnail_html', __NAMESPACE__ . '\\remove_image_dimensions', 10);
+add_filter('image_send_to_editor', __NAMESPACE__ . '\\remove_image_dimensions', 10);
+
+/**
+ * Add preload tags for critical resources
+ */
+function add_preload_tags() {
+    // Preload critical fonts if any
+    // Preload critical CSS
+    echo '<link rel="preload" href="' . get_template_directory_uri() . '/frontend/build.css" as="style" onload="this.onload=null;this.rel=\'stylesheet\'">';
+    echo '<noscript><link rel="stylesheet" href="' . get_template_directory_uri() . '/frontend/build.css"></noscript>';
+}
+add_action('wp_head', __NAMESPACE__ . '\\add_preload_tags', 1);
+
+/**
+ * Add async/defer attributes to non-critical scripts
+ */
+function add_async_defer_attributes($tag, $handle) {
+    // Add async to non-critical scripts
+    $async_scripts = ['thrivingstudio-js'];
+    
+    // Don't defer WPForms scripts as they need to load immediately
+    $wpforms_scripts = ['wpforms', 'wpforms-utils', 'wpforms-frontend'];
+    
+    if (in_array($handle, $async_scripts) && !in_array($handle, $wpforms_scripts)) {
+        // Use defer instead of async for better performance
+        return str_replace(' src', ' defer src', $tag);
+    }
+    
+    return $tag;
+}
+add_filter('script_loader_tag', __NAMESPACE__ . '\\add_async_defer_attributes', 10, 2);
+
+// XML-RPC disabling moved to inc/security.php to avoid duplication
+
+/**
+ * Remove unnecessary meta tags
+ */
+function remove_unnecessary_meta() {
+    remove_action('wp_head', 'wp_generator');
+    remove_action('wp_head', 'wlwmanifest_link');
+    remove_action('wp_head', 'rsd_link');
+    remove_action('wp_head', 'wp_shortlink_wp_head');
+    remove_action('wp_head', 'adjacent_posts_rel_link_wp_head', 10);
+}
+add_action('init', __NAMESPACE__ . '\\remove_unnecessary_meta');
+
+/**
+ * Optimize database queries
+ */
+function optimize_queries() {
+    // Remove unnecessary queries
+    if (!is_admin()) {
+        remove_action('wp_head', 'wp_generator');
+        remove_action('wp_head', 'wlwmanifest_link');
+        remove_action('wp_head', 'rsd_link');
+    }
+}
+add_action('init', __NAMESPACE__ . '\\optimize_queries');
+
+/**
+ * Add advanced cache headers for different asset types
+ */
+function add_cache_headers() {
+    if (is_admin()) return;
+    
+    $request_uri = $_SERVER['REQUEST_URI'];
+    
+    // CSS and JS files - shorter cache with cache busting
+    if (preg_match('/\.(css|js)$/', $request_uri)) {
+        header('Cache-Control: public, max-age=86400'); // 24 hours instead of 1 year
+        header('Expires: ' . gmdate('D, d M Y H:i:s \G\M\T', time() + 86400));
+    }
+    // Images - shorter cache
+    elseif (preg_match('/\.(jpg|jpeg|png|gif|webp|svg|ico)$/', $request_uri)) {
+        header('Cache-Control: public, max-age=604800'); // 7 days instead of 30 days
+        header('Expires: ' . gmdate('D, d M Y H:i:s \G\M\T', time() + 604800));
+    }
+    // Fonts - shorter cache
+    elseif (preg_match('/\.(woff|woff2|ttf|eot)$/', $request_uri)) {
+        header('Cache-Control: public, max-age=604800'); // 7 days instead of 1 year
+        header('Expires: ' . gmdate('D, d M Y H:i:s \G\M\T', time() + 604800));
+    }
+    // HTML pages - very short cache
+    elseif (preg_match('/\.(html|php)$/', $request_uri) || !preg_match('/\./', $request_uri)) {
+        header('Cache-Control: no-cache, no-store, must-revalidate'); // No cache for HTML
+        header('Pragma: no-cache');
+        header('Expires: 0');
+    }
+    
+    // Add ETag for better caching
+    $etag = '"' . md5_file($_SERVER['SCRIPT_FILENAME']) . '"';
+    header('ETag: ' . $etag);
+    
+    // Handle conditional requests
+    if (isset($_SERVER['HTTP_IF_NONE_MATCH']) && $_SERVER['HTTP_IF_NONE_MATCH'] === $etag) {
+        http_response_code(304);
+        exit;
+    }
+}
+add_action('send_headers', __NAMESPACE__ . '\\add_cache_headers');
+
+/**
+ * Minify HTML output - disabled due to conflicts with WordPress
+ * Use server-level minification or caching plugins instead
+ */
+// function minify_html($html) {
+//     if (!is_admin()) {
+//         $search = [
+//             '/\>[^\S ]+/s',  // strip whitespaces after tags, except space
+//             '/[^\S ]+\</s',  // strip whitespaces before tags, except space
+//             '/(\s)+/s'       // shorten multiple whitespace sequences
+//         ];
+//         
+//         $replace = [
+//             '>',
+//             '<',
+//             '\\1'
+//         ];
+//         
+//         $html = preg_replace($search, $replace, $html);
+//         return $html;
+//     }
+//     return $html;
+// }
+// add_filter('wp_loaded', function() {
+//     ob_start(__NAMESPACE__ . '\\minify_html');
+// });
+
+/**
+ * Defer non-critical CSS - simplified to avoid conflicts
+ */
+function defer_css($html, $handle) {
+    if ($handle === 'thrivingstudio-style') {
+        // Only defer if not already preloaded
+        if (strpos($html, 'rel=\'preload\'') === false) {
+            return str_replace("rel='stylesheet'", "rel='preload' as='style' onload=\"this.onload=null;this.rel='stylesheet'\"", $html);
+        }
+    }
+    return $html;
+}
+add_filter('style_loader_tag', __NAMESPACE__ . '\\defer_css', 10, 2); 
+
+/**
+ * Add critical CSS inlining for above-the-fold content
+ */
+function add_critical_css() {
+    if (is_admin()) return;
+    
+    // Critical CSS for above-the-fold content
+    $critical_css = '
+    /* Critical CSS for above-the-fold content */
+    body{font-family:ui-sans-serif,system-ui,sans-serif;margin:0;line-height:1.5}
+    .site-header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.8);backdrop-filter:blur(8px);border-bottom:1px solid #e5e7eb}
+    .container{width:100%;max-width:1280px;margin:0 auto;padding:0 1rem}
+    .flex{display:flex}
+    .items-center{align-items:center}
+    .justify-between{justify-content:space-between}
+    .h-16{height:4rem}
+    .text-2xl{font-size:1.5rem;line-height:2rem}
+    .font-bold{font-weight:700}
+    .font-normal{font-weight:400}
+    .text-gray-800{color:#1f2937}
+    .hidden{display:none}
+    .md\\:flex{display:none}
+    @media (min-width:768px){.md\\:flex{display:flex}.md\\:hidden{display:none}}
+    .bg-white{background-color:#fff}
+    .border-gray-200{border-color:#e5e7eb}
+    .border-b{border-bottom-width:1px}
+    .px-4{padding-left:1rem;padding-right:1rem}
+    .py-2{padding-top:.5rem;padding-bottom:.5rem}
+    .rounded-md{border-radius:.375rem}
+    .text-gray-400{color:#9ca3af}
+    .hover\\:text-gray-500:hover{color:#6b7280}
+    .hover\\:bg-gray-100:hover{background-color:#f3f4f6}
+    .focus\\:outline-none:focus{outline:2px solid transparent}
+    .focus\\:ring-2:focus{box-shadow:0 0 0 2px #3b82f6}
+    .focus\\:ring-indigo-500:focus{--tw-ring-color:#3b82f6}
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border-width:0}
+    .h-6{height:1.5rem}
+    .w-6{width:1.5rem}
+    .stroke-current{stroke:currentColor}
+    .stroke-width-2{stroke-width:2}
+    .fill-none{fill:none}
+    .stroke-linecap-round{stroke-linecap:round}
+    .stroke-linejoin-round{stroke-linejoin:round}
+    
+    /* Category Menu Critical Styles */
+    .category-menu-list{list-style:none!important;padding:0!important;margin:0!important;display:flex!important;flex-direction:column!important;align-items:flex-start!important}
+    .category-menu-list>li{margin-bottom:.5rem!important}
+    .category-menu-list>li:last-child{margin-bottom:0!important}
+    .category-menu-list a{color:#6b7280!important;font-weight:600!important;transition:color .2s!important;display:block!important;padding:.25rem 0!important}
+    .dark .category-menu-list a{color:#9ca3af!important}
+    .category-menu-list a:hover,.category-menu-list .current-menu-item>a{color:#111827!important}
+    .dark .category-menu-list a:hover,.dark .category-menu-list .current-menu-item>a{color:#fff!important}
+    @media (min-width:640px){.category-menu-list{flex-direction:row!important;align-items:center!important}.category-menu-list>li{margin-bottom:0!important;margin-right:1.5rem!important}.category-menu-list>li:last-child{margin-right:0!important}}
+    ';
+    
+    echo '<style id="critical-css">' . $critical_css . '</style>';
+}
+add_action('wp_head', __NAMESPACE__ . '\\add_critical_css', 1); 
+
+/**
+ * Add WebP support and image optimization
+ */
+function add_webp_support($mimes) {
+    $mimes['webp'] = 'image/webp';
+    return $mimes;
+}
+add_filter('upload_mimes', __NAMESPACE__ . '\\add_webp_support');
+
+/**
+ * Generate WebP versions of uploaded images
+ */
+function generate_webp_versions($metadata, $attachment_id) {
+    $file_path = get_attached_file($attachment_id);
+    $file_info = pathinfo($file_path);
+    
+    // Only process images
+    if (!in_array(strtolower($file_info['extension']), ['jpg', 'jpeg', 'png'])) {
+        return $metadata;
+    }
+    
+    // Check if WebP conversion is available
+    if (!function_exists('imagewebp')) {
+        return $metadata;
+    }
+    
+    // Generate WebP version
+    $webp_path = $file_info['dirname'] . '/' . $file_info['filename'] . '.webp';
+    
+    switch (strtolower($file_info['extension'])) {
+        case 'jpg':
+        case 'jpeg':
+            $image = imagecreatefromjpeg($file_path);
+            break;
+        case 'png':
+            $image = imagecreatefrompng($file_path);
+            // Preserve transparency
+            imagepalettetotruecolor($image);
+            imagealphablending($image, true);
+            imagesavealpha($image, true);
+            break;
+        default:
+            return $metadata;
+    }
+    
+    if ($image) {
+        imagewebp($image, $webp_path, 85); // 85% quality
+        imagedestroy($image);
+        
+        // Add WebP version to metadata
+        $metadata['webp'] = $webp_path;
+    }
+    
+    return $metadata;
+}
+add_filter('wp_generate_attachment_metadata', __NAMESPACE__ . '\\generate_webp_versions', 10, 2);
+
+/**
+ * Add WebP support to WordPress image functions
+ */
+function add_webp_to_image_sizes($sizes, $metadata, $attachment_id) {
+    if (isset($metadata['webp'])) {
+        $sizes['webp'] = [
+            'file' => basename($metadata['webp']),
+            'mime-type' => 'image/webp',
+            'width' => $metadata['width'],
+            'height' => $metadata['height']
+        ];
+    }
+    return $sizes;
+}
+add_filter('wp_get_attachment_image_src', __NAMESPACE__ . '\\add_webp_to_image_sizes', 10, 3);
+
+/**
+ * Add responsive image support
+ */
+function add_responsive_image_support() {
+    add_theme_support('responsive-embeds');
+    add_theme_support('post-thumbnails');
+    
+    // Add custom image sizes
+    add_image_size('hero-large', 1920, 1080, true);
+    add_image_size('hero-medium', 1200, 675, true);
+    add_image_size('hero-small', 768, 432, true);
+    add_image_size('card-large', 600, 400, true);
+    add_image_size('card-medium', 400, 267, true);
+    add_image_size('card-small', 300, 200, true);
+}
+add_action('after_setup_theme', __NAMESPACE__ . '\\add_responsive_image_support');
+
+/**
+ * Add lazy loading to images
+ */
+function add_lazy_loading_to_images($attr, $attachment, $size) {
+    if (!is_admin()) {
+        $attr['loading'] = 'lazy';
+        $attr['decoding'] = 'async';
+    }
+    return $attr;
+}
+add_filter('wp_get_attachment_image_attributes', __NAMESPACE__ . '\\add_lazy_loading_to_images', 10, 3); 
+
+/**
+ * Optimize font loading
+ */
+function optimize_font_loading() {
+    if (is_admin()) return;
+    
+    // Preload critical fonts
+    echo '<link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" as="style" onload="this.onload=null;this.rel=\'stylesheet\'">';
+    echo '<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"></noscript>';
+    
+    // Add font-display: swap CSS
+    echo '<style>
+    @font-face {
+        font-family: "Inter";
+        font-style: normal;
+        font-weight: 400;
+        font-display: swap;
+        src: url("https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiA.woff2") format("woff2");
+    }
+    @font-face {
+        font-family: "Inter";
+        font-style: normal;
+        font-weight: 500;
+        font-display: swap;
+        src: url("https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiA.woff2") format("woff2");
+    }
+    @font-face {
+        font-family: "Inter";
+        font-style: normal;
+        font-weight: 600;
+        font-display: swap;
+        src: url("https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiA.woff2") format("woff2");
+    }
+    @font-face {
+        font-family: "Inter";
+        font-style: normal;
+        font-weight: 700;
+        font-display: swap;
+        src: url("https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiA.woff2") format("woff2");
+    }
+    </style>';
+}
+add_action('wp_head', __NAMESPACE__ . '\\optimize_font_loading', 2); 
+
+/**
+ * Add resource hints for better performance
+ */
+function add_resource_hints($hints, $relation_type) {
+    if ($relation_type === 'dns-prefetch') {
+        // Add DNS prefetch for external resources
+        $hints[] = '//fonts.googleapis.com';
+        $hints[] = '//fonts.gstatic.com';
+        $hints[] = '//www.google-analytics.com';
+        $hints[] = '//www.googletagmanager.com';
+    }
+    
+    if ($relation_type === 'preconnect') {
+        // Add preconnect for critical resources
+        $hints[] = [
+            'href' => 'https://fonts.googleapis.com',
+            'crossorigin' => 'anonymous',
+        ];
+        $hints[] = [
+            'href' => 'https://fonts.gstatic.com',
+            'crossorigin' => 'anonymous',
+        ];
+    }
+    
+    return $hints;
+}
+add_filter('wp_resource_hints', __NAMESPACE__ . '\\add_resource_hints', 10, 2);
+
+/**
+ * Add preload for critical resources
+ */
+function add_critical_preloads() {
+    if (is_admin()) return;
+    
+    // Preload critical CSS
+    echo '<link rel="preload" href="' . get_template_directory_uri() . '/frontend/build.css" as="style">';
+    
+    // Preload critical fonts
+    echo '<link rel="preload" href="https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiA.woff2" as="font" type="font/woff2" crossorigin>';
+    
+    // Preload hero images if they exist
+    if (is_front_page() && has_post_thumbnail()) {
+        $hero_image = wp_get_attachment_image_src(get_post_thumbnail_id(), 'hero-large');
+        if ($hero_image) {
+            echo '<link rel="preload" href="' . $hero_image[0] . '" as="image">';
+        }
+    }
+}
+add_action('wp_head', __NAMESPACE__ . '\\add_critical_preloads', 1); 
+
+/**
+ * Add Core Web Vitals tracking
+ */
+function add_web_vitals_tracking() {
+    if (is_admin()) return;
+    
+    ?>
+    <script>
+    // Core Web Vitals tracking
+    function sendToAnalytics(metric) {
+        const body = JSON.stringify(metric);
+        const url = '<?php echo admin_url('admin-ajax.php'); ?>';
+        
+        // Use navigator.sendBeacon if available, fallback to fetch
+        if (navigator.sendBeacon) {
+            navigator.sendBeacon(url, body);
+        } else {
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: body
+            });
+        }
+    }
+
+    // Track Largest Contentful Paint (LCP)
+    new PerformanceObserver((entryList) => {
+        for (const entry of entryList.getEntries()) {
+            sendToAnalytics({
+                name: 'LCP',
+                value: entry.startTime,
+                id: entry.id,
+                action: 'web_vitals'
+            });
+        }
+    }).observe({entryTypes: ['largest-contentful-paint']});
+
+    // Track First Input Delay (FID)
+    new PerformanceObserver((entryList) => {
+        for (const entry of entryList.getEntries()) {
+            sendToAnalytics({
+                name: 'FID',
+                value: entry.processingStart - entry.startTime,
+                id: entry.id,
+                action: 'web_vitals'
+            });
+        }
+    }).observe({entryTypes: ['first-input']});
+
+    // Track Cumulative Layout Shift (CLS)
+    let clsValue = 0;
+    let clsEntries = [];
+
+    new PerformanceObserver((entryList) => {
+        for (const entry of entryList.getEntries()) {
+            if (!entry.hadRecentInput) {
+                clsValue += entry.value;
+                clsEntries.push(entry);
+            }
+        }
+        
+        sendToAnalytics({
+            name: 'CLS',
+            value: clsValue,
+            id: clsEntries[clsEntries.length - 1]?.id,
+            action: 'web_vitals'
+        });
+    }).observe({entryTypes: ['layout-shift']});
+
+    // Track Time to First Byte (TTFB)
+    new PerformanceObserver((entryList) => {
+        for (const entry of entryList.getEntries()) {
+            if (entry.entryType === 'navigation') {
+                sendToAnalytics({
+                    name: 'TTFB',
+                    value: entry.responseStart - entry.requestStart,
+                    id: entry.id,
+                    action: 'web_vitals'
+                });
+            }
+        }
+    }).observe({entryTypes: ['navigation']});
+    </script>
+    <?php
+}
+add_action('wp_head', __NAMESPACE__ . '\\add_web_vitals_tracking', 20);
+
+/**
+ * Handle Web Vitals AJAX requests
+ */
+function handle_web_vitals_ajax() {
+    if (!isset($_POST['action']) || $_POST['action'] !== 'web_vitals') {
+        return;
+    }
+    
+    $input = file_get_contents('php://input');
+    $data = json_decode($input, true);
+    
+    if ($data) {
+        // Log Web Vitals data
+        error_log('Web Vitals: ' . json_encode($data));
+        
+        // Store in database for analysis
+        $web_vitals = get_option('thrivingstudio_web_vitals', []);
+        $web_vitals[] = [
+            'metric' => $data['name'],
+            'value' => $data['value'],
+            'timestamp' => current_time('mysql'),
+            'page' => $_SERVER['HTTP_REFERER'] ?? ''
+        ];
+        
+        // Keep only last 1000 entries
+        if (count($web_vitals) > 1000) {
+            $web_vitals = array_slice($web_vitals, -1000);
+        }
+        
+        update_option('thrivingstudio_web_vitals', $web_vitals);
+    }
+    
+    wp_die();
+}
+add_action('wp_ajax_web_vitals', __NAMESPACE__ . '\\handle_web_vitals_ajax');
+add_action('wp_ajax_nopriv_web_vitals', __NAMESPACE__ . '\\handle_web_vitals_ajax'); 
+
+/**
+ * Performance budget monitoring
+ */
+function add_performance_budget_monitoring() {
+    if (is_admin()) return;
+    
+    ?>
+    <script>
+    // Performance budget thresholds
+    const PERFORMANCE_BUDGETS = {
+        LCP: 2500, // 2.5 seconds
+        FID: 100,  // 100 milliseconds
+        CLS: 0.1,  // 0.1
+        TTFB: 800, // 800 milliseconds
+        JS_SIZE: 100 * 1024, // 100KB
+        CSS_SIZE: 50 * 1024, // 50KB
+        IMAGE_SIZE: 500 * 1024 // 500KB
+    };
+
+    // Monitor performance budgets
+    function checkPerformanceBudget(metric, value) {
+        const budget = PERFORMANCE_BUDGETS[metric];
+        if (budget && value > budget) {
+            console.warn(`Performance budget exceeded: ${metric} = ${value} (budget: ${budget})`);
+            
+            // Send budget violation to analytics
+            sendToAnalytics({
+                name: 'BUDGET_VIOLATION',
+                metric: metric,
+                value: value,
+                budget: budget,
+                action: 'performance_budget'
+            });
+        }
+    }
+
+    // Monitor resource sizes
+    function monitorResourceSizes() {
+        const resources = performance.getEntriesByType('resource');
+        let totalJS = 0;
+        let totalCSS = 0;
+        let totalImages = 0;
+
+        resources.forEach(resource => {
+            const size = resource.transferSize || 0;
+            if (resource.name.includes('.js')) {
+                totalJS += size;
+            } else if (resource.name.includes('.css')) {
+                totalCSS += size;
+            } else if (resource.name.match(/\.(jpg|jpeg|png|gif|webp|svg)$/)) {
+                totalImages += size;
+            }
+        });
+
+        checkPerformanceBudget('JS_SIZE', totalJS);
+        checkPerformanceBudget('CSS_SIZE', totalCSS);
+        checkPerformanceBudget('IMAGE_SIZE', totalImages);
+    }
+
+    // Run monitoring after page load
+    window.addEventListener('load', () => {
+        setTimeout(monitorResourceSizes, 1000);
+    });
+
+    // Enhanced Web Vitals tracking with budget monitoring
+    const originalSendToAnalytics = window.sendToAnalytics;
+    window.sendToAnalytics = function(metric) {
+        if (originalSendToAnalytics) {
+            originalSendToAnalytics(metric);
+        }
+        
+        // Check performance budget
+        if (PERFORMANCE_BUDGETS[metric.name]) {
+            checkPerformanceBudget(metric.name, metric.value);
+        }
+    };
+    </script>
+    <?php
+}
+add_action('wp_head', __NAMESPACE__ . '\\add_performance_budget_monitoring', 21); 
+
+/**
+ * Add CDN support for static assets
+ */
+function add_cdn_support() {
+    // CDN configuration
+    $cdn_domain = get_option('thrivingstudio_cdn_domain', '');
+    
+    if (!empty($cdn_domain)) {
+        // Replace local URLs with CDN URLs for static assets
+        add_filter('wp_get_attachment_url', function($url) use ($cdn_domain) {
+            $site_url = site_url();
+            if (strpos($url, $site_url) === 0) {
+                return str_replace($site_url, $cdn_domain, $url);
+            }
+            return $url;
+        });
+        
+        // Replace theme asset URLs
+        add_filter('stylesheet_uri', function($url) use ($cdn_domain) {
+            $site_url = site_url();
+            if (strpos($url, $site_url) === 0) {
+                return str_replace($site_url, $cdn_domain, $url);
+            }
+            return $url;
+        });
+    }
+}
+
+/**
+ * Add edge caching headers for CDN
+ */
+function add_edge_caching_headers() {
+    if (is_admin()) return;
+    
+    // Add Surrogate-Control headers for CDN edge caching
+    if (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+        // We're behind a CDN
+        header('Surrogate-Control: max-age=3600'); // 1 hour for CDN
+        header('Cache-Control: public, max-age=3600'); // 1 hour for browser
+    }
+    
+    // Add Vary header for proper caching
+    header('Vary: Accept-Encoding, User-Agent');
+    
+    // Add cache warming headers
+    if (is_front_page()) {
+        header('Link: <' . site_url('/blog/') . '>; rel=prefetch');
+        header('Link: <' . site_url('/contact/') . '>; rel=prefetch');
+    }
+}
+
+/**
+ * Add cache warming functionality
+ */
+function add_cache_warming() {
+    // Cache warming for critical pages
+    $critical_pages = [
+        home_url('/'),
+        home_url('/blog/'),
+        home_url('/contact/'),
+    ];
+    
+    // Only run cache warming in background
+    if (!wp_doing_ajax() && !wp_doing_cron()) {
+        wp_schedule_single_event(time() + 60, 'thrivingstudio_cache_warming', [$critical_pages]);
+    }
+}
+
+/**
+ * Cache warming callback
+ */
+function warm_cache($urls) {
+    foreach ($urls as $url) {
+        wp_remote_get($url, [
+            'timeout' => 5,
+            'blocking' => false,
+        ]);
+    }
+}
+add_action('thrivingstudio_cache_warming', __NAMESPACE__ . '\\warm_cache');
+
+/**
+ * Add performance monitoring to admin bar
+ */
+function add_performance_admin_bar($wp_admin_bar) {
+    if (!current_user_can('manage_options')) {
+        return;
+    }
+    
+    // Get recent performance data
+    $web_vitals = get_option('thrivingstudio_web_vitals', []);
+    $recent_vitals = array_slice(array_reverse($web_vitals), 0, 10);
+    
+    if (!empty($recent_vitals)) {
+        $lcp_values = array_filter($recent_vitals, function($v) { return $v['metric'] === 'LCP'; });
+        $avg_lcp = !empty($lcp_values) ? array_sum(array_column($lcp_values, 'value')) / count($lcp_values) : 0;
+        
+        $wp_admin_bar->add_menu([
+            'id' => 'performance-monitor',
+            'title' => 'Performance: ' . round($avg_lcp) . 'ms LCP',
+            'href' => admin_url('themes.php?page=thrivingstudio-performance'),
+        ]);
+    }
+}
+add_action('admin_bar_menu', __NAMESPACE__ . '\\add_performance_admin_bar', 100); 

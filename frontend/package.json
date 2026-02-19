@@ -1,0 +1,22 @@
+{
+  "name": "thriving-studio-frontend",
+  "version": "1.0.0",
+  "description": "Frontend assets for Thriving Studio WordPress theme",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "watch": "tailwindcss -i ./index.css -o ./build.css --watch",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["wordpress", "theme", "frontend", "tailwind", "vite"],
+  "author": "Thriving Studio Team",
+  "license": "GPL-2.0-or-later",
+  "type": "commonjs",
+  "devDependencies": {
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.3",
+    "vite": "^6.3.5"
+  }
+}
