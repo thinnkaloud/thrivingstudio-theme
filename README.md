@@ -116,3 +116,4 @@ This theme is licensed under the GPL v2 or later.
 - Icons from Heroicons
 - Performance optimized for modern web standards
 
+
