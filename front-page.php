@@ -7,6 +7,10 @@
 
 <main class="flex-1 bg-white">
     <div class="site-content container mx-auto px-4 sm:px-6 lg:px-8 pt-0 flex-1 relative">
+        <section class="mb-6 mt-4 rounded-lg border border-black bg-yellow-100 px-4 py-3 text-center">
+            <p class="font-bold text-black">Deployment test banner: if you see this, latest theme code is live.</p>
+        </section>
+
         <!-- Hero Section (Aligned with header) -->
         <section class="hero-section overflow-hidden mb-16 bg-white" style="color:#000; border: 1px solid #bbb; border-color: #bbb; box-shadow: 0 4px 24px 0 rgba(0,0,0,0.04); padding: 3.5rem 0; border-radius: 1rem;">
             <div class="text-center px-4 sm:px-8">
