@@ -1,7 +1,5 @@
 <?php
 if (has_nav_menu('primary')) {
-    echo '<!-- Primary menu found -->';
-    
     // Check if we are rendering the mobile menu
     $is_mobile = isset($args['is_mobile']) && $args['is_mobile'];
 
@@ -37,7 +35,7 @@ if (has_nav_menu('primary')) {
                         $output .= '<a href="' . esc_url($blog_url) . '" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">Blog</a>';
                         $output .= '</li>';
                     } else {
-                        $output .= '<li class="menu-item menu-item-type-post_type menu-item-object-page' . $blog_active_class . '" style="margin-right: 1rem;">';
+                        $output .= '<li class="menu-item menu-item-type-post_type menu-item-object-page primary-menu-item' . $blog_active_class . '">';
                         $output .= '<a href="' . esc_url($blog_url) . '" class="text-base font-medium text-gray-500 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors duration-200">Blog</a>';
                         $output .= '</li>';
                     }
@@ -64,7 +62,14 @@ if (has_nav_menu('primary')) {
                 $class_names = join(' ', apply_filters('nav_menu_css_class', array_filter($classes), $item, $args));
                 $class_names = $class_names ? ' class="' . esc_attr($class_names) . '"' : '';
                 
-                $output .= '<li' . $class_names . ' style="margin-right: 1rem;">';
+                if (!$is_mobile) {
+                    if ($class_names) {
+                        $class_names = rtrim(substr($class_names, 0, -1)) . ' primary-menu-item"';
+                    } else {
+                        $class_names = ' class="primary-menu-item"';
+                    }
+                }
+                $output .= '<li' . $class_names . '>';
                 
                                         if ($is_mobile) {
                             $output .= '<a href="' . esc_url($item->url) . '" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">';
@@ -79,7 +84,5 @@ if (has_nav_menu('primary')) {
             }
         },
     ]);
-} else {
-    echo '<!-- No primary menu assigned -->';
 }
 ?> 

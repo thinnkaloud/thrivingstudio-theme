@@ -338,4 +338,131 @@ body.admin-bar header.sticky {
 /* Remove default prose margins from first h1 */
 .prose.prose-lg h1:first-of-type {
     margin-top: 0.25rem !important;
-} 
+}
+
+/* Phase 1 UX/IA refinement classes */
+.ts-surface-card {
+    border: 1px solid #bbb;
+    border-radius: 1rem;
+    box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.04);
+}
+
+.ts-section-spacing {
+    color: #000;
+    padding: 3.5rem 0;
+}
+
+.ts-social-section {
+    padding: 1.25rem 0;
+}
+
+.ts-social-grid {
+    color: #000;
+}
+
+.ts-social-count {
+    display: inline-block;
+    color: #111827;
+}
+
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+    .ts-social-count {
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        -webkit-text-fill-color: transparent;
+    }
+}
+
+.ts-social-count-facebook {
+    background: linear-gradient(90deg, #1877f3, #1877f3);
+}
+
+.ts-social-count-instagram {
+    background: linear-gradient(90deg, #fd5, #c13584, #833ab4);
+}
+
+.ts-social-count-pinterest {
+    background: linear-gradient(90deg, #e60023, #e60023);
+}
+
+.ts-social-count-youtube {
+    background: linear-gradient(90deg, #ff0000, #ff0000);
+}
+
+.ts-card-inner {
+    border-radius: 1rem;
+}
+
+.ts-line-clamp-4 {
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+}
+
+.ts-subscribe-panel {
+    border: 1px solid #000;
+}
+
+.quote-desktop-track > div {
+    flex-shrink: 0;
+    flex: 1;
+    min-width: 0;
+    margin: 0 1rem;
+}
+
+.quote-desktop-track > div:first-child {
+    margin-left: 0;
+}
+
+.quote-desktop-track > div:last-child {
+    margin-right: 0;
+}
+
+#mobile-quote-slider > * {
+    min-width: 100%;
+    flex-shrink: 0;
+}
+
+.ts-topbar-message {
+    width: 100%;
+    background: #ffe066;
+    color: #111;
+    padding: 0.5rem 0;
+    text-align: center;
+    font-weight: 500;
+    font-size: 0.82rem;
+    letter-spacing: 0.01em;
+    border-bottom: 0.5px solid #111;
+}
+
+.ts-header-cta {
+    background: #000 !important;
+    color: #fff !important;
+}
+
+.ts-mobile-menu-button {
+    min-width: 44px;
+    min-height: 44px;
+    cursor: pointer;
+    z-index: 999;
+}
+
+.primary-menu-item {
+    margin-right: 1rem;
+}
+
+.primary-menu-item:last-child {
+    margin-right: 0;
+}
+
+.ts-category-menu-list {
+    padding: 0.875rem 0 !important;
+    min-height: 2.75rem !important;
+}
+
+.ts-dropdown-menu {
+    left: 0.5rem;
+    top: 100%;
+    margin-top: 0;
+}

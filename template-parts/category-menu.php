@@ -36,7 +36,7 @@ else:
 <div class="container mx-auto px-4 sm:px-6 lg:px-8 my-1">
     
     <nav aria-label="Category Menu">
-        <ul class="category-menu-list flex items-center justify-start text-sm font-medium border-b border-gray-200 dark:border-gray-700" style="padding: 0.875rem 0; min-height: 2.75rem; display: flex; align-items: center;">
+        <ul class="category-menu-list ts-category-menu-list flex items-center justify-start text-sm font-medium border-b border-gray-200 dark:border-gray-700">
             <?php
                 if (has_nav_menu('category_menu')) {
                     // Get the menu items
@@ -90,7 +90,7 @@ else:
                         
                         // Add dropdown for subcategories
                         if ($has_subcategories) {
-                            echo '<ul class="dropdown-menu absolute bg-white border border-gray-200 rounded-md shadow-lg py-1 min-w-[200px] z-50" style="left: 0.5rem; top: 100%; margin-top: 0;">';
+                            echo '<ul class="dropdown-menu ts-dropdown-menu absolute bg-white border border-gray-200 rounded-md shadow-lg py-1 min-w-[200px] z-50">';
                             foreach ($subcategories as $subcategory) {
                                 $sub_is_current = is_category($subcategory->term_id);
                                 $sub_current_class = $sub_is_current ? ' bg-gray-100' : '';
@@ -142,7 +142,7 @@ else:
                             echo '<a href="' . esc_url(get_category_link($category->term_id)) . '" class="text-sm align-middle flex items-center">' . esc_html($category->name) . '</a>';
                             
                             if ($has_subcategories) {
-                                echo '<ul class="dropdown-menu absolute bg-white border border-gray-200 rounded-md shadow-lg py-1 min-w-[200px] z-50" style="left: 0.5rem; top: 100%; margin-top: 0;">';
+                                echo '<ul class="dropdown-menu ts-dropdown-menu absolute bg-white border border-gray-200 rounded-md shadow-lg py-1 min-w-[200px] z-50">';
                                 foreach ($subcategories as $subcategory) {
                                     $sub_is_current = is_category($subcategory->term_id);
                                     $sub_current_class = $sub_is_current ? ' bg-gray-100' : '';

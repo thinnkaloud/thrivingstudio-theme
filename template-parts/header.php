@@ -35,7 +35,7 @@
     <?php $topbar_message = get_theme_mod('thrivingstudio_topbar_message', ''); ?>
     <?php $topbar_show = get_theme_mod('thrivingstudio_topbar_show', true); ?>
     <?php if (!empty($topbar_message) && $topbar_show) : ?>
-        <div style="width:100%;background:#ffe066;color:#111;padding:0.5rem 0;text-align:center;font-weight:500;font-size:0.82rem;letter-spacing:0.01em; border-bottom:0.5px solid #111;">
+        <div class="ts-topbar-message">
             <?php echo esc_html($topbar_message); ?>
         </div>
     <?php endif; ?>
@@ -162,12 +162,12 @@ body.admin-bar #masthead {
                 <div class="flex items-center md:justify-end w-auto md:min-w-[160px]">
                     <!-- Desktop CTA -->
                     <div class="hidden md:flex items-center space-x-4">
-                    <a href="<?php echo esc_url(get_theme_mod('thrivingstudio_header_cta_link', '#')); ?>" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium w-full text-center" style="background:#000 !important; color:#fff !important;">
+                    <a href="<?php echo esc_url(get_theme_mod('thrivingstudio_header_cta_link', '#')); ?>" class="ts-header-cta inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium w-full text-center">
                         <?php echo esc_html(get_theme_mod('thrivingstudio_header_cta_text', __('Get In Touch', 'thrivingstudio'))); ?>
                     </a>
                     </div>
                     <!-- Mobile Hamburger Button (hidden on desktop) -->
-                    <button id="mobile-menu-button" type="button" class="mobile-menu-btn inline-flex md:hidden items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 ml-2" aria-controls="mobile-menu" aria-expanded="false" style="min-width: 44px; min-height: 44px; cursor: pointer; z-index: 999;">
+                    <button id="mobile-menu-button" type="button" class="mobile-menu-btn ts-mobile-menu-button inline-flex md:hidden items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 ml-2" aria-controls="mobile-menu" aria-expanded="false">
                         <!-- Icon when menu is closed -->
                         <svg class="js-mobile-menu-open-icon block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -198,7 +198,7 @@ body.admin-bar #masthead {
             </div>
             <div class="pt-4 pb-3 border-t border-gray-200">
                 <div class="flex items-center px-5">
-                     <a href="<?php echo esc_url(get_theme_mod('thrivingstudio_header_cta_link', '#')); ?>" class="w-full text-center inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium w-full text-center" style="background:#000 !important; color:#fff !important;">
+                     <a href="<?php echo esc_url(get_theme_mod('thrivingstudio_header_cta_link', '#')); ?>" class="ts-header-cta w-full text-center inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium w-full text-center">
                         <?php echo esc_html(get_theme_mod('thrivingstudio_header_cta_text', __('Get In Touch', 'thrivingstudio'))); ?>
                     </a>
                 </div>
