@@ -69,7 +69,11 @@ else:
                             continue;
                         }
                         
-                        $is_current = (get_queried_object_id() == $item->object_id);
+                        $queried_id = get_queried_object_id();
+                        $is_current = ($queried_id == $item->object_id);
+                        if (!$is_current && is_category() && function_exists('cat_is_ancestor_of')) {
+                            $is_current = cat_is_ancestor_of((int) $item->object_id, (int) $queried_id);
+                        }
                         $current_class = $is_current ? ' current-menu-item' : '';
                         
                         // Check if this is a category and get child categories
@@ -86,7 +90,8 @@ else:
                         
                         $dropdown_class = $has_subcategories ? ' has-dropdown' : '';
                         echo '<li class="menu-item menu-item-type-' . $item->type . ' menu-item-object-' . $item->object . $current_class . ' py-0.5 relative' . $dropdown_class . '">';
-                        echo '<a href="' . esc_url($item->url) . '" class="text-sm align-middle flex items-center">' . esc_html($item->title) . '</a>';
+                        $aria_current = $is_current ? ' aria-current="page"' : '';
+                        echo '<a href="' . esc_url($item->url) . '" class="text-sm align-middle flex items-center"' . $aria_current . '>' . esc_html($item->title) . '</a>';
                         
                         // Add dropdown for subcategories
                         if ($has_subcategories) {

@@ -44,6 +44,22 @@ A modern, responsive WordPress theme designed for creative professionals, blogge
 4. **Set up menus** in Appearance > Menus
 5. **Configure social media** in the Customizer
 
+## Build Workflow (Canonical)
+
+Use the root theme directory scripts as the single source of truth:
+
+```bash
+cd /path/to/wp-content/themes/thrivingstudio
+npm run build:css     # Build frontend/build.css from frontend/index.css
+npm run build:js      # Build frontend/main.min.js
+npm run build         # Build CSS + JS together
+npm run watch:css     # Watch CSS during local refinement
+```
+
+Notes:
+- `frontend/package.json` is retained for compatibility, but delegates to root scripts.
+- Deployments use the generated `frontend/build.css` and `frontend/main.min.js`.
+
 ## Customization
 
 ### Theme Customizer Options
@@ -115,5 +131,4 @@ This theme is licensed under the GPL v2 or later.
 - Styled with Tailwind CSS
 - Icons from Heroicons
 - Performance optimized for modern web standards
-
 

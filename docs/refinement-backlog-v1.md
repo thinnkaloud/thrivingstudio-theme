@@ -44,22 +44,28 @@
 ## P2 (Next)
 
 ### P2.1 Footer social consistency cleanup
+- Status: Implemented in this cycle.
 - Files: `template-parts/footer.php`, `frontend/index.css`.
-- Tasks:
-  - Replace inline footer icon hover overrides with consistent class tokens.
-  - Normalize footer spacing and hover behavior.
+- Completed:
+  - Removed inline footer JS and inline style block.
+  - Replaced footer menu/social hover behavior with reusable CSS classes.
+  - Added secure external social links (`target=\"_blank\"` + `rel=\"noopener noreferrer\"`).
 
 ### P2.2 Category menu interaction cleanup
+- Status: Implemented in this cycle.
 - Files: `template-parts/category-menu.php`, `frontend/index.css`.
-- Tasks:
-  - Consolidate dropdown hover/focus states for accessibility and touch behavior.
-  - Add clearer active state treatment across desktop/mobile.
+- Completed:
+  - Added `focus-within` dropdown behavior for keyboard accessibility.
+  - Improved current category detection for child categories via ancestor checks.
+  - Added `aria-current=\"page\"` on active top-level category links.
 
 ### P2.3 Build path simplification (single source of truth)
+- Status: Implemented in this cycle.
 - Files: `package.json`, `frontend/package.json`, build docs.
-- Tasks:
-  - Choose and document one canonical CSS/JS build path.
-  - Remove redundant script paths to reduce drift risk.
+- Completed:
+  - Set root `package.json` as canonical build workflow.
+  - Updated `frontend/package.json` scripts to delegate to root scripts.
+  - Documented canonical build commands in `README.md`.
 
 ## P3 (Planning/Architecture)
 

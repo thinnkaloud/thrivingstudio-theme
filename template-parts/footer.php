@@ -15,47 +15,50 @@
             <div class="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-8">
                 <?php
                 if (has_nav_menu('footer')) {
-                    echo '<!-- Footer menu found -->';
-                    
-                    // Custom Walker for footer menu with hover effects
-                    class Footer_Menu_Walker extends Walker_Nav_Menu {
-                        function start_el(&$output, $item, $depth = 0, $args = null, $id = 0) {
-                            $classes = empty($item->classes) ? array() : (array) $item->classes;
-                            $classes[] = 'menu-item-' . $item->ID;
-                            
-                            $class_names = join(' ', apply_filters('nav_menu_css_class', array_filter($classes), $item, $args));
-                            $class_names = $class_names ? ' class="' . esc_attr($class_names) . '"' : '';
-                            
-                            $id = apply_filters('nav_menu_item_id', 'menu-item-'. $item->ID, $item, $args);
-                            $id = $id ? ' id="' . esc_attr($id) . '"' : '';
-                            
-                            $output .= '<li' . $id . $class_names .'>';
-                            
-                            $attributes = !empty($item->attr_title) ? ' title="'  . esc_attr($item->attr_title) .'"' : '';
-                            $attributes .= !empty($item->target)     ? ' target="' . esc_attr($item->target     ) .'"' : '';
-                            $attributes .= !empty($item->xfn)        ? ' rel="'    . esc_attr($item->xfn        ) .'"' : '';
-                            $attributes .= !empty($item->url)        ? ' href="'   . esc_attr($item->url        ) .'"' : '';
-                            $attributes .= ' class="hover:text-gray-800 transition-colors duration-200 ease-in-out"';
-                            
-                            $item_output = $args->before;
-                            $item_output .= '<a'. $attributes .'>';
-                            $item_output .= $args->link_before . apply_filters('the_title', $item->title, $item->ID) . $args->link_after;
-                            $item_output .= '</a>';
-                            $item_output .= $args->after;
-                            
-                            $output .= apply_filters('walker_nav_menu_start_el', $item_output, $item, $depth, $args);
+                    // Custom Walker for footer menu links.
+                    if (!class_exists('ThrivingStudio_Footer_Menu_Walker')) {
+                        class ThrivingStudio_Footer_Menu_Walker extends Walker_Nav_Menu {
+                            public function start_el(&$output, $item, $depth = 0, $args = null, $id = 0) {
+                                $classes = empty($item->classes) ? [] : (array) $item->classes;
+                                $classes[] = 'menu-item-' . $item->ID;
+                                
+                                $class_names = join(' ', apply_filters('nav_menu_css_class', array_filter($classes), $item, $args));
+                                $class_names = $class_names ? ' class="' . esc_attr($class_names) . '"' : '';
+                                
+                                $item_id = apply_filters('nav_menu_item_id', 'menu-item-' . $item->ID, $item, $args);
+                                $item_id = $item_id ? ' id="' . esc_attr($item_id) . '"' : '';
+                                
+                                $output .= '<li' . $item_id . $class_names . '>';
+                                
+                                $attributes = !empty($item->attr_title) ? ' title="' . esc_attr($item->attr_title) . '"' : '';
+                                $attributes .= !empty($item->target) ? ' target="' . esc_attr($item->target) . '"' : '';
+                                
+                                $rel = !empty($item->xfn) ? $item->xfn : '';
+                                if (!empty($item->target) && '_blank' === $item->target) {
+                                    $rel = trim($rel . ' noopener noreferrer');
+                                }
+                                $attributes .= !empty($rel) ? ' rel="' . esc_attr($rel) . '"' : '';
+                                $attributes .= !empty($item->url) ? ' href="' . esc_url($item->url) . '"' : '';
+                                $attributes .= ' class="footer-menu-link"';
+                                
+                                $item_output = $args->before;
+                                $item_output .= '<a' . $attributes . '>';
+                                $item_output .= $args->link_before . apply_filters('the_title', $item->title, $item->ID) . $args->link_after;
+                                $item_output .= '</a>';
+                                $item_output .= $args->after;
+                                
+                                $output .= apply_filters('walker_nav_menu_start_el', $item_output, $item, $depth, $args);
+                            }
                         }
                     }
-                    
+
                     wp_nav_menu([
                         'theme_location' => 'footer',
-                        'menu_class' => 'flex space-x-4 text-sm text-gray-500',
+                        'menu_class' => 'footer-menu-list flex space-x-4 text-sm text-gray-500',
                         'container' => false,
                         'depth' => 1,
-                        'walker' => new Footer_Menu_Walker(),
+                        'walker' => new ThrivingStudio_Footer_Menu_Walker(),
                     ]);
-                } else {
-                    echo '<!-- No footer menu assigned -->';
                 }
                 ?>
                 <div class="flex items-center space-x-4">
@@ -74,7 +77,7 @@
                             $platform = $profile['platform'] ?? '';
                             $url = $profile['url'] ?? '';
                             if ($platform && $url && isset($icon_svgs[$platform])) {
-                                echo '<a href="' . esc_url($url) . '" class="text-gray-400 hover:text-gray-500 footer-social-' . esc_attr($platform) . '" aria-label="' . esc_attr(ucfirst($platform)) . '">';
+                                echo '<a href="' . esc_url($url) . '" class="footer-social-link footer-social-' . esc_attr($platform) . '" aria-label="' . esc_attr(ucfirst($platform)) . '" target="_blank" rel="noopener noreferrer">';
                                 echo $icon_svgs[$platform];
                                 echo '</a>';
                             }
@@ -87,37 +90,7 @@
     </div>
 </footer>
 
-<script>
-// Category link hover effects
-document.querySelectorAll('.post-category-link').forEach(function(link) {
-  link.addEventListener('mouseenter', function() {
-    this.style.color = '#000';
-    this.style.textDecoration = 'none';
-    this.style.borderBottom = 'none';
-  });
-  link.addEventListener('mouseleave', function() {
-    this.style.color = '';
-  });
-});
-</script>
-
 <?php wp_footer(); ?>
 
-<style>
-.social-icon { transition: color 0.2s; }
-.footer-social-facebook:hover .social-icon { color: #1877F2 !important; }
-.footer-social-instagram:hover .social-icon { color: #E4405F !important; }
-.footer-social-youtube:hover .social-icon { color: #FF0000 !important; }
-.footer-social-pinterest:hover .social-icon { color: #BD081C !important; }
-
-/* Footer menu hover effects - no movement */
-footer .flex.space-x-4 a:hover,
-footer .flex.space-x-4 li a:hover,
-footer .menu-item a:hover {
-    text-shadow: 0 0 1px currentColor !important;
-    transition: text-shadow 0.2s ease-in-out !important;
-}
-</style>
-
 </body>
-</html> 
+</html>

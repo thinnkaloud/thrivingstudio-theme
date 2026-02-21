@@ -27,3 +27,14 @@
 /* Social count visibility fallback */
 .ts-social-count{display:inline-block;color:#111827}
 @supports ((-webkit-background-clip:text) or (background-clip:text)){.ts-social-count{-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}}
+
+/* Phase 2 footer/category polish */
+.category-menu-list .has-dropdown:focus-within .dropdown-menu{opacity:1;visibility:visible;transform:translateY(0);pointer-events:auto}
+.footer-menu-link{transition:color .2s ease-in-out,text-shadow .2s ease-in-out}
+.footer-menu-link:hover,.footer-menu-link:focus-visible{color:#1f2937;text-shadow:0 0 1px currentColor}
+.footer-social-link{color:#9ca3af;transition:color .2s ease-in-out}
+.footer-social-link .social-icon{transition:color .2s ease-in-out}
+.footer-social-facebook:hover,.footer-social-facebook:focus-visible{color:#1877f2}
+.footer-social-instagram:hover,.footer-social-instagram:focus-visible{color:#e4405f}
+.footer-social-youtube:hover,.footer-social-youtube:focus-visible{color:red}
+.footer-social-pinterest:hover,.footer-social-pinterest:focus-visible{color:#bd081c}
