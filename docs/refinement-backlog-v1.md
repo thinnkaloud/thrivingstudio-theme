@@ -83,3 +83,22 @@
 4. Validate UX checklist on staging desktop/mobile.
 5. Fast-forward `main` and run live deploy with `confirm=DEPLOY` when ready.
 6. Confirm live reflects intended visible changes.
+
+## Phase 3 (In Progress)
+
+### P3.1 Structural decomposition batch 1 (non-behavioral)
+- Status: Implemented in this cycle.
+- Files:
+  - `functions.php`
+  - `inc/theme/bootstrap.php`
+  - `inc/performance.php`
+  - `inc/performance/core.php`
+  - `inc/seo.php`
+  - `inc/seo/core.php`
+- Completed:
+  - Reduced `functions.php` to constants/module loader + dedicated bootstrap include.
+  - Moved primary theme function registrations into `inc/theme/bootstrap.php`.
+  - Converted `inc/performance.php` into loader wrapper and moved existing implementation to `inc/performance/core.php`.
+  - Converted `inc/seo.php` into loader wrapper and moved existing implementation to `inc/seo/core.php`.
+- Notes:
+  - Intended as structure-only extraction; no functional behavior changes.
