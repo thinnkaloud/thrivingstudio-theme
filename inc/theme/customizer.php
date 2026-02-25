@@ -287,14 +287,3 @@ function thrivingstudio_customize_register($wp_customize) {
     ]);
 }
 add_action('customize_register', 'thrivingstudio_customize_register');
-
-// Debug: Log when customizer settings are saved
-function thrivingstudio_debug_customizer_save($wp_customize) {
-    if (isset($_POST['customized'])) {
-        $customized = json_decode(stripslashes($_POST['customized']), true);
-        if (isset($customized['thrivingstudio_facebook_followers'])) {
-            error_log('Facebook followers being saved: ' . $customized['thrivingstudio_facebook_followers']);
-        }
-    }
-}
-add_action('customize_save_after', 'thrivingstudio_debug_customizer_save');

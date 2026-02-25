@@ -102,3 +102,31 @@
   - Converted `inc/seo.php` into loader wrapper and moved existing implementation to `inc/seo/core.php`.
 - Notes:
   - Intended as structure-only extraction; no functional behavior changes.
+
+### P3.1 Structural decomposition batch 2 (module split, non-behavioral)
+- Status: Implemented in this cycle.
+- Files:
+  - `inc/theme/bootstrap.php`
+  - `inc/theme/setup-assets.php`
+  - `inc/theme/customizer.php`
+  - `inc/theme/content-types.php`
+  - `inc/theme/taxonomy.php`
+  - `inc/theme/media.php`
+- Completed:
+  - Converted `inc/theme/bootstrap.php` into a lightweight loader.
+  - Split monolithic theme bootstrap logic into focused modules (assets/setup, customizer, content types/meta, taxonomy meta fields, media/webp helpers).
+  - Kept all existing hook registrations and setting keys intact to avoid behavioral drift.
+
+### P3.1 Structural decomposition batch 3 (cleanup + guardrails)
+- Status: Implemented in this cycle.
+- Files:
+  - `inc/theme/customizer.php`
+  - `docs/refinement-backlog-v1.md`
+- Completed:
+  - Removed leftover customizer debug save hook and `error_log` trace from production code path.
+  - Finalized Phase 3 documentation for traceable batch-by-batch rollout.
+
+## Phase 3 (Complete)
+- `functions.php`, performance module, SEO module, and theme bootstrap are now decomposed into maintainable modules with wrapper/loader compatibility.
+- No public Customizer keys or template contracts were changed during Phase 3.
+- Remaining work should move back to UX/IA feature refinement batches.
