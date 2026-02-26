@@ -6,8 +6,14 @@
     <meta name="impact-site-verification" content="e85a892a-537b-4983-a531-0480dc6450ca">
     <?php wp_head(); ?>
 
-    <!-- Google AdSense -->
+    <?php
+    $ts_host = wp_parse_url(home_url(), PHP_URL_HOST);
+    $ts_enable_adsense = in_array($ts_host, ['thrivingstudio.xyz', 'www.thrivingstudio.xyz'], true);
+    ?>
+    <?php if ($ts_enable_adsense) : ?>
+    <!-- Google AdSense (live domain only) -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8401911572659149" crossorigin="anonymous"></script>
+    <?php endif; ?>
     
     <!-- Ahrefs Analytics -->
     <script>
