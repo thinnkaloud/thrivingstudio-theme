@@ -120,3 +120,10 @@
 .ts-single-post-nav-card:hover,.ts-single-post-nav-card:focus-visible{border-color:#d1d5db;box-shadow:0 8px 18px rgba(17,24,39,.06)}
 .ts-single-post-nav-kicker{font-size:.76rem;text-transform:uppercase;letter-spacing:.05em;color:#6b7280}
 .ts-single-post-nav-title{font-size:1rem;line-height:1.4;color:#111827}
+
+/* Phase 4 Batch 4: single post SEO/accessibility polish */
+.ts-single-content h2[id],.ts-single-content h3[id]{scroll-margin-top:7rem}
+.ts-single-content a:focus-visible,.ts-single-toc-list a:focus-visible,.ts-single-post-cta-btn:focus-visible,.ts-single-post-cta-link:focus-visible,.ts-single-post-nav-card:focus-visible,.ts-related-post-card:focus-within{outline:2px solid #2563eb;outline-offset:2px}
+.ts-single-post-nav-card:focus-visible,.ts-related-post-card:focus-within{box-shadow:0 0 0 3px rgba(37,99,235,.18),0 8px 18px rgba(17,24,39,.06)}
+.ts-single-title{text-wrap:balance}
+@media (max-width:640px){.ts-single-article{margin-top:2rem;margin-bottom:2rem}.ts-single-post-cta{margin-top:2rem;padding:1.1rem 1rem}.ts-single-author-card{margin-top:1.2rem;padding:.9rem;gap:.75rem}.ts-single-post-nav{margin-top:1.2rem;gap:.7rem}.ts-single-post-nav-card{padding:.8rem .9rem}.ts-related-posts{margin-top:2.2rem}}

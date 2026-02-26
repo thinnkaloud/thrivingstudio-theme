@@ -876,3 +876,59 @@ body.admin-bar header.sticky {
     line-height: 1.4;
     color: #111827;
 }
+
+/* Phase 4 Batch 4: single post SEO/accessibility polish */
+.ts-single-content h2[id],
+.ts-single-content h3[id] {
+    scroll-margin-top: 7rem;
+}
+
+.ts-single-content a:focus-visible,
+.ts-single-toc-list a:focus-visible,
+.ts-single-post-cta-btn:focus-visible,
+.ts-single-post-cta-link:focus-visible,
+.ts-single-post-nav-card:focus-visible,
+.ts-related-post-card:focus-within {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+}
+
+.ts-single-post-nav-card:focus-visible,
+.ts-related-post-card:focus-within {
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18), 0 8px 18px rgba(17, 24, 39, 0.06);
+}
+
+.ts-single-title {
+    text-wrap: balance;
+}
+
+@media (max-width: 640px) {
+    .ts-single-article {
+        margin-top: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .ts-single-post-cta {
+        margin-top: 2rem;
+        padding: 1.1rem 1rem;
+    }
+
+    .ts-single-author-card {
+        margin-top: 1.2rem;
+        padding: 0.9rem;
+        gap: 0.75rem;
+    }
+
+    .ts-single-post-nav {
+        margin-top: 1.2rem;
+        gap: 0.7rem;
+    }
+
+    .ts-single-post-nav-card {
+        padding: 0.8rem 0.9rem;
+    }
+
+    .ts-related-posts {
+        margin-top: 2.2rem;
+    }
+}

@@ -1,6 +1,6 @@
 <?php get_header(); ?>
 
-<main class="flex-1">
+<main class="flex-1" id="main-content" role="main">
     <div class="site-content container mx-auto px-4 sm:px-6 lg:px-8 pt-0 flex-1 relative">
         <?php if (have_posts()) : while (have_posts()) : the_post(); ?>
             <?php
@@ -69,7 +69,7 @@
                 }
             }
             ?>
-            <article id="post-<?php the_ID(); ?>" <?php post_class('max-w-3xl mx-auto ts-single-article'); ?>>
+            <article id="post-<?php the_ID(); ?>" <?php post_class('max-w-3xl mx-auto ts-single-article'); ?> aria-labelledby="ts-post-title-<?php the_ID(); ?>">
                 <div class="prose prose-lg mx-auto ts-single-content">
                     <!-- Category first -->
                     <div class="mb-1 ts-single-category-row">
@@ -107,7 +107,7 @@
                         ?>
                     </div>
                     <!-- Title second -->
-                    <h1 class="text-4xl font-bold mb-0 ts-single-title"><?php the_title(); ?></h1>
+                    <h1 id="ts-post-title-<?php the_ID(); ?>" class="text-4xl font-bold mb-0 ts-single-title"><?php the_title(); ?></h1>
                     <!-- Custom excerpt -->
                     <?php if (has_excerpt()) : ?>
                         <div class="text-lg text-gray-600 mb-1 leading-relaxed ts-single-excerpt">
@@ -156,8 +156,8 @@
                     <h2 class="ts-single-post-cta-title">Want More Practical Insights?</h2>
                     <p class="ts-single-post-cta-text">Get focused ideas on psychology, discipline, and creative growth delivered to your inbox.</p>
                     <div class="ts-single-post-cta-actions">
-                        <a href="<?php echo esc_url(home_url('/#subscribe')); ?>" class="ts-single-post-cta-btn">Subscribe</a>
-                        <a href="<?php echo esc_url(home_url('/contact')); ?>" class="ts-single-post-cta-link">Get in touch</a>
+                        <a href="<?php echo esc_url(home_url('/#subscribe')); ?>" class="ts-single-post-cta-btn" aria-label="Subscribe for more insights">Subscribe</a>
+                        <a href="<?php echo esc_url(home_url('/contact')); ?>" class="ts-single-post-cta-link" aria-label="Contact us">Get in touch</a>
                     </div>
                 </section>
 
@@ -191,13 +191,13 @@
                 ?>
                     <nav class="ts-single-post-nav" aria-label="Post navigation">
                         <?php if ($prev_post) : ?>
-                            <a class="ts-single-post-nav-card ts-single-post-nav-prev" href="<?php echo esc_url(get_permalink($prev_post)); ?>">
+                            <a class="ts-single-post-nav-card ts-single-post-nav-prev" href="<?php echo esc_url(get_permalink($prev_post)); ?>" aria-label="<?php echo esc_attr(sprintf(__('Previous post: %s', 'thrivingstudio'), get_the_title($prev_post))); ?>">
                                 <span class="ts-single-post-nav-kicker">Previous</span>
                                 <span class="ts-single-post-nav-title"><?php echo esc_html(get_the_title($prev_post)); ?></span>
                             </a>
                         <?php endif; ?>
                         <?php if ($next_post) : ?>
-                            <a class="ts-single-post-nav-card ts-single-post-nav-next" href="<?php echo esc_url(get_permalink($next_post)); ?>">
+                            <a class="ts-single-post-nav-card ts-single-post-nav-next" href="<?php echo esc_url(get_permalink($next_post)); ?>" aria-label="<?php echo esc_attr(sprintf(__('Next post: %s', 'thrivingstudio'), get_the_title($next_post))); ?>">
                                 <span class="ts-single-post-nav-kicker">Next</span>
                                 <span class="ts-single-post-nav-title"><?php echo esc_html(get_the_title($next_post)); ?></span>
                             </a>
@@ -224,8 +224,15 @@
                             <?php while ($related_query->have_posts()) : $related_query->the_post(); ?>
                                 <article class="ts-related-post-card">
                                     <?php if (has_post_thumbnail()) : ?>
+                                        <?php
+                                        $thumb_id = get_post_thumbnail_id();
+                                        $thumb_alt = trim((string) get_post_meta($thumb_id, '_wp_attachment_image_alt', true));
+                                        if ($thumb_alt === '') {
+                                            $thumb_alt = get_the_title();
+                                        }
+                                        ?>
                                         <a href="<?php the_permalink(); ?>" class="ts-related-post-thumb-link">
-                                            <?php the_post_thumbnail('medium', ['class' => 'ts-related-post-thumb', 'loading' => 'lazy']); ?>
+                                            <?php the_post_thumbnail('medium', ['class' => 'ts-related-post-thumb', 'loading' => 'lazy', 'alt' => $thumb_alt]); ?>
                                         </a>
                                     <?php endif; ?>
                                     <div class="ts-related-post-card-body">
