@@ -3,6 +3,72 @@
 <main class="flex-1">
     <div class="site-content container mx-auto px-4 sm:px-6 lg:px-8 pt-0 flex-1 relative">
         <?php if (have_posts()) : while (have_posts()) : the_post(); ?>
+            <?php
+            $raw_content = get_the_content();
+            $rendered_content = apply_filters('the_content', $raw_content);
+            $reading_time = max(1, (int) ceil(str_word_count(wp_strip_all_tags($raw_content)) / 200));
+            $toc_items = [];
+
+            if (class_exists('DOMDocument')) {
+                $dom = new DOMDocument();
+                $loaded = false;
+                $used_ids = [];
+
+                libxml_use_internal_errors(true);
+                $loaded = $dom->loadHTML(
+                    '<?xml encoding="utf-8" ?><div id="ts-content-root">' . $rendered_content . '</div>',
+                    LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD
+                );
+                libxml_clear_errors();
+
+                if ($loaded) {
+                    $xpath = new DOMXPath($dom);
+                    $headings = $xpath->query('//h2|//h3');
+
+                    if ($headings instanceof DOMNodeList) {
+                        foreach ($headings as $heading) {
+                            $text = trim($heading->textContent);
+                            if ($text === '') {
+                                continue;
+                            }
+
+                            $id = $heading->getAttribute('id');
+                            if ($id === '') {
+                                $base_id = sanitize_title($text);
+                                $id = $base_id !== '' ? $base_id : 'section';
+                            }
+
+                            $unique_id = $id;
+                            $suffix = 2;
+                            while (in_array($unique_id, $used_ids, true)) {
+                                $unique_id = $id . '-' . $suffix;
+                                $suffix++;
+                            }
+                            $id = $unique_id;
+
+                            $heading->setAttribute('id', $id);
+                            $used_ids[] = $id;
+                            $toc_items[] = [
+                                'id' => $id,
+                                'text' => $text,
+                                'level' => strtolower($heading->nodeName),
+                            ];
+                        }
+                    }
+
+                    $root = $dom->getElementById('ts-content-root');
+                    if ($root) {
+                        $html = '';
+                        foreach ($root->childNodes as $child) {
+                            $html .= $dom->saveHTML($child);
+                        }
+                        if ($html !== '') {
+                            $rendered_content = $html;
+                        }
+                    }
+                }
+            }
+            ?>
             <article id="post-<?php the_ID(); ?>" <?php post_class('max-w-3xl mx-auto ts-single-article'); ?>>
                 <div class="prose prose-lg mx-auto ts-single-content">
                     <!-- Category first -->
@@ -48,6 +114,19 @@
                             <?php the_excerpt(); ?>
                         </div>
                     <?php endif; ?>
+
+                    <div class="text-base text-gray-500 mb-6 ts-single-meta">
+                        <span><?php echo esc_html($reading_time); ?> min read</span>
+                        <span class="ts-meta-sep">•</span>
+                        <span>Published <?php echo esc_html(get_the_date(get_option('date_format'))); ?></span>
+                        <?php if (get_the_modified_time('U') > get_the_time('U')) : ?>
+                            <span class="ts-meta-sep">•</span>
+                            <span>Updated <?php echo esc_html(get_the_modified_date(get_option('date_format'))); ?></span>
+                        <?php endif; ?>
+                        <span class="ts-meta-sep">•</span>
+                        <span>By <?php the_author(); ?></span>
+                    </div>
+
                     <?php if ( has_post_thumbnail() ) : ?>
                         <div class="mb-4 overflow-auto ts-single-featured-wrap">
                             <?php the_post_thumbnail('full', [
@@ -56,12 +135,61 @@
                             ]); ?>
                         </div>
                     <?php endif; ?>
-                    <!-- Author and date together -->
-                    <div class="text-base text-gray-500 mb-6 ts-single-meta">
-                        Published on <?php the_time(get_option('date_format')); ?> by <?php the_author(); ?>
-                    </div>
-                    <?php the_content(); ?>
+                    <?php if (count($toc_items) >= 2) : ?>
+                        <nav class="ts-single-toc" aria-label="In this article">
+                            <p class="ts-single-toc-title">In this article</p>
+                            <ul class="ts-single-toc-list">
+                                <?php foreach ($toc_items as $item) : ?>
+                                    <li class="<?php echo $item['level'] === 'h3' ? 'ts-single-toc-subitem' : ''; ?>">
+                                        <a href="#<?php echo esc_attr($item['id']); ?>">
+                                            <?php echo esc_html($item['text']); ?>
+                                        </a>
+                                    </li>
+                                <?php endforeach; ?>
+                            </ul>
+                        </nav>
+                    <?php endif; ?>
+                    <?php echo $rendered_content; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
                 </div>
+
+                <?php
+                $related_categories = wp_get_post_categories(get_the_ID());
+                if (!empty($related_categories)) :
+                    $related_query = new WP_Query([
+                        'post_type' => 'post',
+                        'post_status' => 'publish',
+                        'posts_per_page' => 3,
+                        'post__not_in' => [get_the_ID()],
+                        'category__in' => $related_categories,
+                        'ignore_sticky_posts' => true,
+                    ]);
+                    if ($related_query->have_posts()) :
+                ?>
+                    <section class="ts-related-posts" aria-label="Related posts">
+                        <h2 class="ts-related-posts-title">Related Articles</h2>
+                        <div class="ts-related-posts-grid">
+                            <?php while ($related_query->have_posts()) : $related_query->the_post(); ?>
+                                <article class="ts-related-post-card">
+                                    <?php if (has_post_thumbnail()) : ?>
+                                        <a href="<?php the_permalink(); ?>" class="ts-related-post-thumb-link">
+                                            <?php the_post_thumbnail('medium', ['class' => 'ts-related-post-thumb', 'loading' => 'lazy']); ?>
+                                        </a>
+                                    <?php endif; ?>
+                                    <div class="ts-related-post-card-body">
+                                        <h3 class="ts-related-post-card-title">
+                                            <a href="<?php the_permalink(); ?>"><?php the_title(); ?></a>
+                                        </h3>
+                                        <p class="ts-related-post-card-meta"><?php echo esc_html(get_the_date(get_option('date_format'))); ?></p>
+                                    </div>
+                                </article>
+                            <?php endwhile; ?>
+                        </div>
+                    </section>
+                <?php
+                    endif;
+                    wp_reset_postdata();
+                endif;
+                ?>
 
                 <?php
                 if (comments_open() || get_comments_number()) :

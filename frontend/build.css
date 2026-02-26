@@ -55,3 +55,47 @@
 .ts-single-content blockquote{border-left:3px solid #111827;padding-left:1rem;margin:1.4em 0;color:#374151;font-style:italic}
 .ts-single-content a{text-decoration-thickness:1px;text-underline-offset:3px}
 .ts-single-content a:hover,.ts-single-content a:focus-visible{color:#1d4ed8}
+
+/* Phase 4 Batch 2: single post engagement */
+.ts-single-meta{display:flex;flex-wrap:wrap;gap:.45rem;align-items:center}
+.ts-meta-sep{color:#9ca3af}
+.ts-single-toc{margin:0 0 1.5rem;padding:1rem 1.1rem;border:1px solid #e5e7eb;border-radius:.75rem;background:#f9fafb}
+.ts-single-toc-title{margin:0 0 .55rem;font-weight:700;font-size:.95rem;text-transform:uppercase;letter-spacing:.04em;color:#111827}
+.ts-single-toc-list{margin:0;padding-left:1.05rem}
+.ts-single-toc-list li{margin:.2rem 0}
+.ts-single-toc-subitem{margin-left:.65rem!important;list-style-type:circle}
+.ts-single-toc-list a{text-decoration:none;color:#374151}
+.ts-single-toc-list a:hover,.ts-single-toc-list a:focus-visible{color:#1d4ed8;text-decoration:underline}
+.ts-related-posts{margin-top:2.75rem;padding-top:1.5rem;border-top:1px solid #e5e7eb}
+.ts-related-posts-title{margin:0 0 1rem;font-size:1.35rem;font-weight:700;color:#111827}
+.ts-related-posts-grid{display:grid;grid-template-columns:repeat(1,minmax(0,1fr));gap:.9rem}
+@media (min-width:768px){.ts-related-posts-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.ts-related-post-card{border:1px solid #e5e7eb;border-radius:.75rem;padding:.85rem .95rem;background:#fff}
+.ts-related-post-card-title{margin:0 0 .35rem!important;font-size:1rem!important;line-height:1.4!important}
+.ts-related-post-card-title a{color:#111827;text-decoration:none}
+.ts-related-post-card-title a:hover,.ts-related-post-card-title a:focus-visible{color:#1d4ed8}
+.ts-related-post-card-meta{margin:0;font-size:.85rem;color:#6b7280}
+
+/* Single post local refinement: toc position + related thumbs */
+.ts-related-post-card{padding:.8rem}
+.ts-related-post-thumb-link{display:block;margin-bottom:.65rem}
+.ts-related-post-thumb{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:.6rem}
+
+/* Local tweak: related thumbs full-bleed in card */
+.ts-related-post-card{padding:0;overflow:hidden}
+.ts-related-post-thumb-link{margin:0}
+.ts-related-post-thumb{border-radius:0}
+.ts-related-post-card-body{padding:.8rem}
+
+/* Local tweak: related cards subtle hover */
+.ts-related-post-card{transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+.ts-related-post-thumb-link{overflow:hidden}
+.ts-related-post-thumb{transition:transform .25s ease}
+.ts-related-post-card:hover,.ts-related-post-card:focus-within{transform:translateY(-3px);border-color:#d1d5db;box-shadow:0 10px 24px rgba(17,24,39,.08)}
+.ts-related-post-card:hover .ts-related-post-thumb,.ts-related-post-card:focus-within .ts-related-post-thumb{transform:scale(1.02)}
+
+/* Local tweak: smoother related card hover */
+.ts-related-post-card{will-change:transform;transform:translateZ(0);transition:transform .28s cubic-bezier(.22,1,.36,1),box-shadow .28s cubic-bezier(.22,1,.36,1),border-color .28s ease}
+.ts-related-post-thumb{transform:translateZ(0) scale(1);transition:transform .4s cubic-bezier(.22,1,.36,1)}
+.ts-related-post-card:hover,.ts-related-post-card:focus-within{transform:translateY(-2px);border-color:#e2e8f0;box-shadow:0 8px 18px rgba(17,24,39,.06)}
+.ts-related-post-card:hover .ts-related-post-thumb,.ts-related-post-card:focus-within .ts-related-post-thumb{transform:translateZ(0) scale(1.015)}
