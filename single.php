@@ -152,6 +152,59 @@
                     <?php echo $rendered_content; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
                 </div>
 
+                <section class="ts-single-post-cta" aria-label="Post call to action">
+                    <h2 class="ts-single-post-cta-title">Want More Practical Insights?</h2>
+                    <p class="ts-single-post-cta-text">Get focused ideas on psychology, discipline, and creative growth delivered to your inbox.</p>
+                    <div class="ts-single-post-cta-actions">
+                        <a href="<?php echo esc_url(home_url('/#subscribe')); ?>" class="ts-single-post-cta-btn">Subscribe</a>
+                        <a href="<?php echo esc_url(home_url('/contact')); ?>" class="ts-single-post-cta-link">Get in touch</a>
+                    </div>
+                </section>
+
+                <?php
+                $author_id = get_the_author_meta('ID');
+                $author_bio = trim(get_the_author_meta('description', $author_id));
+                ?>
+                <section class="ts-single-author-card" aria-label="Author information">
+                    <div class="ts-single-author-avatar">
+                        <?php echo get_avatar($author_id, 84, '', get_the_author(), ['class' => 'ts-single-author-avatar-img']); ?>
+                    </div>
+                    <div class="ts-single-author-body">
+                        <p class="ts-single-author-label">Written by</p>
+                        <h2 class="ts-single-author-name"><?php the_author(); ?></h2>
+                        <p class="ts-single-author-bio">
+                            <?php
+                            if ($author_bio !== '') {
+                                echo esc_html($author_bio);
+                            } else {
+                                echo esc_html__('Sharing practical ideas on mindset, creativity, and better work.', 'thrivingstudio');
+                            }
+                            ?>
+                        </p>
+                    </div>
+                </section>
+
+                <?php
+                $prev_post = get_previous_post();
+                $next_post = get_next_post();
+                if ($prev_post || $next_post) :
+                ?>
+                    <nav class="ts-single-post-nav" aria-label="Post navigation">
+                        <?php if ($prev_post) : ?>
+                            <a class="ts-single-post-nav-card ts-single-post-nav-prev" href="<?php echo esc_url(get_permalink($prev_post)); ?>">
+                                <span class="ts-single-post-nav-kicker">Previous</span>
+                                <span class="ts-single-post-nav-title"><?php echo esc_html(get_the_title($prev_post)); ?></span>
+                            </a>
+                        <?php endif; ?>
+                        <?php if ($next_post) : ?>
+                            <a class="ts-single-post-nav-card ts-single-post-nav-next" href="<?php echo esc_url(get_permalink($next_post)); ?>">
+                                <span class="ts-single-post-nav-kicker">Next</span>
+                                <span class="ts-single-post-nav-title"><?php echo esc_html(get_the_title($next_post)); ?></span>
+                            </a>
+                        <?php endif; ?>
+                    </nav>
+                <?php endif; ?>
+
                 <?php
                 $related_categories = wp_get_post_categories(get_the_ID());
                 if (!empty($related_categories)) :
