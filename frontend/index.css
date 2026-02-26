@@ -506,3 +506,92 @@ body.admin-bar header.sticky {
 .footer-social-pinterest:focus-visible {
     color: #bd081c;
 }
+
+/* Phase 4 Batch 1: single post readability */
+.ts-single-article {
+    margin-top: 3rem;
+    margin-bottom: 3rem;
+}
+
+.ts-single-title {
+    margin-top: 0.5rem !important;
+    margin-bottom: 1rem !important;
+    line-height: 1.15 !important;
+    letter-spacing: -0.015em;
+}
+
+.ts-single-excerpt {
+    margin-top: 0 !important;
+    margin-bottom: 1.25rem !important;
+    font-size: 1.2rem;
+    line-height: 1.65;
+    color: #4b5563 !important;
+}
+
+.ts-single-featured-wrap {
+    margin-top: 0 !important;
+    margin-bottom: 1.25rem !important;
+}
+
+.ts-single-featured-image {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    border-radius: 0.9rem !important;
+}
+
+.ts-single-meta {
+    margin-bottom: 2rem !important;
+    font-size: 0.95rem;
+}
+
+.ts-single-content p {
+    margin-top: 1.05em;
+    margin-bottom: 1.05em;
+    line-height: 1.9;
+    color: #111827;
+}
+
+.ts-single-content h2,
+.ts-single-content h3 {
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+}
+
+.ts-single-content h2 {
+    margin-top: 1.9em;
+    margin-bottom: 0.65em;
+}
+
+.ts-single-content h3 {
+    margin-top: 1.45em;
+    margin-bottom: 0.5em;
+}
+
+.ts-single-content ul,
+.ts-single-content ol {
+    margin-top: 0.85em;
+    margin-bottom: 1.1em;
+}
+
+.ts-single-content li {
+    margin-top: 0.3em;
+    margin-bottom: 0.3em;
+}
+
+.ts-single-content blockquote {
+    border-left: 3px solid #111827;
+    padding-left: 1rem;
+    margin: 1.4em 0;
+    color: #374151;
+    font-style: italic;
+}
+
+.ts-single-content a {
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+}
+
+.ts-single-content a:hover,
+.ts-single-content a:focus-visible {
+    color: #1d4ed8;
+}
