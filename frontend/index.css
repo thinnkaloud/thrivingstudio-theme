@@ -542,6 +542,10 @@ body.admin-bar header.sticky {
 .ts-single-meta {
     margin-bottom: 2rem !important;
     font-size: 0.95rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    align-items: center;
 }
 
 .ts-single-content p {
@@ -594,13 +598,6 @@ body.admin-bar header.sticky {
 .ts-single-content a:hover,
 .ts-single-content a:focus-visible {
     color: #1d4ed8;
-}
-
-.ts-single-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.45rem;
-    align-items: center;
 }
 
 .ts-meta-sep {
@@ -875,6 +872,229 @@ body.admin-bar header.sticky {
     font-size: 1rem;
     line-height: 1.4;
     color: #111827;
+}
+
+/* Blog/archive Batch 1: card hierarchy + rhythm */
+.ts-blog-grid {
+    gap: 1.5rem;
+}
+
+.ts-blog-card {
+    padding: 0 !important;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.95rem;
+    overflow: hidden;
+    background: #fff;
+    transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+}
+
+.ts-blog-card:hover,
+.ts-blog-card:focus-within {
+    transform: translateY(-2px);
+    border-color: #d1d5db;
+    box-shadow: 0 10px 24px rgba(17, 24, 39, 0.08);
+}
+
+.ts-blog-card-image-link {
+    display: block;
+    overflow: hidden;
+}
+
+.ts-blog-card-image {
+    width: 100%;
+    height: 210px !important;
+    object-fit: cover;
+    border-radius: 0;
+    transition: transform 0.28s ease;
+}
+
+.ts-blog-card:hover .ts-blog-card-image,
+.ts-blog-card:focus-within .ts-blog-card-image {
+    transform: scale(1.015);
+}
+
+.ts-blog-card-image-placeholder {
+    height: 210px !important;
+    border-radius: 0;
+}
+
+.ts-blog-card-meta {
+    padding-top: 0.85rem !important;
+}
+
+.ts-blog-card-category {
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.ts-blog-card-body {
+    padding-top: 0.35rem !important;
+    padding-bottom: 1rem !important;
+}
+
+.ts-blog-card-title {
+    margin-bottom: 0.55rem !important;
+    font-size: 1.7rem !important;
+    line-height: 1.25 !important;
+}
+
+.ts-blog-card-title-link {
+    color: #111827;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.ts-blog-card-title-link:hover,
+.ts-blog-card-title-link:focus-visible {
+    color: #1d4ed8 !important;
+}
+
+.ts-blog-card-excerpt {
+    color: #4b5563 !important;
+    margin-bottom: 0.85rem !important;
+}
+
+.ts-blog-card-excerpt p {
+    margin: 0;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    overflow: hidden;
+}
+
+.ts-blog-card-link {
+    font-size: 0.92rem;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+@media (max-width: 640px) {
+    .ts-blog-card-title {
+        font-size: 1.4rem !important;
+    }
+
+    .ts-blog-card-image,
+    .ts-blog-card-image-placeholder {
+        height: 190px !important;
+    }
+}
+
+.ts-category-row {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.ts-category-row::-webkit-scrollbar {
+    display: none;
+}
+
+.ts-category-filter-btn {
+    border: 1px solid transparent;
+    outline: none;
+}
+
+.ts-category-filter-btn:hover {
+    transform: translateY(-1px);
+}
+
+.ts-category-filter-btn:focus-visible {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+}
+
+.ts-see-more-btn {
+    background: #dbeafe;
+    color: #1d4ed8;
+    border-color: #bfdbfe;
+}
+
+.ts-see-more-btn:hover,
+.ts-see-more-btn:focus-visible {
+    background: #bfdbfe;
+}
+
+.ts-filter-status {
+    font-size: 0.92rem;
+    margin-top: 0.55rem;
+    line-height: 1.35;
+}
+
+/* Blog/archive Batch 3: pagination + empty state */
+.ts-pagination-wrap {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: center;
+}
+
+.ts-pagination-wrap .nav-links {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    flex-wrap: wrap;
+}
+
+.ts-pagination-wrap .page-numbers {
+    min-width: 2.2rem;
+    height: 2.2rem;
+    padding: 0 0.65rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.6rem;
+    color: #374151;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    background: #fff;
+    transition: border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ts-pagination-wrap .page-numbers:hover,
+.ts-pagination-wrap .page-numbers:focus-visible {
+    border-color: #cbd5e1;
+    color: #111827;
+    box-shadow: 0 6px 14px rgba(17, 24, 39, 0.08);
+}
+
+.ts-pagination-wrap .page-numbers.current {
+    border-color: #111827;
+    color: #111827;
+    background: #f9fafb;
+}
+
+.ts-empty-state {
+    margin-top: 1.5rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.9rem;
+    background: #fff;
+    padding: 1.4rem 1.2rem;
+}
+
+.ts-empty-state-title {
+    margin: 0 0 0.45rem;
+    font-size: 1.35rem;
+    line-height: 1.25;
+    color: #111827;
+}
+
+.ts-empty-state-text {
+    margin: 0;
+    color: #4b5563;
+}
+
+.ts-empty-state-link {
+    display: inline-flex;
+    margin-top: 0.9rem;
+    color: #1d4ed8;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.ts-empty-state-link:hover,
+.ts-empty-state-link:focus-visible {
+    color: #1e40af;
+    text-decoration: underline;
 }
 
 /* Phase 4 Batch 4: single post SEO/accessibility polish */

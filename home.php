@@ -20,12 +20,13 @@
         <!-- Category Filter Buttons -->
         <div class="mb-12">
             <div id="category-container">
-                <div id="category-row-1" class="flex justify-start gap-4 px-4 sm:px-0 overflow-hidden"></div>
+                <div id="category-row-1" class="ts-category-row flex justify-start gap-3 px-4 sm:px-0 overflow-x-auto pb-1"></div>
             </div>
+            <p id="filter-results-status" class="ts-filter-status px-4 sm:px-0 text-sm text-gray-600" aria-live="polite"></p>
         </div>
         
         <?php if ( have_posts() ) : ?>
-            <div class="blog-grid grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div id="blog-post-grid" class="blog-grid ts-blog-grid grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 <?php while ( have_posts() ) : the_post(); 
                     $post_categories = get_the_category();
                     $category_slugs = array();
@@ -34,53 +35,68 @@
                     }
                     $category_data = implode(' ', $category_slugs);
                 ?>
-                    <article id="post-<?php the_ID(); ?>" <?php post_class('blog-card bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden transform hover:-translate-y-1 transition-transform duration-300'); ?> data-categories="<?php echo esc_attr($category_data); ?>">
+                    <article id="post-<?php the_ID(); ?>" <?php post_class('blog-card ts-blog-card bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden transform hover:-translate-y-1 transition-transform duration-300'); ?> data-categories="<?php echo esc_attr($category_data); ?>">
                         <?php if ( has_post_thumbnail() ) : ?>
-                            <a href="<?php the_permalink(); ?>">
+                            <a href="<?php the_permalink(); ?>" class="ts-blog-card-image-link">
                                 <?php 
                                 $thumbnail_id = get_post_thumbnail_id();
                                 $image_url = wp_get_attachment_image_url($thumbnail_id, 'medium');
                                 if ($image_url) {
-                                    echo '<img src="' . esc_url($image_url) . '" alt="' . esc_attr(get_the_title()) . '" class="blog-card-image w-full rounded-lg" loading="lazy" decoding="async" style="height: 200px; object-fit: cover;">';
+                                    echo '<img src="' . esc_url($image_url) . '" alt="' . esc_attr(get_the_title()) . '" class="blog-card-image ts-blog-card-image w-full" loading="lazy" decoding="async">';
                                 } else {
-                                    echo '<div class="w-full h-48 bg-gray-100 rounded-lg flex items-center justify-center"><span class="text-gray-400 text-sm">Image not found</span></div>';
+                                    echo '<div class="ts-blog-card-image-placeholder w-full h-48 bg-gray-100 flex items-center justify-center"><span class="text-gray-400 text-sm">Image not found</span></div>';
                                 }
                                 ?>
                             </a>
                         <?php else : ?>
                             <!-- Fallback for posts without featured images -->
-                            <div class="w-full h-48 bg-gray-100 rounded-lg flex items-center justify-center">
+                            <div class="ts-blog-card-image-placeholder w-full h-48 bg-gray-100 flex items-center justify-center">
                                 <span class="text-gray-400 text-sm">No image available</span>
                             </div>
                         <?php endif; ?>
                         
                         <!-- Category Name -->
-                        <div class="px-4 pt-4">
+                        <div class="px-4 pt-4 ts-blog-card-meta">
                             <?php 
                             $categories = get_the_category();
                             if (!empty($categories)) {
                                 $primary_category = $categories[0]; // Get the first category
-                                echo '<span class="text-gray-600 text-xs font-medium">' . esc_html($primary_category->name) . '</span>';
+                                echo '<span class="text-gray-600 text-xs font-medium ts-blog-card-category">' . esc_html($primary_category->name) . '</span>';
                             }
                             ?>
                         </div>
                         
-                        <div class="px-4 pt-2 pb-4">
-                            <h2 class="text-2xl font-bold mb-2">
-                                <a href="<?php the_permalink(); ?>" class="hover:text-indigo-600 dark:text-white dark:hover:text-indigo-400"><?php the_title(); ?></a>
+                        <div class="px-4 pt-2 pb-4 ts-blog-card-body">
+                            <h2 class="text-2xl font-bold mb-2 ts-blog-card-title">
+                                <a href="<?php the_permalink(); ?>" class="ts-blog-card-title-link hover:text-indigo-600 dark:text-white dark:hover:text-indigo-400"><?php the_title(); ?></a>
                             </h2>
-                            <div class="text-gray-600 dark:text-gray-300 mb-4">
+                            <div class="text-gray-600 dark:text-gray-300 mb-4 ts-blog-card-excerpt">
                                 <?php the_excerpt(); ?>
                             </div>
-                            <a href="<?php the_permalink(); ?>" class="text-indigo-600 hover:text-indigo-800 dark:hover:text-indigo-400 font-semibold">
+                            <a href="<?php the_permalink(); ?>" class="text-indigo-600 hover:text-indigo-800 dark:hover:text-indigo-400 font-semibold ts-blog-card-link">
                                 Read More &rarr;
                             </a>
                         </div>
                     </article>
                 <?php endwhile; ?>
             </div>
+            <nav class="ts-pagination-wrap" aria-label="Blog pagination">
+                <?php
+                the_posts_pagination([
+                    'mid_size'  => 1,
+                    'prev_text' => __('Previous', 'thrivingstudio'),
+                    'next_text' => __('Next', 'thrivingstudio'),
+                ]);
+                ?>
+            </nav>
         <?php else : ?>
-            <p>No articles found.</p>
+            <section class="ts-empty-state" aria-label="No articles found">
+                <h2 class="ts-empty-state-title"><?php esc_html_e('No articles found', 'thrivingstudio'); ?></h2>
+                <p class="ts-empty-state-text"><?php esc_html_e('Try another category or return to the full blog feed.', 'thrivingstudio'); ?></p>
+                <a href="<?php echo esc_url(get_permalink(get_option('page_for_posts')) ?: home_url('/blog')); ?>" class="ts-empty-state-link">
+                    <?php esc_html_e('Go to Blog Home', 'thrivingstudio'); ?>
+                </a>
+            </section>
         <?php endif; ?>
     </div>
 </main>
@@ -107,6 +123,7 @@ document.addEventListener('DOMContentLoaded', function() {
         ?>;
     
     const blogCards = document.querySelectorAll('.blog-card');
+    const resultsStatus = document.getElementById('filter-results-status');
     let currentRow = 1;
     let visibleCategories = 0;
     const maxCategoriesPerRow = 8; // Limit categories per row for desktop
@@ -134,12 +151,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return getScreenSize() === 'mobile';
     }
     
-    function isTablet() {
-        return getScreenSize() === 'tablet';
-    }
-    
     function getCategoryColor(categoryName) {
-        console.log('Getting color for category:', categoryName);
         const colorMap = {
             'Uncategorized': { bg: '#f3f4f6', text: '#374151', hover: '#e5e7eb', active: '#6b7280' },
             'Self Improvement': { bg: '#f3f4f6', text: '#374151', hover: '#e5e7eb', active: '#059669' },
@@ -177,40 +189,80 @@ document.addEventListener('DOMContentLoaded', function() {
         
         return colorMap[categoryName] || { bg: '#f3f4f6', text: '#374151', hover: '#e5e7eb', active: '#6b7280' };
     }
+
+    function setCategoryButtonDefault(button) {
+        if (button.textContent === 'See more...') {
+            return;
+        }
+        const colors = getCategoryColor(button.textContent);
+        button.classList.remove('active');
+        button.setAttribute('aria-pressed', 'false');
+        button.style.backgroundColor = colors.bg;
+        button.style.color = colors.text;
+        button.style.border = '1px solid transparent';
+    }
+
+    function setCategoryButtonActive(button) {
+        const colors = getCategoryColor(button.textContent);
+        button.classList.add('active');
+        button.setAttribute('aria-pressed', 'true');
+        button.style.backgroundColor = '#f3f4f6';
+        button.style.color = '#374151';
+        button.style.border = `1px solid ${colors.active}`;
+    }
+
+    function updateFilterStatus(selectedCategory) {
+        if (!resultsStatus) {
+            return;
+        }
+        let visibleCount = 0;
+        blogCards.forEach((card) => {
+            if (!card.hidden) {
+                visibleCount++;
+            }
+        });
+
+        const label = selectedCategory === 'all'
+            ? 'all categories'
+            : `"${selectedCategory.replace(/-/g, ' ')}"`;
+        const noun = visibleCount === 1 ? 'post' : 'posts';
+        resultsStatus.textContent = `Showing ${visibleCount} ${noun} for ${label}.`;
+    }
+
+    function applyFilter(selectedCategory) {
+        blogCards.forEach((card) => {
+            if (selectedCategory === 'all') {
+                card.hidden = false;
+                return;
+            }
+            const cardCategories = card.getAttribute('data-categories') || '';
+            card.hidden = !cardCategories.includes(selectedCategory);
+        });
+        updateFilterStatus(selectedCategory);
+    }
     
     function createCategoryButton(category, isActive = false) {
         const button = document.createElement('button');
         const textSize = isMobile() ? 'text-xs' : 'text-sm'; // 20% smaller on mobile
-        button.className = `category-filter-btn px-3 py-2 rounded-full ${textSize} font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0`;
+        button.type = 'button';
+        button.className = `category-filter-btn ts-category-filter-btn px-3 py-2 rounded-full ${textSize} font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0`;
         button.setAttribute('data-category', category.slug);
+        button.setAttribute('aria-controls', 'blog-post-grid');
+        button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
         button.textContent = category.name;
-        
+
+        setCategoryButtonDefault(button);
         if (isActive) {
-            const colors = getCategoryColor(category.name);
-            button.style.backgroundColor = '#f3f4f6';
-            button.style.color = '#374151';
-            button.style.border = `1px solid ${colors.active}`;
-        } else {
-            const colors = getCategoryColor(category.name);
-            button.style.backgroundColor = colors.bg;
-            button.style.color = colors.text;
-            button.style.border = '1px solid transparent';
-            button.addEventListener('mouseenter', function() {
-                this.style.backgroundColor = colors.hover;
-            });
-            button.addEventListener('mouseleave', function() {
-                this.style.backgroundColor = colors.bg;
-            });
+            setCategoryButtonActive(button);
         }
-        
-        console.log('Created button for:', category.name, 'with colors:', isActive ? 'black/white' : getCategoryColor(category.name));
         return button;
     }
     
     function createSeeMoreButton() {
         const button = document.createElement('button');
         const textSize = isMobile() ? 'text-xs' : 'text-sm'; // 20% smaller on mobile
-        button.className = `category-filter-btn px-3 py-2 rounded-full ${textSize} font-medium transition-all duration-200 bg-blue-100 text-blue-700 hover:bg-blue-200 whitespace-nowrap flex-shrink-0`;
+        button.type = 'button';
+        button.className = `category-filter-btn ts-see-more-btn px-3 py-2 rounded-full ${textSize} font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0`;
         button.textContent = 'See more...';
         button.addEventListener('click', showNextRow);
         return button;
@@ -221,7 +273,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const container = document.getElementById('category-container');
         const newRow = document.createElement('div');
         newRow.id = `category-row-${currentRow}`;
-                newRow.className = 'flex justify-start gap-4 px-4 sm:px-0 overflow-hidden mt-4';
+        newRow.className = 'ts-category-row flex justify-start gap-3 px-4 sm:px-0 overflow-x-auto pb-1 mt-4';
         
         // Add categories to new row
         let categoriesInRow = 0;
@@ -258,46 +310,12 @@ document.addEventListener('DOMContentLoaded', function() {
             if (button.textContent !== 'See more...') {
                 button.addEventListener('click', function() {
                     const selectedCategory = this.getAttribute('data-category');
-                    
-                            // Update active button
-                            document.querySelectorAll('.category-filter-btn').forEach(btn => {
-                                if (btn.textContent !== 'See more...') {
-                                    btn.classList.remove('active');
-                                    // Restore original color for each button
-                                    const categoryName = btn.textContent;
-                                    if (categoryName !== 'All') {
-                                        const colors = getCategoryColor(categoryName);
-                                        btn.style.backgroundColor = colors.bg;
-                                        btn.style.color = colors.text;
-                                        btn.style.border = '1px solid transparent';
-                                    } else {
-                                        btn.style.backgroundColor = '#f3f4f6';
-                                        btn.style.color = '#374151';
-                                        btn.style.border = '1px solid #6b7280'; // Grey for "All"
-                                    }
-                                }
-                            });
-                            this.classList.add('active');
-                            this.style.backgroundColor = '#f3f4f6';
-                            this.style.color = '#374151';
-                            // Use the category's specific active color
-                            const categoryName = this.textContent;
-                            const colors = getCategoryColor(categoryName);
-                            this.style.border = `1px solid ${colors.active}`;
-                    
-                    // Filter blog cards
-                    blogCards.forEach(card => {
-                        if (selectedCategory === 'all') {
-                            card.style.display = 'block';
-                        } else {
-                            const cardCategories = card.getAttribute('data-categories') || '';
-                            if (cardCategories.includes(selectedCategory)) {
-                                card.style.display = 'block';
-                            } else {
-                                card.style.display = 'none';
-                            }
-                        }
+
+                    document.querySelectorAll('.category-filter-btn').forEach((btn) => {
+                        setCategoryButtonDefault(btn);
                     });
+                    setCategoryButtonActive(this);
+                    applyFilter(selectedCategory);
                 });
             }
         });
@@ -305,12 +323,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize first row
     function initializeCategories() {
-        console.log('Categories loaded:', categories);
-        console.log('Window width:', window.innerWidth);
-        console.log('Screen size:', getScreenSize());
-        console.log('Is mobile:', isMobile());
-        console.log('Is tablet:', isTablet());
-        console.log('Max categories per row:', getMaxCategoriesPerRow());
         const firstRow = document.getElementById('category-row-1');
         
         // Add "All" button
@@ -351,6 +363,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Add event listeners
         addEventListenersToRow(firstRow);
+        applyFilter('all');
     }
     
     initializeCategories();
@@ -360,7 +373,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Reinitialize categories when window is resized
         const container = document.getElementById('category-container');
         if (container) {
-            container.innerHTML = '<div id="category-row-1" class="flex justify-start gap-4 px-4 sm:px-0 overflow-hidden"></div>';
+            container.innerHTML = '<div id="category-row-1" class="ts-category-row flex justify-start gap-3 px-4 sm:px-0 overflow-x-auto pb-1"></div>';
             currentRow = 1;
             visibleCategories = 0;
             initializeCategories();

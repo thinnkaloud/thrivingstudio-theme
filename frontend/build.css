@@ -127,3 +127,46 @@
 .ts-single-post-nav-card:focus-visible,.ts-related-post-card:focus-within{box-shadow:0 0 0 3px rgba(37,99,235,.18),0 8px 18px rgba(17,24,39,.06)}
 .ts-single-title{text-wrap:balance}
 @media (max-width:640px){.ts-single-article{margin-top:2rem;margin-bottom:2rem}.ts-single-post-cta{margin-top:2rem;padding:1.1rem 1rem}.ts-single-author-card{margin-top:1.2rem;padding:.9rem;gap:.75rem}.ts-single-post-nav{margin-top:1.2rem;gap:.7rem}.ts-single-post-nav-card{padding:.8rem .9rem}.ts-related-posts{margin-top:2.2rem}}
+
+/* Blog/archive Batch 1: card hierarchy + rhythm */
+.ts-blog-grid{gap:1.5rem}
+.ts-blog-card{padding:0!important;border:1px solid #e5e7eb;border-radius:.95rem;overflow:hidden;background:#fff;transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease}
+.ts-blog-card:hover,.ts-blog-card:focus-within{transform:translateY(-2px);border-color:#d1d5db;box-shadow:0 10px 24px rgba(17,24,39,.08)}
+.ts-blog-card-image-link{display:block;overflow:hidden}
+.ts-blog-card-image{width:100%;height:210px!important;object-fit:cover;border-radius:0;transition:transform .28s ease}
+.ts-blog-card:hover .ts-blog-card-image,.ts-blog-card:focus-within .ts-blog-card-image{transform:scale(1.015)}
+.ts-blog-card-image-placeholder{height:210px!important;border-radius:0}
+.ts-blog-card-meta{padding-top:.85rem!important}
+.ts-blog-card-category{text-transform:uppercase;letter-spacing:.04em}
+.ts-blog-card-body{padding-top:.35rem!important;padding-bottom:1rem!important}
+.ts-blog-card-title{margin-bottom:.55rem!important;font-size:1.7rem!important;line-height:1.25!important}
+.ts-blog-card-title-link{color:#111827;text-decoration:none;transition:color .2s ease}
+.ts-blog-card-title-link:hover,.ts-blog-card-title-link:focus-visible{color:#1d4ed8!important}
+.ts-blog-card-excerpt{color:#4b5563!important;margin-bottom:.85rem!important}
+.ts-blog-card-excerpt p{margin:0;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
+.ts-blog-card-link{font-size:.92rem;letter-spacing:.02em;text-transform:uppercase}
+@media (max-width:640px){.ts-blog-card-title{font-size:1.4rem!important}.ts-blog-card-image,.ts-blog-card-image-placeholder{height:190px!important}}
+
+/* Blog/archive Batch 2: category filter interaction polish */
+.ts-category-row{scrollbar-width:none;-ms-overflow-style:none}.ts-category-row::-webkit-scrollbar{display:none}
+.ts-category-filter-btn{border:1px solid transparent;outline:none}
+.ts-category-filter-btn:hover{transform:translateY(-1px)}
+.ts-category-filter-btn:focus-visible{outline:2px solid #2563eb;outline-offset:2px}
+.ts-see-more-btn{background:#dbeafe;color:#1d4ed8;border-color:#bfdbfe}
+.ts-see-more-btn:hover,.ts-see-more-btn:focus-visible{background:#bfdbfe}
+.ts-filter-status{font-size:.92rem}
+
+/* Blog/archive local tweak: filter status spacing */
+.ts-filter-status{margin-top:.55rem;line-height:1.35}
+
+/* Blog/archive Batch 3: pagination + empty state */
+.ts-pagination-wrap{margin-top:2rem;display:flex;justify-content:center}
+.ts-pagination-wrap .nav-links{display:inline-flex;align-items:center;gap:.45rem;flex-wrap:wrap}
+.ts-pagination-wrap .page-numbers{min-width:2.2rem;height:2.2rem;padding:0 .65rem;display:inline-flex;align-items:center;justify-content:center;border:1px solid #e5e7eb;border-radius:.6rem;color:#374151;text-decoration:none;font-weight:600;font-size:.9rem;background:#fff;transition:border-color .2s ease,color .2s ease,box-shadow .2s ease}
+.ts-pagination-wrap .page-numbers:hover,.ts-pagination-wrap .page-numbers:focus-visible{border-color:#cbd5e1;color:#111827;box-shadow:0 6px 14px rgba(17,24,39,.08)}
+.ts-pagination-wrap .page-numbers.current{border-color:#111827;color:#111827;background:#f9fafb}
+.ts-empty-state{margin-top:1.5rem;border:1px solid #e5e7eb;border-radius:.9rem;background:#fff;padding:1.4rem 1.2rem}
+.ts-empty-state-title{margin:0 0 .45rem;font-size:1.35rem;line-height:1.25;color:#111827}
+.ts-empty-state-text{margin:0;color:#4b5563}
+.ts-empty-state-link{display:inline-flex;margin-top:.9rem;color:#1d4ed8;text-decoration:none;font-weight:600}
+.ts-empty-state-link:hover,.ts-empty-state-link:focus-visible{color:#1e40af;text-decoration:underline}

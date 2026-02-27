@@ -175,27 +175,6 @@ function thrivingstudio_custom_css() {
         </style>';
     }
 
-    // Force blog layout fixes
-    if (is_home() || is_archive()) {
-        echo '<style>
-        /* Force blog layout fixes */
-        .blog-grid {
-            gap: 1.5rem !important;
-        }
-        .blog-card {
-            padding: 1rem !important;
-        }
-        .blog-card img {
-            height: 200px !important;
-            object-fit: cover !important;
-            width: 100% !important;
-        }
-        .blog-card-image {
-            height: 200px !important;
-            object-fit: cover !important;
-        }
-        </style>';
-    }
 }
 add_action('wp_head', 'thrivingstudio_custom_css');
 

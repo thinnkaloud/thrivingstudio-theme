@@ -130,3 +130,64 @@
 - `functions.php`, performance module, SEO module, and theme bootstrap are now decomposed into maintainable modules with wrapper/loader compatibility.
 - No public Customizer keys or template contracts were changed during Phase 3.
 - Remaining work should move back to UX/IA feature refinement batches.
+
+## Phase 4 (Single Post Refinement Track)
+
+### Batch 1: Readability and spacing baseline
+- Status: Implemented and released.
+- Files:
+  - `single.php`
+  - `frontend/index.css`
+  - `frontend/build.css`
+- Completed:
+  - Replaced inline style hacks with scoped single-post classes.
+  - Improved title/excerpt/meta rhythm and body readability.
+  - Standardized heading/list/blockquote/link styling.
+
+### Batch 2: Engagement layer
+- Status: Implemented and released.
+- Files:
+  - `single.php`
+  - `frontend/index.css`
+  - `frontend/build.css`
+- Completed:
+  - Added reading-time and published/updated meta row.
+  - Added auto-generated in-article TOC from `h2`/`h3`.
+  - Added related articles section with thumbnail cards and refined hover behavior.
+
+### Batch 3: Conversion and utility
+- Status: Implemented and released.
+- Files:
+  - `single.php`
+  - `frontend/index.css`
+  - `frontend/build.css`
+- Completed:
+  - Added post-end CTA block.
+  - Added author card with bio fallback.
+  - Added styled previous/next post navigation cards.
+
+### Batch 4: SEO + accessibility polish
+- Status: Implemented and released.
+- Files:
+  - `single.php`
+  - `frontend/index.css`
+  - `frontend/build.css`
+- Completed:
+  - Added semantic/accessibility attributes (`role`, `aria-labelledby`, `aria-label`).
+  - Added heading anchor offset (`scroll-margin-top`) for TOC navigation.
+  - Improved keyboard focus visibility and mobile spacing polish.
+  - Added related thumbnail `alt` fallback.
+
+### Closure Cleanup
+- Status: In progress (local cleanup pass).
+- Files:
+  - `frontend/index.css`
+  - `docs/refinement-backlog-v1.md`
+- Completed:
+  - Consolidated duplicate single-post CSS blocks.
+  - Updated backlog with completed Single Post B1-B4 delivery record.
+
+## Next Track (Planned): Blog/Archive Refinement
+1. Batch 1: Card hierarchy + excerpt/title rhythm.
+2. Batch 2: Category/filter interaction polish.
+3. Batch 3: Pagination and empty-state UX improvements.
