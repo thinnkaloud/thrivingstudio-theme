@@ -119,7 +119,7 @@
         <section class="mb-16">
             <h2 class="text-2xl font-bold mb-6 text-center text-gray-900">Latest Articles</h2>
             <p class="text-center text-gray-600 max-w-2xl mx-auto mb-6">Fresh posts on psychology, discipline, creativity, and practical systems for better work.</p>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div class="blog-grid ts-blog-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <?php
                 $latest_query = new WP_Query([
                     'post_type' => 'post',
@@ -128,32 +128,36 @@
                 ]);
                 if ($latest_query->have_posts()) :
                     while ($latest_query->have_posts()) : $latest_query->the_post(); ?>
-                        <article class="bg-white rounded-lg shadow-md overflow-hidden transform hover:-translate-y-1 transition-transform duration-300">
+                        <article <?php post_class('blog-card ts-blog-card bg-white rounded-lg shadow-md overflow-hidden transform hover:-translate-y-1 transition-transform duration-300'); ?>>
                             <?php if (has_post_thumbnail()) : ?>
-                                <a href="<?php the_permalink(); ?>">
-                                    <?php the_post_thumbnail('medium_large', ['class' => 'w-full rounded-lg', 'loading' => 'lazy']); ?>
+                                <a href="<?php the_permalink(); ?>" class="ts-blog-card-image-link">
+                                    <?php the_post_thumbnail('medium_large', ['class' => 'blog-card-image ts-blog-card-image w-full', 'loading' => 'lazy']); ?>
                                 </a>
+                            <?php else : ?>
+                                <div class="ts-blog-card-image-placeholder w-full h-48 bg-gray-100 flex items-center justify-center">
+                                    <span class="text-gray-400 text-sm">No image available</span>
+                                </div>
                             <?php endif; ?>
                             
                             <!-- Category Name -->
-                            <div class="px-6 pt-4">
+                            <div class="px-4 pt-4 ts-blog-card-meta">
                                 <?php 
                                 $categories = get_the_category();
                                 if (!empty($categories)) {
                                     $primary_category = $categories[0]; // Get the first category
-                                    echo '<span class="text-gray-600 text-xs font-medium">' . esc_html($primary_category->name) . '</span>';
+                                    echo '<span class="text-gray-600 text-xs font-medium ts-blog-card-category">' . esc_html($primary_category->name) . '</span>';
                                 }
                                 ?>
                             </div>
                             
-                            <div class="px-6 pt-2 pb-6">
-                                <h2 class="text-xl font-bold mb-2">
-                                    <a href="<?php the_permalink(); ?>" class="hover:text-indigo-600"><?php the_title(); ?></a>
+                            <div class="px-4 pt-2 pb-4 ts-blog-card-body">
+                                <h2 class="text-2xl font-bold mb-2 ts-blog-card-title">
+                                    <a href="<?php the_permalink(); ?>" class="ts-blog-card-title-link hover:text-indigo-600"><?php the_title(); ?></a>
                                 </h2>
-                                <div class="text-gray-600 mb-4">
+                                <div class="text-gray-600 mb-4 ts-blog-card-excerpt">
                                     <?php the_excerpt(); ?>
                                 </div>
-                                <a href="<?php the_permalink(); ?>" class="text-indigo-600 hover:text-indigo-800 font-semibold"><?php esc_html_e('Read More', 'thrivingstudio'); ?> &rarr;</a>
+                                <a href="<?php the_permalink(); ?>" class="text-indigo-600 hover:text-indigo-800 font-semibold ts-blog-card-link"><?php esc_html_e('Read More', 'thrivingstudio'); ?> &rarr;</a>
                             </div>
                         </article>
                     <?php endwhile;
