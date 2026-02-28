@@ -38,10 +38,23 @@
             <div class="ts-social-grid flex flex-col md:flex-row justify-center items-center gap-8 rounded-xl p-6 bg-white">
                 <?php
                 // Get follower counts from theme customizer
-                $facebook_followers = get_theme_mod('thrivingstudio_home_social_facebook_count', '1.2M+');
-                $instagram_followers = get_theme_mod('thrivingstudio_home_social_instagram_count', '1.2K+');
-                $pinterest_followers = get_theme_mod('thrivingstudio_home_social_pinterest_count', '150+');
-                $youtube_followers = get_theme_mod('thrivingstudio_home_social_youtube_count', '99K+');
+                $facebook_followers = trim((string) get_theme_mod('thrivingstudio_home_social_facebook_count', '1.2M+'));
+                $instagram_followers = trim((string) get_theme_mod('thrivingstudio_home_social_instagram_count', '1.2K+'));
+                $pinterest_followers = trim((string) get_theme_mod('thrivingstudio_home_social_pinterest_count', '150+'));
+                $youtube_followers = trim((string) get_theme_mod('thrivingstudio_home_social_youtube_count', '99K+'));
+
+                if ($facebook_followers === '') {
+                    $facebook_followers = '1.2M+';
+                }
+                if ($instagram_followers === '') {
+                    $instagram_followers = '1.2K+';
+                }
+                if ($pinterest_followers === '') {
+                    $pinterest_followers = '150+';
+                }
+                if ($youtube_followers === '') {
+                    $youtube_followers = '99K+';
+                }
                 ?>
                 
                 <div class="flex flex-col items-center">

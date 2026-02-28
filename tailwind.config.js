@@ -3,12 +3,10 @@ module.exports = {
   darkMode: 'class',
   content: [
     "./**/*.php",
-    "./frontend/**/*.js",
+    "./frontend/main.js",
     "./frontend/index.css",
-    // Scan all PHP files to ensure all Tailwind classes are included
   ],
   safelist: [
-    // CRITICAL: Use patterns to include ALL utility classes
     {
       pattern: /^(container|mx-auto|mx-\d+|px-\d+|py-\d+|pt-\d+|pb-\d+|mb-\d+|mt-\d+)$/,
     },
@@ -26,15 +24,6 @@ module.exports = {
     },
     {
       pattern: /^(rounded-lg|rounded-md|shadow|transition|duration-\d+)$/,
-    },
-    {
-      pattern: /^(hover:bg-gray-\d+|hover:text-\w+|focus:outline-none|focus:ring-\d+)$/,
-    },
-    {
-      pattern: /^(sm:|md:|lg:|xl:).+/,
-    },
-    {
-      pattern: /^(dark:).+/,
     },
     // Specific classes that must be included
     'container', 'mx-auto', 'flex', 'flex-1', 'bg-white', 'text-black', 'px-4', 'items-center',

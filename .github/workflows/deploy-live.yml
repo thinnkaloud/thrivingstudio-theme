@@ -1,4 +1,5 @@
 name: Deploy Theme To Live
+run-name: "Live deploy: ${{ inputs.ref }} by @${{ github.actor }}"
 
 on:
   workflow_dispatch:

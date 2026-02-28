@@ -87,6 +87,19 @@ function thrivingstudio_enqueue_scripts() {
         $js_version,
         true
     );
+
+    if (is_home()) {
+        $home_filters_file = THRIVINGSTUDIO_DIR . '/assets/js/home-filters.js';
+        $home_filters_version = file_exists($home_filters_file) ? filemtime($home_filters_file) : time();
+
+        wp_enqueue_script(
+            'thrivingstudio-home-filters',
+            THRIVINGSTUDIO_URI . '/assets/js/home-filters.js',
+            [],
+            $home_filters_version,
+            true
+        );
+    }
 }
 add_action('wp_enqueue_scripts', 'thrivingstudio_enqueue_scripts');
 

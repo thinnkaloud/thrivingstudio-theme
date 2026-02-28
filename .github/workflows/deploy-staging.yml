@@ -1,4 +1,5 @@
 name: Deploy Theme To Staging
+run-name: "Staging deploy: ${{ github.ref_name }} @${{ github.sha }}"
 
 on:
   push:

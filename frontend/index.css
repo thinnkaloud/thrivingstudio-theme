@@ -363,32 +363,24 @@ body.admin-bar header.sticky {
 
 .ts-social-count {
     display: inline-block;
+    line-height: 1.1;
     color: #111827;
 }
 
-@supports ((-webkit-background-clip: text) or (background-clip: text)) {
-    .ts-social-count {
-        -webkit-background-clip: text;
-        background-clip: text;
-        color: transparent;
-        -webkit-text-fill-color: transparent;
-    }
-}
-
 .ts-social-count-facebook {
-    background: linear-gradient(90deg, #1877f3, #1877f3);
+    color: #1877f3;
 }
 
 .ts-social-count-instagram {
-    background: linear-gradient(90deg, #fd5, #c13584, #833ab4);
+    color: #c13584;
 }
 
 .ts-social-count-pinterest {
-    background: linear-gradient(90deg, #e60023, #e60023);
+    color: #e60023;
 }
 
 .ts-social-count-youtube {
-    background: linear-gradient(90deg, #ff0000, #ff0000);
+    color: #ff0000;
 }
 
 .ts-card-inner {
@@ -875,6 +867,15 @@ body.admin-bar header.sticky {
 }
 
 /* Blog/archive Batch 1: card hierarchy + rhythm */
+.ts-blog-hero {
+    background: #fff;
+    color: #000;
+    border: 1px solid #bbb;
+    box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.04);
+    padding: 3.5rem 0;
+    border-radius: 1rem;
+}
+
 .ts-blog-grid {
     gap: 1.5rem;
 }
