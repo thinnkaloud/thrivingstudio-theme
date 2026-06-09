@@ -46,9 +46,6 @@ function thrivingstudio_enqueue_scripts() {
         $css_version = time();
     }
 
-    // Add aggressive cache busting for CSS (force reload)
-    $css_version = $css_version . '-' . time();
-
     $js_file = WP_DEBUG ? 'main.js' : 'main.min.js';
     $js_source = $frontend_path . '/main.js';
     $js_version = file_exists($js_source) ? filemtime($js_source) : time();

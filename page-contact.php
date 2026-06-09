@@ -4,8 +4,6 @@ Template Name: Contact Page
 */
 get_header(); ?>
 
-
-
 <main class="flex-1 bg-gradient-to-br from-slate-50 to-white">
     <div class="site-content container mx-auto px-4 sm:px-6 lg:px-8 py-16">
         
@@ -45,8 +43,27 @@ get_header(); ?>
                     </p>
                 </div>
 
+                <?php
+                $contact_status = isset($_GET['contact_status']) ? sanitize_key(wp_unslash($_GET['contact_status'])) : '';
+                if ($contact_status === 'success') :
+                ?>
+                    <div class="mb-8 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-green-800" role="status">
+                        <?php esc_html_e('Thanks, your message has been sent.', 'thrivingstudio'); ?>
+                    </div>
+                <?php elseif ($contact_status === 'error') : ?>
+                    <div class="mb-8 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-red-800" role="alert">
+                        <?php esc_html_e('Something went wrong. Please check your details and try again.', 'thrivingstudio'); ?>
+                    </div>
+                <?php endif; ?>
+
                 <!-- Contact Form -->
-                <form class="space-y-6" action="#" method="POST" id="contact-form">
+                <form class="space-y-6" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" method="post" id="contact-form">
+                    <input type="hidden" name="action" value="thrivingstudio_contact_submit">
+                    <?php wp_nonce_field('thrivingstudio_contact_form', 'thrivingstudio_contact_nonce'); ?>
+                    <div class="hidden" aria-hidden="true">
+                        <label for="website">Website</label>
+                        <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
+                    </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div>
                             <label for="name" class="block text-sm font-semibold text-gray-700 mb-2">
@@ -120,30 +137,4 @@ get_header(); ?>
     </div>
 </main>
 
-<script>
-// Simple form handling
-document.getElementById('contact-form').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    // Get form data
-    const formData = new FormData(this);
-    const name = formData.get('name');
-    const email = formData.get('email');
-    const subject = formData.get('subject');
-    const message = formData.get('message');
-    
-    // Simple validation
-    if (!name || !email || !message) {
-        alert('Please fill in all required fields.');
-        return;
-    }
-    
-    // Show success message (you can replace this with actual form submission)
-    alert('Thank you for your message! We\'ll get back to you soon.');
-    this.reset();
-});
-</script>
-
-
-
-<?php get_footer(); ?> 
+<?php get_footer(); ?>

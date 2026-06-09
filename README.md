@@ -60,6 +60,23 @@ Notes:
 - `frontend/package.json` is retained for compatibility, but delegates to root scripts.
 - Deployments use the generated `frontend/build.css` and `frontend/main.min.js`.
 
+## Mail Delivery
+
+The contact form uses WordPress mail. For production delivery, configure SMTP in `wp-config.php` or environment variables. The theme reads these constants and falls back to default WordPress mail when `THRIVINGSTUDIO_SMTP_HOST` is not set.
+
+```php
+define('THRIVINGSTUDIO_SMTP_HOST', 'smtp.example.com');
+define('THRIVINGSTUDIO_SMTP_PORT', 587);
+define('THRIVINGSTUDIO_SMTP_SECURE', 'tls'); // tls or ssl
+define('THRIVINGSTUDIO_SMTP_USERNAME', 'smtp-user');
+define('THRIVINGSTUDIO_SMTP_PASSWORD', 'smtp-password');
+define('THRIVINGSTUDIO_MAIL_FROM', 'hello@thrivingstudio.xyz');
+define('THRIVINGSTUDIO_MAIL_FROM_NAME', 'Thriving Studio');
+define('THRIVINGSTUDIO_CONTACT_RECIPIENT', 'hello@thrivingstudio.xyz');
+```
+
+Keep SMTP credentials out of git. After setting them on production, send a test message from the contact page and confirm it arrives.
+
 ## Customization
 
 ### Theme Customizer Options
@@ -131,4 +148,3 @@ This theme is licensed under the GPL v2 or later.
 - Styled with Tailwind CSS
 - Icons from Heroicons
 - Performance optimized for modern web standards
-

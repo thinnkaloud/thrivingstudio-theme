@@ -12,9 +12,11 @@
     "watch": "npm run watch:css",
     "watch:css": "npx tailwindcss -i ./frontend/index.css -o ./frontend/build.css --watch",
     "check:css": "node scripts/check-css.js",
+    "check:php": "rg --files -g '*.php' | xargs -n 1 php -l",
+    "check:hygiene": "node scripts/check-theme-hygiene.js",
     "rebuild": "npm run build:css && echo '✅ CSS rebuilt successfully!'",
     "clean": "rm -rf frontend/node_modules frontend/package-lock.json",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "npm run check:hygiene && npm run check:css && npm run check:php"
   },
   "keywords": [
     "wordpress",

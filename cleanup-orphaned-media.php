@@ -4,6 +4,10 @@
  * Removes WordPress media entries that don't have corresponding files
  */
 
+if (!defined('ABSPATH')) {
+    exit;
+}
+
 // Only run if user is admin
 if (!current_user_can('manage_options')) {
     return;
@@ -13,16 +17,22 @@ if (!current_user_can('manage_options')) {
 add_action('admin_notices', 'thrivingstudio_orphaned_media_notice');
 
 function thrivingstudio_orphaned_media_notice() {
+    $screen = function_exists('get_current_screen') ? get_current_screen() : null;
+    if (!$screen || $screen->base !== 'upload') {
+        return;
+    }
+
     $orphaned_count = count_orphaned_media();
     
     if ($orphaned_count > 0) {
         echo '<div class="notice notice-warning is-dismissible">';
         echo '<h3>🧹 Orphaned Media Entries Found</h3>';
-        echo '<p>Found <strong>' . $orphaned_count . ' media entries</strong> in WordPress that don\'t have corresponding files.</p>';
+        echo '<p>Found <strong>' . esc_html($orphaned_count) . ' media entries</strong> in WordPress that don\'t have corresponding files.</p>';
         echo '<p>This can cause confusion with image optimization plugins.</p>';
         
-        echo '<form method="post" style="margin: 15px 0;">';
+        echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '" style="margin: 15px 0;">';
         echo '<input type="hidden" name="action" value="cleanup_orphaned_media">';
+        wp_nonce_field('thrivingstudio_cleanup_orphaned_media', 'thrivingstudio_cleanup_nonce');
         echo '<button type="submit" class="button button-primary">🧹 Clean Up Orphaned Media</button>';
         echo '<span style="margin-left: 10px; color: #666;">This will remove database entries for missing files</span>';
         echo '</form>';
@@ -38,6 +48,8 @@ function thrivingstudio_handle_cleanup() {
     if (!current_user_can('manage_options')) {
         wp_die('Unauthorized');
     }
+
+    check_admin_referer('thrivingstudio_cleanup_orphaned_media', 'thrivingstudio_cleanup_nonce');
     
     $results = cleanup_orphaned_media();
     
@@ -159,4 +171,3 @@ function thrivingstudio_show_cleanup_results() {
     
     delete_transient('thrivingstudio_cleanup_results');
 }
-
