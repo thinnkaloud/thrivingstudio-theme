@@ -79,6 +79,11 @@ add_filter('wp_mail_from_name', 'thrivingstudio_mail_from_name');
  */
 function thrivingstudio_contact_recipient($recipient) {
     $configured = sanitize_email(thrivingstudio_get_mail_config('CONTACT_RECIPIENT'));
-    return is_email($configured) ? $configured : $recipient;
+    if (is_email($configured)) {
+        return $configured;
+    }
+
+    $public_inbox = 'hello@thrivingstudio.xyz';
+    return is_email($public_inbox) ? $public_inbox : $recipient;
 }
 add_filter('thrivingstudio_contact_recipient', 'thrivingstudio_contact_recipient');
