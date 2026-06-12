@@ -9,15 +9,6 @@ coverage/
 .vscode/
 .idea/
 *.log
-error_log
-**/error_log
-DEBUG-*.php
-debug-*.php
-simple-fix.php
-emergency-*.php
-fix-critical-error.php
-test-working.php
-test-php.php
 *.local
 .env
 .env.*
