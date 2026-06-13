@@ -12,6 +12,16 @@ emergency-*.php
 fix-critical-error.php
 test-working.php
 test-php.php
+check-test-code.php
+cleanup-ads-options.php
+clear-cache.php
+find-large-images.php
+optimize-existing-images.php
+quick-image-optimizer.php
+quick-optimize.php
+regenerate-blog-images.php
+test-mobile-menu.php
+update-wordpress-webp.php
 .vscode/
 .idea/
 coverage/
