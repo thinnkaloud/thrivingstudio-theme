@@ -7,6 +7,15 @@
             $raw_content = get_the_content();
             $rendered_content = apply_filters('the_content', $raw_content);
             $reading_time = max(1, (int) ceil(str_word_count(wp_strip_all_tags($raw_content)) / 200));
+            $author_id = get_the_author_meta('ID');
+            $author_name = get_the_author();
+            $published_iso = get_the_date('c');
+            $published_label = get_the_date('M j, Y');
+            $modified_iso = get_the_modified_date('c');
+            $modified_label = get_the_modified_date('M j, Y');
+            $show_modified = get_the_modified_date('Y-m-d') !== get_the_date('Y-m-d');
+            $has_custom_excerpt = has_excerpt();
+            $post_summary = $has_custom_excerpt ? get_the_excerpt() : '';
             $toc_items = [];
 
             if (class_exists('DOMDocument')) {
@@ -56,6 +65,32 @@
                         }
                     }
 
+                    if (!$has_custom_excerpt && $post_summary === '') {
+                        $paragraphs = $xpath->query('//p');
+
+                        if ($paragraphs instanceof DOMNodeList) {
+                            $summary_parts = [];
+                            $summary_word_count = 0;
+
+                            foreach ($paragraphs as $paragraph) {
+                                $summary_text = trim(preg_replace('/\s+/', ' ', $paragraph->textContent));
+
+                                if ($summary_text !== '') {
+                                    $summary_parts[] = $summary_text;
+                                    $summary_word_count += str_word_count($summary_text);
+
+                                    if ($summary_word_count >= 34) {
+                                        break;
+                                    }
+                                }
+                            }
+
+                            if (!empty($summary_parts)) {
+                                $post_summary = wp_trim_words(implode(' ', $summary_parts), 34, '...');
+                            }
+                        }
+                    }
+
                     $root = $dom->getElementById('ts-content-root');
                     if ($root) {
                         $html = '';
@@ -68,11 +103,14 @@
                     }
                 }
             }
+
+            if ($post_summary === '') {
+                $post_summary = wp_trim_words(wp_strip_all_tags(strip_shortcodes($raw_content)), 34, '...');
+            }
             ?>
-            <article id="post-<?php the_ID(); ?>" <?php post_class('max-w-3xl mx-auto ts-single-article'); ?> aria-labelledby="ts-post-title-<?php the_ID(); ?>">
-                <div class="prose prose-lg mx-auto ts-single-content">
-                    <!-- Category first -->
-                    <div class="mb-1 ts-single-category-row">
+            <article id="post-<?php the_ID(); ?>" <?php post_class('ts-single-article'); ?> aria-labelledby="ts-post-title-<?php the_ID(); ?>">
+                <header class="ts-single-hero">
+                    <div class="ts-single-category-row" aria-label="<?php esc_attr_e('Post categories', 'thrivingstudio'); ?>">
                         <?php
                         $categories = get_the_category();
                         if ( ! empty( $categories ) ) {
@@ -93,51 +131,51 @@
                             
                             if ( ! empty( $parent_categories ) ) {
                                 $parent = $parent_categories[0]; // Use first parent category
-                                $category_parts[] = '<a href="' . esc_url( get_category_link( $parent->term_id ) ) . '" class="text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors duration-200 no-underline">' . esc_html( $parent->name ) . '</a>';
+                                $category_parts[] = '<a href="' . esc_url( get_category_link( $parent->term_id ) ) . '" class="ts-single-category-link ts-single-category-parent">' . esc_html( $parent->name ) . '</a>';
                             }
                             
                             if ( ! empty( $child_categories ) ) {
                                 $child = $child_categories[0]; // Use first child category
-                                $category_parts[] = '<a href="' . esc_url( get_category_link( $child->term_id ) ) . '" class="text-xs font-medium text-gray-500 hover:text-gray-700 transition-colors duration-200 no-underline">' . esc_html( $child->name ) . '</a>';
+                                $category_parts[] = '<a href="' . esc_url( get_category_link( $child->term_id ) ) . '" class="ts-single-category-link ts-single-category-child">' . esc_html( $child->name ) . '</a>';
                             }
                             
-                            // Join with a separator (bullet or dash)
-                            echo implode( ' <span class="text-gray-400 mx-1">•</span> ', $category_parts );
+                            echo '<span class="ts-single-category-breadcrumb">' . implode( ' <span class="ts-single-category-sep">/</span> ', $category_parts ) . '</span>';
                         }
                         ?>
                     </div>
-                    <!-- Title second -->
-                    <h1 id="ts-post-title-<?php the_ID(); ?>" class="text-4xl font-bold mb-0 ts-single-title"><?php the_title(); ?></h1>
-                    <!-- Custom excerpt -->
-                    <?php if (has_excerpt()) : ?>
-                        <div class="text-lg text-gray-600 mb-1 leading-relaxed ts-single-excerpt">
-                            <?php the_excerpt(); ?>
-                        </div>
+                    <h1 id="ts-post-title-<?php the_ID(); ?>" class="ts-single-title"><?php the_title(); ?></h1>
+                    <?php if ($post_summary !== '') : ?>
+                        <p class="ts-single-excerpt">
+                            <?php echo esc_html(wp_strip_all_tags($post_summary)); ?>
+                        </p>
                     <?php endif; ?>
 
-                    <div class="text-base text-gray-500 mb-6 ts-single-meta">
-                        <span><?php echo esc_html($reading_time); ?> min read</span>
-                        <span class="ts-meta-sep">•</span>
-                        <span>Published <?php echo esc_html(get_the_date(get_option('date_format'))); ?></span>
-                        <?php if (get_the_modified_time('U') > get_the_time('U')) : ?>
-                            <span class="ts-meta-sep">•</span>
-                            <span>Updated <?php echo esc_html(get_the_modified_date(get_option('date_format'))); ?></span>
-                        <?php endif; ?>
-                        <span class="ts-meta-sep">•</span>
-                        <span>By <?php the_author(); ?></span>
+                    <div class="ts-single-byline">
+                        <a class="ts-single-byline-avatar" href="<?php echo esc_url(get_author_posts_url($author_id)); ?>" aria-label="<?php echo esc_attr(sprintf(__('View posts by %s', 'thrivingstudio'), $author_name)); ?>">
+                            <?php echo get_avatar($author_id, 44, '', $author_name, ['class' => 'ts-single-byline-avatar-img']); ?>
+                        </a>
+                        <div class="ts-single-byline-body">
+                            <p class="ts-single-byline-author">
+                                <?php esc_html_e('By', 'thrivingstudio'); ?>
+                                <a href="<?php echo esc_url(get_author_posts_url($author_id)); ?>"><?php echo esc_html($author_name); ?></a>
+                            </p>
+                            <div class="ts-single-meta">
+                                <time datetime="<?php echo esc_attr($published_iso); ?>"><?php echo esc_html($published_label); ?></time>
+                                <span class="ts-meta-sep">•</span>
+                                <span><?php echo esc_html($reading_time); ?> <?php esc_html_e('min read', 'thrivingstudio'); ?></span>
+                                <?php if ($show_modified) : ?>
+                                    <span class="ts-meta-sep">•</span>
+                                    <span><?php esc_html_e('Updated', 'thrivingstudio'); ?> <time datetime="<?php echo esc_attr($modified_iso); ?>"><?php echo esc_html($modified_label); ?></time></span>
+                                <?php endif; ?>
+                            </div>
+                        </div>
                     </div>
+                </header>
 
-                    <?php if ( has_post_thumbnail() ) : ?>
-                        <div class="mb-4 overflow-auto ts-single-featured-wrap">
-                            <?php the_post_thumbnail('full', [
-                                'class' => 'w-full rounded-lg ts-single-featured-image',
-                                'loading' => 'lazy'
-                            ]); ?>
-                        </div>
-                    <?php endif; ?>
-                    <?php if (count($toc_items) >= 2) : ?>
-                        <nav class="ts-single-toc" aria-label="In this article">
-                            <p class="ts-single-toc-title">In this article</p>
+                <?php if (count($toc_items) >= 2) : ?>
+                    <aside class="ts-single-toc-shell">
+                        <nav class="ts-single-toc" aria-label="<?php esc_attr_e('In this article', 'thrivingstudio'); ?>">
+                            <p class="ts-single-toc-title"><?php esc_html_e('In this article', 'thrivingstudio'); ?></p>
                             <ul class="ts-single-toc-list">
                                 <?php foreach ($toc_items as $item) : ?>
                                     <li class="<?php echo $item['level'] === 'h3' ? 'ts-single-toc-subitem' : ''; ?>">
@@ -148,8 +186,39 @@
                                 <?php endforeach; ?>
                             </ul>
                         </nav>
-                    <?php endif; ?>
-                    <?php echo $rendered_content; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+                    </aside>
+                <?php endif; ?>
+
+                <?php if ( has_post_thumbnail() ) : ?>
+                    <?php
+                    $thumbnail_id = get_post_thumbnail_id();
+                    $thumbnail_alt = trim((string) get_post_meta($thumbnail_id, '_wp_attachment_image_alt', true));
+                    $thumbnail_caption = trim((string) wp_get_attachment_caption($thumbnail_id));
+
+                    if ($thumbnail_alt === '') {
+                        $thumbnail_alt = get_the_title();
+                    }
+                    ?>
+                    <figure class="ts-single-featured-wrap">
+                        <?php
+                        echo wp_get_attachment_image($thumbnail_id, 'full', false, [
+                            'class' => 'ts-single-featured-image',
+                            'loading' => 'eager',
+                            'fetchpriority' => 'high',
+                            'decoding' => 'async',
+                            'alt' => $thumbnail_alt,
+                        ]);
+                        ?>
+                        <?php if ($thumbnail_caption !== '') : ?>
+                            <figcaption class="ts-single-featured-caption"><?php echo wp_kses_post($thumbnail_caption); ?></figcaption>
+                        <?php endif; ?>
+                    </figure>
+                <?php endif; ?>
+
+                <div class="ts-single-body-shell">
+                    <div class="prose prose-lg ts-single-content ts-single-reading-column">
+                        <?php echo $rendered_content; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+                    </div>
                 </div>
 
                 <section class="ts-single-post-cta" aria-label="Post call to action">
@@ -162,7 +231,6 @@
                 </section>
 
                 <?php
-                $author_id = get_the_author_meta('ID');
                 $author_bio = trim(get_the_author_meta('description', $author_id));
                 ?>
                 <section class="ts-single-author-card" aria-label="Author information">

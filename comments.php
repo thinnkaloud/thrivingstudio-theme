@@ -45,24 +45,26 @@ if (post_password_required()) {
     <?php
     $commenter = wp_get_current_commenter();
     $req = get_option('require_name_email');
-    $aria_req = ($req ? " aria-required='true'" : '');
+    $required_attr = ($req ? " required='required' aria-required='true'" : '');
     
     $fields = [
-        'author' => '<p class="comment-form-author"><label for="author" class="text-gray-700 dark:text-gray-300">Name' . ($req ? ' <span class="required">*</span>' : '') . '</label> ' .
-                    '<input id="author" name="author" type="text" value="' . esc_attr($commenter['comment_author']) . '" size="30"' . $aria_req . ' class="mt-1 block w-full rounded-md bg-white border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" /></p>',
-        'email'  => '<p class="comment-form-email"><label for="email" class="text-gray-700 dark:text-gray-300">Email' . ($req ? ' <span class="required">*</span>' : '') . '</label> ' .
-                    '<input id="email" name="email" type="email" value="' . esc_attr($commenter['comment_author_email']) . '" size="30"' . $aria_req . ' class="mt-1 block w-full rounded-md bg-white border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" /></p>',
-        'url'    => '<p class="comment-form-url"><label for="url" class="text-gray-700 dark:text-gray-300">Website</label>' .
-                    '<input id="url" name="url" type="url" value="' . esc_attr($commenter['comment_author_url']) . '" size="30" class="mt-1 block w-full rounded-md bg-white border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" /></p>',
+        'author' => '<p class="comment-form-author"><label for="author" class="ts-comment-label">' . esc_html__('Name', 'thrivingstudio') . ($req ? ' <span class="required">*</span>' : '') . '</label>' .
+                    '<input id="author" name="author" type="text" value="' . esc_attr($commenter['comment_author']) . '" autocomplete="name" size="30"' . $required_attr . ' class="ts-comment-input" /></p>',
+        'email'  => '<p class="comment-form-email"><label for="email" class="ts-comment-label">' . esc_html__('Email', 'thrivingstudio') . ($req ? ' <span class="required">*</span>' : '') . '</label>' .
+                    '<input id="email" name="email" type="email" value="' . esc_attr($commenter['comment_author_email']) . '" autocomplete="email" size="30"' . $required_attr . ' class="ts-comment-input" /></p>',
+        'url'    => '<p class="comment-form-url"><label for="url" class="ts-comment-label">' . esc_html__('Website', 'thrivingstudio') . '</label>' .
+                    '<input id="url" name="url" type="url" value="' . esc_attr($commenter['comment_author_url']) . '" autocomplete="url" size="30" class="ts-comment-input" /></p>',
     ];
 
     comment_form([
-        'title_reply'          => '<h3 class="text-xl font-bold text-gray-900 dark:text-white">' . esc_html__('Leave a Reply', 'thrivingstudio') . '</h3>',
-        'title_reply_to'       => '<h3 class="text-xl font-bold text-gray-900 dark:text-white">' . esc_html__('Leave a Reply to %s', 'thrivingstudio') . '</h3>',
+        'title_reply_before'   => '<h2 id="reply-title" class="comment-reply-title">',
+        'title_reply_after'    => '</h2>',
+        'title_reply'          => esc_html__('Join the Conversation', 'thrivingstudio'),
+        'title_reply_to'       => esc_html__('Reply to %s', 'thrivingstudio'),
         'cancel_reply_link'    => esc_html__('Cancel Reply', 'thrivingstudio'),
-        'comment_field'        => '<p class="comment-form-comment"><label for="comment" class="text-gray-700 dark:text-gray-300">' . esc_html__('Comment', 'thrivingstudio') . '</label><textarea id="comment" name="comment" cols="45" rows="8" maxlength="65525" required="required" class="mt-1 block w-full rounded-md bg-white border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"></textarea></p>',
+        'comment_field'        => '<p class="comment-form-comment"><label for="comment" class="ts-comment-label">' . esc_html__('Comment', 'thrivingstudio') . ' <span class="required">*</span></label><textarea id="comment" name="comment" cols="45" rows="6" maxlength="65525" required="required" class="ts-comment-input ts-comment-textarea" placeholder="' . esc_attr__('Share a thoughtful response...', 'thrivingstudio') . '"></textarea></p>',
         'fields'               => $fields,
-        'logged_in_as'         => '<p class="logged-in-as text-gray-600 dark:text-gray-300">' . 
+        'logged_in_as'         => '<p class="logged-in-as">' .
             sprintf(
                 __('Logged in as <a href="%1$s" class="hover:underline font-semibold">%2$s</a>. <a href="%3$s" class="hover:underline font-semibold">Log out?</a>', 'thrivingstudio'),
                 get_edit_user_link(),
@@ -70,13 +72,14 @@ if (post_password_required()) {
                 wp_logout_url(apply_filters('the_permalink', get_permalink()))
             ) . 
             '</p>',
-        'comment_notes_before' => '<p class="comment-notes text-sm text-gray-600 dark:text-gray-300">' .
-                                  esc_html__('Your email address will not be published.', 'thrivingstudio') .
-                                  ($req ? ' ' . esc_html__('Required fields are marked', 'thrivingstudio') . ' <span class="required">*</span>' : '') .
+        'comment_notes_before' => '<p class="comment-notes">' .
+                                  esc_html__('Your email address stays private.', 'thrivingstudio') .
+                                  ($req ? ' ' . esc_html__('Required fields are marked', 'thrivingstudio') . ' <span class="required">*</span>.' : '') .
                                   '</p>',
-        'class_submit'         => 'mt-4 px-6 py-3 bg-indigo-600 text-white rounded-md shadow-sm hover:bg-indigo-700 transition-colors',
+        'class_form'           => 'comment-form ts-comment-form',
+        'class_submit'         => 'ts-comment-submit',
         'submit_button'        => '<button name="%1$s" type="submit" id="%2$s" class="%3$s">%4$s</button>',
         'submit_field'         => '<p class="form-submit">%1$s %2$s</p>',
     ]);
     ?>
-</div> 
+</div>
