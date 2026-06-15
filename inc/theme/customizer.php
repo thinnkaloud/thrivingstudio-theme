@@ -291,6 +291,217 @@ function thrivingstudio_customize_register($wp_customize) {
         'title' => __('Single Post Settings', 'thrivingstudio'),
         'priority' => 38,
     ]);
+
+    $sanitize_choice = static function($input, $setting) {
+        $input = sanitize_key($input);
+        $control = $setting->manager->get_control($setting->id);
+        $choices = $control && isset($control->choices) ? $control->choices : [];
+
+        return array_key_exists($input, $choices) ? $input : $setting->default;
+    };
+
+    $sanitize_int_range = static function($input, $setting) {
+        $input = (int) $input;
+        $control = $setting->manager->get_control($setting->id);
+        $attrs = $control && isset($control->input_attrs) ? $control->input_attrs : [];
+        $min = isset($attrs['min']) ? (int) $attrs['min'] : $input;
+        $max = isset($attrs['max']) ? (int) $attrs['max'] : $input;
+
+        return max($min, min($max, $input));
+    };
+
+    $wp_customize->add_setting('thrivingstudio_single_layout', [
+        'default' => 'content_rail',
+        'sanitize_callback' => $sanitize_choice,
+    ]);
+    $wp_customize->add_control('thrivingstudio_single_layout', [
+        'label' => __('Post layout', 'thrivingstudio'),
+        'section' => 'thrivingstudio_single_post_section',
+        'type' => 'select',
+        'choices' => [
+            'content_rail' => __('Content + right rail', 'thrivingstudio'),
+            'centered' => __('Centered article', 'thrivingstudio'),
+            'wide' => __('Wide article', 'thrivingstudio'),
+        ],
+        'description' => __('The right rail layout can show widgets and the article outline beside the post on desktop.', 'thrivingstudio'),
+    ]);
+
+    $wp_customize->add_setting('thrivingstudio_single_content_width', [
+        'default' => 48,
+        'sanitize_callback' => $sanitize_int_range,
+    ]);
+    $wp_customize->add_control('thrivingstudio_single_content_width', [
+        'label' => __('Content max width', 'thrivingstudio'),
+        'section' => 'thrivingstudio_single_post_section',
+        'type' => 'range',
+        'input_attrs' => [
+            'min' => 38,
+            'max' => 72,
+            'step' => 1,
+        ],
+        'description' => __('Measured in rem units. Default: 48.', 'thrivingstudio'),
+    ]);
+
+    $wp_customize->add_setting('thrivingstudio_single_featured_image_position', [
+        'default' => 'below_header',
+        'sanitize_callback' => $sanitize_choice,
+    ]);
+    $wp_customize->add_control('thrivingstudio_single_featured_image_position', [
+        'label' => __('Featured image', 'thrivingstudio'),
+        'section' => 'thrivingstudio_single_post_section',
+        'type' => 'select',
+        'choices' => [
+            'below_header' => __('Below post header', 'thrivingstudio'),
+            'above_title' => __('Above title', 'thrivingstudio'),
+            'hidden' => __('Hidden', 'thrivingstudio'),
+        ],
+    ]);
+
+    $wp_customize->add_setting('thrivingstudio_single_show_category', [
+        'default' => true,
+        'sanitize_callback' => 'rest_sanitize_boolean',
+    ]);
+    $wp_customize->add_control('thrivingstudio_single_show_category', [
+        'label' => __('Show category label', 'thrivingstudio'),
+        'section' => 'thrivingstudio_single_post_section',
+        'type' => 'checkbox',
+    ]);
+
+    $wp_customize->add_setting('thrivingstudio_single_show_excerpt', [
+        'default' => true,
+        'sanitize_callback' => 'rest_sanitize_boolean',
+    ]);
+    $wp_customize->add_control('thrivingstudio_single_show_excerpt', [
+        'label' => __('Show excerpt or intro text', 'thrivingstudio'),
+        'section' => 'thrivingstudio_single_post_section',
+        'type' => 'checkbox',
+    ]);
+
+    $wp_customize->add_setting('thrivingstudio_single_show_author_avatar', [
+        'default' => true,
+        'sanitize_callback' => 'rest_sanitize_boolean',
+    ]);
+    $wp_customize->add_control('thrivingstudio_single_show_author_avatar', [
+        'label' => __('Show author avatar', 'thrivingstudio'),
+        'section' => 'thrivingstudio_single_post_section',
+        'type' => 'checkbox',
+    ]);
+
+    $wp_customize->add_setting('thrivingstudio_single_show_author_name', [
+        'default' => true,
+        'sanitize_callback' => 'rest_sanitize_boolean',
+    ]);
+    $wp_customize->add_control('thrivingstudio_single_show_author_name', [
+        'label' => __('Show author name', 'thrivingstudio'),
+        'section' => 'thrivingstudio_single_post_section',
+        'type' => 'checkbox',
+    ]);
+
+    $wp_customize->add_setting('thrivingstudio_single_show_published_date', [
+        'default' => true,
+        'sanitize_callback' => 'rest_sanitize_boolean',
+    ]);
+    $wp_customize->add_control('thrivingstudio_single_show_published_date', [
+        'label' => __('Show published date', 'thrivingstudio'),
+        'section' => 'thrivingstudio_single_post_section',
+        'type' => 'checkbox',
+    ]);
+
+    $wp_customize->add_setting('thrivingstudio_single_show_reading_time', [
+        'default' => true,
+        'sanitize_callback' => 'rest_sanitize_boolean',
+    ]);
+    $wp_customize->add_control('thrivingstudio_single_show_reading_time', [
+        'label' => __('Show reading time', 'thrivingstudio'),
+        'section' => 'thrivingstudio_single_post_section',
+        'type' => 'checkbox',
+    ]);
+
+    $wp_customize->add_setting('thrivingstudio_single_show_updated_date', [
+        'default' => true,
+        'sanitize_callback' => 'rest_sanitize_boolean',
+    ]);
+    $wp_customize->add_control('thrivingstudio_single_show_updated_date', [
+        'label' => __('Show updated date when changed', 'thrivingstudio'),
+        'section' => 'thrivingstudio_single_post_section',
+        'type' => 'checkbox',
+    ]);
+
+    $wp_customize->add_setting('thrivingstudio_single_title_size', [
+        'default' => 44,
+        'sanitize_callback' => $sanitize_int_range,
+    ]);
+    $wp_customize->add_control('thrivingstudio_single_title_size', [
+        'label' => __('Title size', 'thrivingstudio'),
+        'section' => 'thrivingstudio_single_post_section',
+        'type' => 'range',
+        'input_attrs' => [
+            'min' => 30,
+            'max' => 64,
+            'step' => 1,
+        ],
+        'description' => __('Measured in pixels. Default: 44.', 'thrivingstudio'),
+    ]);
+
+    $wp_customize->add_setting('thrivingstudio_single_excerpt_size', [
+        'default' => 16,
+        'sanitize_callback' => $sanitize_int_range,
+    ]);
+    $wp_customize->add_control('thrivingstudio_single_excerpt_size', [
+        'label' => __('Excerpt size', 'thrivingstudio'),
+        'section' => 'thrivingstudio_single_post_section',
+        'type' => 'range',
+        'input_attrs' => [
+            'min' => 14,
+            'max' => 24,
+            'step' => 1,
+        ],
+        'description' => __('Measured in pixels. Default: 16.', 'thrivingstudio'),
+    ]);
+
+    $wp_customize->add_setting('thrivingstudio_single_body_size', [
+        'default' => 16,
+        'sanitize_callback' => $sanitize_int_range,
+    ]);
+    $wp_customize->add_control('thrivingstudio_single_body_size', [
+        'label' => __('Body text size', 'thrivingstudio'),
+        'section' => 'thrivingstudio_single_post_section',
+        'type' => 'range',
+        'input_attrs' => [
+            'min' => 15,
+            'max' => 22,
+            'step' => 1,
+        ],
+        'description' => __('Measured in pixels. Default: 16.', 'thrivingstudio'),
+    ]);
+
+    $wp_customize->add_setting('thrivingstudio_single_body_line_height', [
+        'default' => 166,
+        'sanitize_callback' => $sanitize_int_range,
+    ]);
+    $wp_customize->add_control('thrivingstudio_single_body_line_height', [
+        'label' => __('Body line height', 'thrivingstudio'),
+        'section' => 'thrivingstudio_single_post_section',
+        'type' => 'range',
+        'input_attrs' => [
+            'min' => 145,
+            'max' => 190,
+            'step' => 1,
+        ],
+        'description' => __('Stored as a percentage. Default: 166.', 'thrivingstudio'),
+    ]);
+
+    $wp_customize->add_setting('thrivingstudio_single_show_rail_widgets', [
+        'default' => true,
+        'sanitize_callback' => 'rest_sanitize_boolean',
+    ]);
+    $wp_customize->add_control('thrivingstudio_single_show_rail_widgets', [
+        'label' => __('Show right rail widgets', 'thrivingstudio'),
+        'section' => 'thrivingstudio_single_post_section',
+        'type' => 'checkbox',
+        'description' => __('Widget content is managed in Appearance > Widgets > Single Post Right Rail.', 'thrivingstudio'),
+    ]);
+
     $wp_customize->add_setting('thrivingstudio_single_rail_show_mobile', [
         'default' => false,
         'sanitize_callback' => 'rest_sanitize_boolean',
@@ -300,6 +511,102 @@ function thrivingstudio_customize_register($wp_customize) {
         'section' => 'thrivingstudio_single_post_section',
         'type' => 'checkbox',
         'description' => __('Widget content is managed in Appearance > Widgets > Single Post Right Rail. Leave this off to keep those modules desktop-only.', 'thrivingstudio'),
+    ]);
+
+    $wp_customize->add_setting('thrivingstudio_single_show_related_posts', [
+        'default' => true,
+        'sanitize_callback' => 'rest_sanitize_boolean',
+    ]);
+    $wp_customize->add_control('thrivingstudio_single_show_related_posts', [
+        'label' => __('Show related posts', 'thrivingstudio'),
+        'section' => 'thrivingstudio_single_post_section',
+        'type' => 'checkbox',
+    ]);
+
+    $wp_customize->add_setting('thrivingstudio_single_related_posts_count', [
+        'default' => 3,
+        'sanitize_callback' => $sanitize_int_range,
+    ]);
+    $wp_customize->add_control('thrivingstudio_single_related_posts_count', [
+        'label' => __('Related posts count', 'thrivingstudio'),
+        'section' => 'thrivingstudio_single_post_section',
+        'type' => 'range',
+        'input_attrs' => [
+            'min' => 2,
+            'max' => 6,
+            'step' => 1,
+        ],
+        'description' => __('Default: 3.', 'thrivingstudio'),
+    ]);
+
+    $wp_customize->add_setting('thrivingstudio_single_show_cta', [
+        'default' => true,
+        'sanitize_callback' => 'rest_sanitize_boolean',
+    ]);
+    $wp_customize->add_control('thrivingstudio_single_show_cta', [
+        'label' => __('Show post CTA block', 'thrivingstudio'),
+        'section' => 'thrivingstudio_single_post_section',
+        'type' => 'checkbox',
+    ]);
+
+    $wp_customize->add_setting('thrivingstudio_single_cta_title', [
+        'default' => __('Want More Practical Insights?', 'thrivingstudio'),
+        'sanitize_callback' => 'sanitize_text_field',
+    ]);
+    $wp_customize->add_control('thrivingstudio_single_cta_title', [
+        'label' => __('CTA title', 'thrivingstudio'),
+        'section' => 'thrivingstudio_single_post_section',
+        'type' => 'text',
+    ]);
+
+    $wp_customize->add_setting('thrivingstudio_single_cta_text', [
+        'default' => __('Get focused ideas on psychology, discipline, and creative growth delivered to your inbox.', 'thrivingstudio'),
+        'sanitize_callback' => 'sanitize_textarea_field',
+    ]);
+    $wp_customize->add_control('thrivingstudio_single_cta_text', [
+        'label' => __('CTA text', 'thrivingstudio'),
+        'section' => 'thrivingstudio_single_post_section',
+        'type' => 'textarea',
+    ]);
+
+    $wp_customize->add_setting('thrivingstudio_single_cta_primary_label', [
+        'default' => __('Subscribe', 'thrivingstudio'),
+        'sanitize_callback' => 'sanitize_text_field',
+    ]);
+    $wp_customize->add_control('thrivingstudio_single_cta_primary_label', [
+        'label' => __('Primary CTA label', 'thrivingstudio'),
+        'section' => 'thrivingstudio_single_post_section',
+        'type' => 'text',
+    ]);
+
+    $wp_customize->add_setting('thrivingstudio_single_cta_primary_link', [
+        'default' => home_url('/#subscribe'),
+        'sanitize_callback' => 'esc_url_raw',
+    ]);
+    $wp_customize->add_control('thrivingstudio_single_cta_primary_link', [
+        'label' => __('Primary CTA link', 'thrivingstudio'),
+        'section' => 'thrivingstudio_single_post_section',
+        'type' => 'url',
+    ]);
+
+    $wp_customize->add_setting('thrivingstudio_single_cta_secondary_label', [
+        'default' => __('Get in touch', 'thrivingstudio'),
+        'sanitize_callback' => 'sanitize_text_field',
+    ]);
+    $wp_customize->add_control('thrivingstudio_single_cta_secondary_label', [
+        'label' => __('Secondary CTA label', 'thrivingstudio'),
+        'section' => 'thrivingstudio_single_post_section',
+        'type' => 'text',
+    ]);
+
+    $wp_customize->add_setting('thrivingstudio_single_cta_secondary_link', [
+        'default' => home_url('/contact'),
+        'sanitize_callback' => 'esc_url_raw',
+    ]);
+    $wp_customize->add_control('thrivingstudio_single_cta_secondary_link', [
+        'label' => __('Secondary CTA link', 'thrivingstudio'),
+        'section' => 'thrivingstudio_single_post_section',
+        'type' => 'url',
     ]);
 }
 add_action('customize_register', 'thrivingstudio_customize_register');

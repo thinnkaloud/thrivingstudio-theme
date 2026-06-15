@@ -18,6 +18,41 @@
             $post_summary = $has_custom_excerpt ? get_the_excerpt() : '';
             $toc_items = [];
             $has_featured_image = has_post_thumbnail();
+            $single_layout = get_theme_mod('thrivingstudio_single_layout', 'content_rail');
+            $featured_image_position = get_theme_mod('thrivingstudio_single_featured_image_position', 'below_header');
+            $allowed_single_layouts = ['content_rail', 'centered', 'wide'];
+            $allowed_featured_image_positions = ['below_header', 'above_title', 'hidden'];
+
+            if (!in_array($single_layout, $allowed_single_layouts, true)) {
+                $single_layout = 'content_rail';
+            }
+
+            if (!in_array($featured_image_position, $allowed_featured_image_positions, true)) {
+                $featured_image_position = 'below_header';
+            }
+
+            $content_width = max(38, min(72, (int) get_theme_mod('thrivingstudio_single_content_width', 48)));
+            $title_size = max(30, min(64, (int) get_theme_mod('thrivingstudio_single_title_size', 44)));
+            $excerpt_size = max(14, min(24, (int) get_theme_mod('thrivingstudio_single_excerpt_size', 16)));
+            $body_size = max(15, min(22, (int) get_theme_mod('thrivingstudio_single_body_size', 16)));
+            $body_line_height = max(145, min(190, (int) get_theme_mod('thrivingstudio_single_body_line_height', 166))) / 100;
+            $show_category = (bool) get_theme_mod('thrivingstudio_single_show_category', true);
+            $show_excerpt = (bool) get_theme_mod('thrivingstudio_single_show_excerpt', true);
+            $show_author_avatar = (bool) get_theme_mod('thrivingstudio_single_show_author_avatar', true);
+            $show_author_name = (bool) get_theme_mod('thrivingstudio_single_show_author_name', true);
+            $show_published_date = (bool) get_theme_mod('thrivingstudio_single_show_published_date', true);
+            $show_reading_time = (bool) get_theme_mod('thrivingstudio_single_show_reading_time', true);
+            $show_updated_date = (bool) get_theme_mod('thrivingstudio_single_show_updated_date', true);
+            $show_featured_image = $has_featured_image && $featured_image_position !== 'hidden';
+            $show_post_cta = (bool) get_theme_mod('thrivingstudio_single_show_cta', true);
+            $post_cta_title = trim((string) get_theme_mod('thrivingstudio_single_cta_title', __('Want More Practical Insights?', 'thrivingstudio')));
+            $post_cta_text = trim((string) get_theme_mod('thrivingstudio_single_cta_text', __('Get focused ideas on psychology, discipline, and creative growth delivered to your inbox.', 'thrivingstudio')));
+            $post_cta_primary_label = trim((string) get_theme_mod('thrivingstudio_single_cta_primary_label', __('Subscribe', 'thrivingstudio')));
+            $post_cta_primary_link = trim((string) get_theme_mod('thrivingstudio_single_cta_primary_link', home_url('/#subscribe')));
+            $post_cta_secondary_label = trim((string) get_theme_mod('thrivingstudio_single_cta_secondary_label', __('Get in touch', 'thrivingstudio')));
+            $post_cta_secondary_link = trim((string) get_theme_mod('thrivingstudio_single_cta_secondary_link', home_url('/contact')));
+            $show_related_posts = (bool) get_theme_mod('thrivingstudio_single_show_related_posts', true);
+            $related_posts_count = max(2, min(6, (int) get_theme_mod('thrivingstudio_single_related_posts_count', 3)));
 
             if (class_exists('DOMDocument')) {
                 $dom = new DOMDocument();
@@ -109,16 +144,90 @@
                 $post_summary = wp_trim_words(wp_strip_all_tags(strip_shortcodes($raw_content)), 34, '...');
             }
 
+            $layout_supports_right_rail = $single_layout === 'content_rail';
             $has_toc = count($toc_items) >= 2;
-            $has_right_rail_widgets = is_active_sidebar('single-post-right-rail');
+            $has_right_rail_widgets = $layout_supports_right_rail && (bool) get_theme_mod('thrivingstudio_single_show_rail_widgets', true) && is_active_sidebar('single-post-right-rail');
             $show_right_rail_widgets_mobile = (bool) get_theme_mod('thrivingstudio_single_rail_show_mobile', false);
             $right_rail_widget_shell_classes = 'ts-single-rail-widgets-shell';
             $right_rail_widget_classes = 'ts-single-rail-widgets';
             $toc_shell_classes = 'ts-single-toc-shell';
-            $article_classes = 'ts-single-article';
+            $article_classes = 'ts-single-article ts-single-layout-' . str_replace('_', '-', $single_layout);
+            $article_style = sprintf(
+                '--ts-single-content-width:%drem;--ts-single-title-size:%dpx;--ts-single-excerpt-size:%dpx;--ts-single-body-size:%dpx;--ts-single-body-line-height:%s;',
+                $content_width,
+                $title_size,
+                $excerpt_size,
+                $body_size,
+                number_format($body_line_height, 2, '.', '')
+            );
+            $meta_items = [];
+            $featured_image_markup = '';
 
-            $right_rail_widget_shell_classes .= $has_featured_image ? ' ts-single-rail-widgets-shell-with-media' : ' ts-single-rail-widgets-shell-no-media';
-            $toc_shell_classes .= $has_featured_image ? ' ts-single-toc-shell-after-media' : ' ts-single-toc-shell-after-hero';
+            if ($show_published_date) {
+                $meta_items[] = sprintf(
+                    '<time datetime="%s">%s</time>',
+                    esc_attr($published_iso),
+                    esc_html($published_label)
+                );
+            }
+
+            if ($show_reading_time) {
+                $meta_items[] = sprintf(
+                    '<span>%s</span>',
+                    esc_html(sprintf(_n('%d min read', '%d min read', $reading_time, 'thrivingstudio'), $reading_time))
+                );
+            }
+
+            if ($show_updated_date && $show_modified) {
+                $meta_items[] = sprintf(
+                    '<span>%s <time datetime="%s">%s</time></span>',
+                    esc_html__('Updated', 'thrivingstudio'),
+                    esc_attr($modified_iso),
+                    esc_html($modified_label)
+                );
+            }
+
+            $has_byline_body = $show_author_name || !empty($meta_items);
+            $show_byline = $show_author_avatar || $has_byline_body;
+
+            if ($show_featured_image) {
+                $thumbnail_id = get_post_thumbnail_id();
+                $thumbnail_alt = trim((string) get_post_meta($thumbnail_id, '_wp_attachment_image_alt', true));
+                $thumbnail_caption = trim((string) wp_get_attachment_caption($thumbnail_id));
+                $featured_wrap_classes = 'ts-single-featured-wrap';
+
+                if ($featured_image_position === 'above_title') {
+                    $featured_wrap_classes .= ' ts-single-featured-wrap-in-hero';
+                }
+
+                if ($thumbnail_alt === '') {
+                    $thumbnail_alt = get_the_title();
+                }
+
+                ob_start();
+                ?>
+                <figure class="<?php echo esc_attr($featured_wrap_classes); ?>">
+                    <?php
+                    echo wp_get_attachment_image($thumbnail_id, 'full', false, [
+                        'class' => 'ts-single-featured-image',
+                        'loading' => 'eager',
+                        'fetchpriority' => 'high',
+                        'decoding' => 'async',
+                        'alt' => $thumbnail_alt,
+                    ]);
+                    ?>
+                    <?php if ($thumbnail_caption !== '') : ?>
+                        <figcaption class="ts-single-featured-caption"><?php echo wp_kses_post($thumbnail_caption); ?></figcaption>
+                    <?php endif; ?>
+                </figure>
+                <?php
+                $featured_image_markup = ob_get_clean();
+            }
+
+            $featured_image_has_grid_row = $show_featured_image && $featured_image_position === 'below_header';
+            $right_rail_widget_shell_classes .= $featured_image_has_grid_row ? ' ts-single-rail-widgets-shell-with-media' : ' ts-single-rail-widgets-shell-no-media';
+            $toc_shell_classes .= $featured_image_has_grid_row ? ' ts-single-toc-shell-after-media' : ' ts-single-toc-shell-after-hero';
+            $article_classes .= $show_featured_image ? ' ts-single-has-featured-image' : ' ts-single-no-featured-image';
 
             if ($has_right_rail_widgets) {
                 $article_classes .= ' ts-single-article-has-rail-widgets';
@@ -128,68 +237,84 @@
                 $right_rail_widget_shell_classes .= ' ts-single-rail-widgets-shell-hide-mobile';
             }
             ?>
-            <article id="post-<?php the_ID(); ?>" <?php post_class($article_classes); ?> aria-labelledby="ts-post-title-<?php the_ID(); ?>">
+            <article id="post-<?php the_ID(); ?>" <?php post_class($article_classes); ?> style="<?php echo esc_attr($article_style); ?>" aria-labelledby="ts-post-title-<?php the_ID(); ?>">
                 <header class="ts-single-hero">
-                    <div class="ts-single-category-row" aria-label="<?php esc_attr_e('Post categories', 'thrivingstudio'); ?>">
-                        <?php
-                        $categories = get_the_category();
-                        if ( ! empty( $categories ) ) {
-                            // Separate parent and child categories
-                            $parent_categories = [];
-                            $child_categories = [];
-                            
-                            foreach( $categories as $category ) {
-                                if ( $category->parent == 0 ) {
-                                    $parent_categories[] = $category;
-                                } else {
-                                    $child_categories[] = $category;
+                    <?php if ($featured_image_position === 'above_title' && $featured_image_markup !== '') : ?>
+                        <?php echo $featured_image_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+                    <?php endif; ?>
+
+                    <?php if ($show_category) : ?>
+                        <div class="ts-single-category-row" aria-label="<?php esc_attr_e('Post categories', 'thrivingstudio'); ?>">
+                            <?php
+                            $categories = get_the_category();
+                            if ( ! empty( $categories ) ) {
+                                // Separate parent and child categories
+                                $parent_categories = [];
+                                $child_categories = [];
+
+                                foreach( $categories as $category ) {
+                                    if ( $category->parent == 0 ) {
+                                        $parent_categories[] = $category;
+                                    } else {
+                                        $child_categories[] = $category;
+                                    }
                                 }
+
+                                // Display parent category first, then child category with separator
+                                $category_parts = [];
+
+                                if ( ! empty( $parent_categories ) ) {
+                                    $parent = $parent_categories[0]; // Use first parent category
+                                    $category_parts[] = '<a href="' . esc_url( get_category_link( $parent->term_id ) ) . '" class="ts-single-category-link ts-single-category-parent">' . esc_html( $parent->name ) . '</a>';
+                                }
+
+                                if ( ! empty( $child_categories ) ) {
+                                    $child = $child_categories[0]; // Use first child category
+                                    $category_parts[] = '<a href="' . esc_url( get_category_link( $child->term_id ) ) . '" class="ts-single-category-link ts-single-category-child">' . esc_html( $child->name ) . '</a>';
+                                }
+
+                                echo '<span class="ts-single-category-breadcrumb">' . implode( ' <span class="ts-single-category-sep">/</span> ', $category_parts ) . '</span>';
                             }
-                            
-                            // Display parent category first, then child category with separator
-                            $category_parts = [];
-                            
-                            if ( ! empty( $parent_categories ) ) {
-                                $parent = $parent_categories[0]; // Use first parent category
-                                $category_parts[] = '<a href="' . esc_url( get_category_link( $parent->term_id ) ) . '" class="ts-single-category-link ts-single-category-parent">' . esc_html( $parent->name ) . '</a>';
-                            }
-                            
-                            if ( ! empty( $child_categories ) ) {
-                                $child = $child_categories[0]; // Use first child category
-                                $category_parts[] = '<a href="' . esc_url( get_category_link( $child->term_id ) ) . '" class="ts-single-category-link ts-single-category-child">' . esc_html( $child->name ) . '</a>';
-                            }
-                            
-                            echo '<span class="ts-single-category-breadcrumb">' . implode( ' <span class="ts-single-category-sep">/</span> ', $category_parts ) . '</span>';
-                        }
-                        ?>
-                    </div>
+                            ?>
+                        </div>
+                    <?php endif; ?>
+
                     <h1 id="ts-post-title-<?php the_ID(); ?>" class="ts-single-title"><?php the_title(); ?></h1>
-                    <?php if ($post_summary !== '') : ?>
+                    <?php if ($show_excerpt && $post_summary !== '') : ?>
                         <p class="ts-single-excerpt">
                             <?php echo esc_html(wp_strip_all_tags($post_summary)); ?>
                         </p>
                     <?php endif; ?>
 
-                    <div class="ts-single-byline">
-                        <a class="ts-single-byline-avatar" href="<?php echo esc_url(get_author_posts_url($author_id)); ?>" aria-label="<?php echo esc_attr(sprintf(__('View posts by %s', 'thrivingstudio'), $author_name)); ?>">
-                            <?php echo get_avatar($author_id, 44, '', $author_name, ['class' => 'ts-single-byline-avatar-img']); ?>
-                        </a>
-                        <div class="ts-single-byline-body">
-                            <p class="ts-single-byline-author">
-                                <?php esc_html_e('By', 'thrivingstudio'); ?>
-                                <a href="<?php echo esc_url(get_author_posts_url($author_id)); ?>"><?php echo esc_html($author_name); ?></a>
-                            </p>
-                            <div class="ts-single-meta">
-                                <time datetime="<?php echo esc_attr($published_iso); ?>"><?php echo esc_html($published_label); ?></time>
-                                <span class="ts-meta-sep">•</span>
-                                <span><?php echo esc_html($reading_time); ?> <?php esc_html_e('min read', 'thrivingstudio'); ?></span>
-                                <?php if ($show_modified) : ?>
-                                    <span class="ts-meta-sep">•</span>
-                                    <span><?php esc_html_e('Updated', 'thrivingstudio'); ?> <time datetime="<?php echo esc_attr($modified_iso); ?>"><?php echo esc_html($modified_label); ?></time></span>
-                                <?php endif; ?>
-                            </div>
+                    <?php if ($show_byline) : ?>
+                        <div class="ts-single-byline">
+                            <?php if ($show_author_avatar) : ?>
+                                <a class="ts-single-byline-avatar" href="<?php echo esc_url(get_author_posts_url($author_id)); ?>" aria-label="<?php echo esc_attr(sprintf(__('View posts by %s', 'thrivingstudio'), $author_name)); ?>">
+                                    <?php echo get_avatar($author_id, 44, '', $author_name, ['class' => 'ts-single-byline-avatar-img']); ?>
+                                </a>
+                            <?php endif; ?>
+                            <?php if ($has_byline_body) : ?>
+                                <div class="ts-single-byline-body">
+                                    <?php if ($show_author_name) : ?>
+                                        <p class="ts-single-byline-author">
+                                            <?php esc_html_e('By', 'thrivingstudio'); ?>
+                                            <a href="<?php echo esc_url(get_author_posts_url($author_id)); ?>"><?php echo esc_html($author_name); ?></a>
+                                        </p>
+                                    <?php endif; ?>
+                                    <?php if (!empty($meta_items)) : ?>
+                                        <div class="ts-single-meta">
+                                            <?php foreach ($meta_items as $index => $meta_item) : ?>
+                                                <?php if ($index > 0) : ?>
+                                                    <span class="ts-meta-sep">•</span>
+                                                <?php endif; ?>
+                                                <?php echo $meta_item; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+                                            <?php endforeach; ?>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+                            <?php endif; ?>
                         </div>
-                    </div>
+                    <?php endif; ?>
                 </header>
 
                 <?php if ($has_right_rail_widgets) : ?>
@@ -217,30 +342,8 @@
                     </aside>
                 <?php endif; ?>
 
-                <?php if ($has_featured_image) : ?>
-                    <?php
-                    $thumbnail_id = get_post_thumbnail_id();
-                    $thumbnail_alt = trim((string) get_post_meta($thumbnail_id, '_wp_attachment_image_alt', true));
-                    $thumbnail_caption = trim((string) wp_get_attachment_caption($thumbnail_id));
-
-                    if ($thumbnail_alt === '') {
-                        $thumbnail_alt = get_the_title();
-                    }
-                    ?>
-                    <figure class="ts-single-featured-wrap">
-                        <?php
-                        echo wp_get_attachment_image($thumbnail_id, 'full', false, [
-                            'class' => 'ts-single-featured-image',
-                            'loading' => 'eager',
-                            'fetchpriority' => 'high',
-                            'decoding' => 'async',
-                            'alt' => $thumbnail_alt,
-                        ]);
-                        ?>
-                        <?php if ($thumbnail_caption !== '') : ?>
-                            <figcaption class="ts-single-featured-caption"><?php echo wp_kses_post($thumbnail_caption); ?></figcaption>
-                        <?php endif; ?>
-                    </figure>
+                <?php if ($featured_image_position === 'below_header' && $featured_image_markup !== '') : ?>
+                    <?php echo $featured_image_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
                 <?php endif; ?>
 
                 <div class="ts-single-body-shell">
@@ -249,14 +352,26 @@
                     </div>
                 </div>
 
-                <section class="ts-single-post-cta" aria-label="Post call to action">
-                    <h2 class="ts-single-post-cta-title">Want More Practical Insights?</h2>
-                    <p class="ts-single-post-cta-text">Get focused ideas on psychology, discipline, and creative growth delivered to your inbox.</p>
-                    <div class="ts-single-post-cta-actions">
-                        <a href="<?php echo esc_url(home_url('/#subscribe')); ?>" class="ts-single-post-cta-btn" aria-label="Subscribe for more insights">Subscribe</a>
-                        <a href="<?php echo esc_url(home_url('/contact')); ?>" class="ts-single-post-cta-link" aria-label="Contact us">Get in touch</a>
-                    </div>
-                </section>
+                <?php if ($show_post_cta && ($post_cta_title !== '' || $post_cta_text !== '' || ($post_cta_primary_label !== '' && $post_cta_primary_link !== '') || ($post_cta_secondary_label !== '' && $post_cta_secondary_link !== ''))) : ?>
+                    <section class="ts-single-post-cta" aria-label="<?php echo esc_attr($post_cta_title !== '' ? $post_cta_title : __('Post call to action', 'thrivingstudio')); ?>">
+                        <?php if ($post_cta_title !== '') : ?>
+                            <h2 class="ts-single-post-cta-title"><?php echo esc_html($post_cta_title); ?></h2>
+                        <?php endif; ?>
+                        <?php if ($post_cta_text !== '') : ?>
+                            <p class="ts-single-post-cta-text"><?php echo esc_html($post_cta_text); ?></p>
+                        <?php endif; ?>
+                        <?php if (($post_cta_primary_label !== '' && $post_cta_primary_link !== '') || ($post_cta_secondary_label !== '' && $post_cta_secondary_link !== '')) : ?>
+                            <div class="ts-single-post-cta-actions">
+                                <?php if ($post_cta_primary_label !== '' && $post_cta_primary_link !== '') : ?>
+                                    <a href="<?php echo esc_url($post_cta_primary_link); ?>" class="ts-single-post-cta-btn" aria-label="<?php echo esc_attr($post_cta_primary_label); ?>"><?php echo esc_html($post_cta_primary_label); ?></a>
+                                <?php endif; ?>
+                                <?php if ($post_cta_secondary_label !== '' && $post_cta_secondary_link !== '') : ?>
+                                    <a href="<?php echo esc_url($post_cta_secondary_link); ?>" class="ts-single-post-cta-link" aria-label="<?php echo esc_attr($post_cta_secondary_label); ?>"><?php echo esc_html($post_cta_secondary_label); ?></a>
+                                <?php endif; ?>
+                            </div>
+                        <?php endif; ?>
+                    </section>
+                <?php endif; ?>
 
                 <?php
                 $author_bio = trim(get_the_author_meta('description', $author_id));
@@ -303,11 +418,11 @@
 
                 <?php
                 $related_categories = wp_get_post_categories(get_the_ID());
-                if (!empty($related_categories)) :
+                if ($show_related_posts && !empty($related_categories)) :
                     $related_query = new WP_Query([
                         'post_type' => 'post',
                         'post_status' => 'publish',
-                        'posts_per_page' => 3,
+                        'posts_per_page' => $related_posts_count,
                         'post__not_in' => [get_the_ID()],
                         'category__in' => $related_categories,
                         'ignore_sticky_posts' => true,

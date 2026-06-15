@@ -491,6 +491,10 @@ body.single-post #site-wrapper {
     --ts-single-content-width: 48rem;
     --ts-single-toc-width: 15rem;
     --ts-single-layout-gap: clamp(2rem, 4vw, 3rem);
+    --ts-single-title-size: 44px;
+    --ts-single-excerpt-size: 16px;
+    --ts-single-body-size: 16px;
+    --ts-single-body-line-height: 1.66;
     display: grid;
     grid-template-columns: minmax(0, min(100%, var(--ts-single-content-width)));
     justify-content: center;
@@ -546,7 +550,7 @@ body.single-post #site-wrapper {
 .ts-single-title {
     margin: 0 !important;
     color: #111827;
-    font-size: clamp(2rem, 3vw, 2.75rem);
+    font-size: var(--ts-single-title-size);
     font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
     font-weight: 700;
     line-height: 1.16 !important;
@@ -557,7 +561,7 @@ body.single-post #site-wrapper {
     margin: 1rem 0 0 !important;
     max-width: var(--ts-single-content-width);
     font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-    font-size: 1rem;
+    font-size: var(--ts-single-excerpt-size);
     font-weight: 400;
     line-height: 1.65 !important;
     color: #111827 !important;
@@ -616,6 +620,10 @@ body.single-post #site-wrapper {
     max-width: var(--ts-single-content-width);
 }
 
+.ts-single-featured-wrap-in-hero {
+    margin: 0 0 clamp(1.25rem, 3vw, 2rem) !important;
+}
+
 .ts-single-featured-image {
     width: 100%;
     aspect-ratio: 16 / 9;
@@ -663,9 +671,9 @@ body.single-post #site-wrapper {
 
 .ts-single-content {
     font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-    font-size: 1rem;
+    font-size: var(--ts-single-body-size);
     font-weight: 400;
-    line-height: 1.66;
+    line-height: var(--ts-single-body-line-height);
     color: #111827;
 }
 
@@ -681,9 +689,9 @@ body.single-post #site-wrapper {
     margin-top: 0.72em;
     margin-bottom: 0.72em;
     font-family: inherit;
-    font-size: 1rem !important;
+    font-size: inherit !important;
     font-weight: 400;
-    line-height: 1.66 !important;
+    line-height: var(--ts-single-body-line-height) !important;
     color: #111827;
 }
 
@@ -722,9 +730,9 @@ body.single-post #site-wrapper {
     margin-top: 0.22em;
     margin-bottom: 0.22em;
     font-family: inherit;
-    font-size: 1rem !important;
+    font-size: inherit !important;
     font-weight: 400;
-    line-height: 1.66 !important;
+    line-height: var(--ts-single-body-line-height) !important;
 }
 
 .ts-single-content blockquote {
@@ -732,9 +740,9 @@ body.single-post #site-wrapper {
     padding-left: 1rem;
     margin: 1.05em 0;
     font-family: inherit;
-    font-size: 1rem !important;
+    font-size: inherit !important;
     font-weight: 400;
-    line-height: 1.66 !important;
+    line-height: var(--ts-single-body-line-height) !important;
     color: #374151;
     font-style: italic;
 }
@@ -902,14 +910,8 @@ body.single-post #site-wrapper {
 
 .ts-related-posts-grid {
     display: grid;
-    grid-template-columns: repeat(1, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
     gap: 0.9rem;
-}
-
-@media (min-width: 768px) {
-    .ts-related-posts-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
 }
 
 .ts-related-post-card {
@@ -1653,6 +1655,36 @@ body.single-post #site-wrapper {
         padding-left: 0;
         list-style: none;
     }
+
+    .ts-single-layout-centered,
+    .ts-single-layout-wide {
+        grid-template-columns: minmax(0, var(--ts-single-content-width));
+        width: min(100%, var(--ts-single-content-width));
+    }
+
+    .ts-single-layout-centered .ts-single-toc-shell,
+    .ts-single-layout-wide .ts-single-toc-shell {
+        order: 3;
+        grid-column: 1;
+        grid-row: auto;
+        align-self: start;
+        max-width: var(--ts-single-content-width);
+    }
+
+    .ts-single-layout-centered .ts-single-toc,
+    .ts-single-layout-wide .ts-single-toc {
+        position: static;
+        padding: 0.95rem 0;
+        border-top: 1px solid #e5e7eb;
+        border-bottom: 1px solid #e5e7eb;
+        border-left: 0;
+    }
+
+    .ts-single-layout-centered .ts-single-toc-list,
+    .ts-single-layout-wide .ts-single-toc-list {
+        padding-left: 1.05rem;
+        list-style: disc;
+    }
 }
 
 @media (max-width: 1099px) {
@@ -1693,7 +1725,7 @@ body.single-post #site-wrapper {
     }
 
     .ts-single-title {
-        font-size: clamp(1.9rem, 9vw, 2.4rem);
+        font-size: min(var(--ts-single-title-size), 2.4rem);
     }
 
     .ts-single-byline {
