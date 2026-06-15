@@ -118,6 +118,51 @@ function tsRunWhenReady(fn) {
 
 tsRunWhenReady(tsSetupMobileMenu);
 
+function tsSetupSingleRailHandoff() {
+    const article = document.querySelector('.ts-single-article');
+    const bodyShell = document.querySelector('.ts-single-body-shell');
+    const widgetShell = document.querySelector('.ts-single-rail-widgets-shell');
+    const toc = document.querySelector('.ts-single-toc');
+
+    if (!article || !bodyShell || !widgetShell || !toc) return;
+
+    article.classList.add('ts-single-rail-handoff-ready');
+
+    let ticking = false;
+
+    const update = function() {
+        ticking = false;
+
+        if (window.innerWidth < 1100) {
+            article.classList.remove('ts-single-rail-body-active');
+            article.style.removeProperty('--ts-single-rail-available-height');
+            return;
+        }
+
+        const stickyTop = parseFloat(window.getComputedStyle(toc).top) || 0;
+        const bodyTop = bodyShell.getBoundingClientRect().top;
+        const railGap = 16;
+        const maxRailHeight = Math.max(0, window.innerHeight - stickyTop - railGap);
+        const availableRailHeight = Math.max(0, Math.min(maxRailHeight, bodyTop - stickyTop - railGap));
+
+        article.style.setProperty('--ts-single-rail-available-height', availableRailHeight + 'px');
+        article.classList.toggle('ts-single-rail-body-active', bodyTop <= window.innerHeight - 24);
+    };
+
+    const requestUpdate = function() {
+        if (ticking) return;
+        ticking = true;
+        window.requestAnimationFrame(update);
+    };
+
+    window.addEventListener('scroll', requestUpdate, { passive: true });
+    window.addEventListener('resize', requestUpdate);
+    window.addEventListener('load', requestUpdate);
+    update();
+}
+
+tsRunWhenReady(tsSetupSingleRailHandoff);
+
 // Quote Cards Slider Logic
 (function() {
     const slider = document.getElementById('quote-slider');

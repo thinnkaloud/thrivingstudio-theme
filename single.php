@@ -17,6 +17,7 @@
             $has_custom_excerpt = has_excerpt();
             $post_summary = $has_custom_excerpt ? get_the_excerpt() : '';
             $toc_items = [];
+            $has_featured_image = has_post_thumbnail();
 
             if (class_exists('DOMDocument')) {
                 $dom = new DOMDocument();
@@ -107,8 +108,27 @@
             if ($post_summary === '') {
                 $post_summary = wp_trim_words(wp_strip_all_tags(strip_shortcodes($raw_content)), 34, '...');
             }
+
+            $has_toc = count($toc_items) >= 2;
+            $has_right_rail_widgets = is_active_sidebar('single-post-right-rail');
+            $show_right_rail_widgets_mobile = (bool) get_theme_mod('thrivingstudio_single_rail_show_mobile', false);
+            $right_rail_widget_shell_classes = 'ts-single-rail-widgets-shell';
+            $right_rail_widget_classes = 'ts-single-rail-widgets';
+            $toc_shell_classes = 'ts-single-toc-shell';
+            $article_classes = 'ts-single-article';
+
+            $right_rail_widget_shell_classes .= $has_featured_image ? ' ts-single-rail-widgets-shell-with-media' : ' ts-single-rail-widgets-shell-no-media';
+            $toc_shell_classes .= $has_featured_image ? ' ts-single-toc-shell-after-media' : ' ts-single-toc-shell-after-hero';
+
+            if ($has_right_rail_widgets) {
+                $article_classes .= ' ts-single-article-has-rail-widgets';
+            }
+
+            if (!$show_right_rail_widgets_mobile) {
+                $right_rail_widget_shell_classes .= ' ts-single-rail-widgets-shell-hide-mobile';
+            }
             ?>
-            <article id="post-<?php the_ID(); ?>" <?php post_class('ts-single-article'); ?> aria-labelledby="ts-post-title-<?php the_ID(); ?>">
+            <article id="post-<?php the_ID(); ?>" <?php post_class($article_classes); ?> aria-labelledby="ts-post-title-<?php the_ID(); ?>">
                 <header class="ts-single-hero">
                     <div class="ts-single-category-row" aria-label="<?php esc_attr_e('Post categories', 'thrivingstudio'); ?>">
                         <?php
@@ -172,8 +192,16 @@
                     </div>
                 </header>
 
-                <?php if (count($toc_items) >= 2) : ?>
-                    <aside class="ts-single-toc-shell">
+                <?php if ($has_right_rail_widgets) : ?>
+                    <aside class="<?php echo esc_attr($right_rail_widget_shell_classes); ?>" aria-label="<?php esc_attr_e('Article sidebar modules', 'thrivingstudio'); ?>">
+                        <div class="<?php echo esc_attr($right_rail_widget_classes); ?>">
+                            <?php dynamic_sidebar('single-post-right-rail'); ?>
+                        </div>
+                    </aside>
+                <?php endif; ?>
+
+                <?php if ($has_toc) : ?>
+                    <aside class="<?php echo esc_attr($toc_shell_classes); ?>">
                         <nav class="ts-single-toc" aria-label="<?php esc_attr_e('In this article', 'thrivingstudio'); ?>">
                             <p class="ts-single-toc-title"><?php esc_html_e('In this article', 'thrivingstudio'); ?></p>
                             <ul class="ts-single-toc-list">
@@ -189,7 +217,7 @@
                     </aside>
                 <?php endif; ?>
 
-                <?php if ( has_post_thumbnail() ) : ?>
+                <?php if ($has_featured_image) : ?>
                     <?php
                     $thumbnail_id = get_post_thumbnail_id();
                     $thumbnail_alt = trim((string) get_post_meta($thumbnail_id, '_wp_attachment_image_alt', true));

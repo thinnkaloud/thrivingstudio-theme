@@ -3,6 +3,8 @@
 function thrivingstudio_setup() {
     add_theme_support('title-tag');
     add_theme_support('post-thumbnails');
+    add_theme_support('editor-styles');
+    add_editor_style('assets/css/editor-style.css');
     add_theme_support('html5', [
         'search-form',
         'comment-form',
@@ -19,6 +21,41 @@ function thrivingstudio_setup() {
     ]);
 }
 add_action('after_setup_theme', 'thrivingstudio_setup');
+
+/**
+ * Load the same scoped typography in the block editor shell.
+ */
+function thrivingstudio_enqueue_block_editor_styles() {
+    $editor_style = THRIVINGSTUDIO_DIR . '/assets/css/editor-style.css';
+
+    if (!file_exists($editor_style)) {
+        return;
+    }
+
+    wp_enqueue_style(
+        'thrivingstudio-block-editor-style',
+        THRIVINGSTUDIO_URI . '/assets/css/editor-style.css',
+        [],
+        filemtime($editor_style)
+    );
+}
+add_action('enqueue_block_editor_assets', 'thrivingstudio_enqueue_block_editor_styles');
+
+/**
+ * Register widget areas used by the theme.
+ */
+function thrivingstudio_register_widget_areas() {
+    register_sidebar([
+        'name'          => __('Single Post Right Rail', 'thrivingstudio'),
+        'id'            => 'single-post-right-rail',
+        'description'   => __('Optional modules shown above the article outline on single blog posts. Use this for ads, custom banners, social links, or small calls to action.', 'thrivingstudio'),
+        'before_widget' => '<section id="%1$s" class="widget ts-single-rail-widget %2$s">',
+        'after_widget'  => '</section>',
+        'before_title'  => '<h2 class="ts-single-rail-widget-title">',
+        'after_title'   => '</h2>',
+    ]);
+}
+add_action('widgets_init', 'thrivingstudio_register_widget_areas');
 
 /**
  * Enqueue theme scripts and styles with optimized loading.

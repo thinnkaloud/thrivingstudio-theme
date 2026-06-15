@@ -285,5 +285,21 @@ function thrivingstudio_customize_register($wp_customize) {
         'type' => 'checkbox',
         'description' => __('Toggle to show or hide the top bar notification section.', 'thrivingstudio'),
     ]);
+
+    // Single Post Settings
+    $wp_customize->add_section('thrivingstudio_single_post_section', [
+        'title' => __('Single Post Settings', 'thrivingstudio'),
+        'priority' => 38,
+    ]);
+    $wp_customize->add_setting('thrivingstudio_single_rail_show_mobile', [
+        'default' => false,
+        'sanitize_callback' => 'rest_sanitize_boolean',
+    ]);
+    $wp_customize->add_control('thrivingstudio_single_rail_show_mobile', [
+        'label' => __('Show right rail widgets on mobile', 'thrivingstudio'),
+        'section' => 'thrivingstudio_single_post_section',
+        'type' => 'checkbox',
+        'description' => __('Widget content is managed in Appearance > Widgets > Single Post Right Rail. Leave this off to keep those modules desktop-only.', 'thrivingstudio'),
+    ]);
 }
 add_action('customize_register', 'thrivingstudio_customize_register');
