@@ -545,19 +545,22 @@ body.single-post #site-wrapper {
 
 .ts-single-title {
     margin: 0 !important;
-    color: #0f172a;
-    font-size: clamp(2.25rem, 3.5vw, 3.25rem);
-    font-weight: 800;
-    line-height: 1.08 !important;
+    color: #111827;
+    font-size: clamp(2rem, 3vw, 2.75rem);
+    font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    font-weight: 700;
+    line-height: 1.16 !important;
     letter-spacing: 0;
 }
 
 .ts-single-excerpt {
     margin: 1rem 0 0 !important;
     max-width: var(--ts-single-content-width);
-    font-size: clamp(1.08rem, 2vw, 1.25rem);
+    font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    font-size: 1rem;
+    font-weight: 400;
     line-height: 1.65 !important;
-    color: #4b5563 !important;
+    color: #111827 !important;
 }
 
 .ts-single-byline {
@@ -658,6 +661,14 @@ body.single-post #site-wrapper {
     margin: 0 !important;
 }
 
+.ts-single-content {
+    font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.66;
+    color: #111827;
+}
+
 .ts-single-content > :first-child {
     margin-top: 0 !important;
 }
@@ -669,24 +680,36 @@ body.single-post #site-wrapper {
 .ts-single-content p {
     margin-top: 0.72em;
     margin-bottom: 0.72em;
-    line-height: 1.66;
+    font-family: inherit;
+    font-size: 1rem !important;
+    font-weight: 400;
+    line-height: 1.66 !important;
     color: #111827;
 }
 
 .ts-single-content h2,
 .ts-single-content h3 {
+    font-family: inherit;
+    font-weight: 700;
     letter-spacing: 0;
     line-height: 1.2;
+    color: #111827;
 }
 
 .ts-single-content h2 {
     margin-top: 1.45em;
     margin-bottom: 0.45em;
+    font-size: 1.875rem;
 }
 
 .ts-single-content h3 {
     margin-top: 1.2em;
     margin-bottom: 0.35em;
+    font-size: 1.25rem;
+}
+
+.ts-single-content strong {
+    font-weight: 700;
 }
 
 .ts-single-content ul,
@@ -698,12 +721,20 @@ body.single-post #site-wrapper {
 .ts-single-content li {
     margin-top: 0.22em;
     margin-bottom: 0.22em;
+    font-family: inherit;
+    font-size: 1rem !important;
+    font-weight: 400;
+    line-height: 1.66 !important;
 }
 
 .ts-single-content blockquote {
     border-left: 3px solid #111827;
     padding-left: 1rem;
     margin: 1.05em 0;
+    font-family: inherit;
+    font-size: 1rem !important;
+    font-weight: 400;
+    line-height: 1.66 !important;
     color: #374151;
     font-style: italic;
 }
@@ -1277,6 +1308,7 @@ body.single-post #site-wrapper {
     border-radius: 0.95rem;
     overflow: hidden;
     background: #fff;
+    font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
     transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
 }
 
@@ -1317,6 +1349,7 @@ body.single-post #site-wrapper {
 .ts-blog-card-category {
     text-transform: uppercase;
     letter-spacing: 0.04em;
+    font-weight: 700;
 }
 
 .ts-blog-card-body {
@@ -1325,13 +1358,16 @@ body.single-post #site-wrapper {
 }
 
 .ts-blog-card-title {
+    color: #111827 !important;
     margin-bottom: 0.55rem !important;
-    font-size: 1.7rem !important;
-    line-height: 1.25 !important;
+    font-size: 1.25rem !important;
+    font-weight: 700 !important;
+    line-height: 1.4 !important;
+    letter-spacing: 0;
 }
 
 .ts-blog-card-title-link {
-    color: #111827;
+    color: #111827 !important;
     text-decoration: none;
     transition: color 0.2s ease;
 }
@@ -1342,7 +1378,10 @@ body.single-post #site-wrapper {
 }
 
 .ts-blog-card-excerpt {
-    color: #4b5563 !important;
+    color: #111827 !important;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
     margin-bottom: 0.85rem !important;
 }
 
@@ -1355,14 +1394,15 @@ body.single-post #site-wrapper {
 }
 
 .ts-blog-card-link {
-    font-size: 0.92rem;
-    letter-spacing: 0.02em;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0;
     text-transform: uppercase;
 }
 
 @media (max-width: 640px) {
     .ts-blog-card-title {
-        font-size: 1.4rem !important;
+        font-size: 1.25rem !important;
     }
 
     .ts-blog-card-image,
@@ -1653,7 +1693,7 @@ body.single-post #site-wrapper {
     }
 
     .ts-single-title {
-        font-size: clamp(2.05rem, 11vw, 2.85rem);
+        font-size: clamp(1.9rem, 9vw, 2.4rem);
     }
 
     .ts-single-byline {
