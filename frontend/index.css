@@ -1554,7 +1554,7 @@ body.single-post #site-wrapper {
 }
 
 .ts-single-title {
-    text-wrap: balance;
+    text-wrap: wrap;
 }
 
 @media (min-width: 1100px) {
