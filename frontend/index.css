@@ -845,12 +845,13 @@ body.single-post #site-wrapper {
 
 .ts-single-toc-shell {
     display: block;
+    margin-bottom: clamp(1.4rem, 3vw, 2.15rem);
 }
 
 .ts-single-toc {
     position: static;
     margin: 0;
-    padding: 0.95rem 0;
+    padding: 0.95rem 0 1.35rem;
     border-top: 1px solid #e5e7eb;
     border-bottom: 1px solid #e5e7eb;
 }
@@ -1573,6 +1574,7 @@ body.single-post #site-wrapper {
         grid-column: 2;
         align-self: stretch;
         max-width: none;
+        margin-bottom: 0;
     }
 
     .ts-single-rail-widgets-shell {
@@ -1669,12 +1671,13 @@ body.single-post #site-wrapper {
         grid-row: auto;
         align-self: start;
         max-width: var(--ts-single-content-width);
+        margin-bottom: clamp(1.4rem, 3vw, 2.15rem);
     }
 
     .ts-single-layout-centered .ts-single-toc,
     .ts-single-layout-wide .ts-single-toc {
         position: static;
-        padding: 0.95rem 0;
+        padding: 0.95rem 0 1.35rem;
         border-top: 1px solid #e5e7eb;
         border-bottom: 1px solid #e5e7eb;
         border-left: 0;
@@ -1707,7 +1710,7 @@ body.single-post #site-wrapper {
 
     .ts-single-toc {
         position: static;
-        padding: 0.95rem 0;
+        padding: 0.95rem 0 1.35rem;
         border-top: 1px solid #e5e7eb;
         border-bottom: 1px solid #e5e7eb;
         border-left: 0;

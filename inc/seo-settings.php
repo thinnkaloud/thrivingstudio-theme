@@ -27,13 +27,31 @@ add_action('admin_menu', 'thrivingstudio_seo_settings_menu');
  * Register SEO settings
  */
 function thrivingstudio_register_seo_settings() {
-    register_setting('thrivingstudio_seo_settings', 'thrivingstudio_seo_options');
+    register_setting('thrivingstudio_seo_settings', 'thrivingstudio_seo_options', [
+        'sanitize_callback' => 'thrivingstudio_sanitize_seo_options',
+    ]);
 
     add_settings_section(
-        'thrivingstudio_seo_general',
-        'General SEO Settings',
-        'thrivingstudio_seo_general_callback',
+        'thrivingstudio_seo_search_appearance',
+        'Search Appearance',
+        'thrivingstudio_seo_search_appearance_callback',
         'thrivingstudio-seo-settings'
+    );
+
+    add_settings_field(
+        'thrivingstudio_seo_homepage_title',
+        'Homepage SEO Title',
+        'thrivingstudio_seo_homepage_title_callback',
+        'thrivingstudio-seo-settings',
+        'thrivingstudio_seo_search_appearance'
+    );
+
+    add_settings_field(
+        'thrivingstudio_seo_homepage_description',
+        'Homepage Meta Description',
+        'thrivingstudio_seo_homepage_description_callback',
+        'thrivingstudio-seo-settings',
+        'thrivingstudio_seo_search_appearance'
     );
 
     add_settings_field(
@@ -41,7 +59,53 @@ function thrivingstudio_register_seo_settings() {
         'Default Meta Description',
         'thrivingstudio_seo_default_description_callback',
         'thrivingstudio-seo-settings',
-        'thrivingstudio_seo_general'
+        'thrivingstudio_seo_search_appearance'
+    );
+
+    add_settings_field(
+        'thrivingstudio_seo_site_alternate_name',
+        'Alternate Site Name',
+        'thrivingstudio_seo_site_alternate_name_callback',
+        'thrivingstudio-seo-settings',
+        'thrivingstudio_seo_search_appearance'
+    );
+
+    add_settings_section(
+        'thrivingstudio_seo_social_preview',
+        'Social Preview',
+        'thrivingstudio_seo_social_preview_callback',
+        'thrivingstudio-seo-settings'
+    );
+
+    add_settings_field(
+        'thrivingstudio_seo_social_title',
+        'Homepage Social Title',
+        'thrivingstudio_seo_social_title_callback',
+        'thrivingstudio-seo-settings',
+        'thrivingstudio_seo_social_preview'
+    );
+
+    add_settings_field(
+        'thrivingstudio_seo_social_description',
+        'Homepage Social Description',
+        'thrivingstudio_seo_social_description_callback',
+        'thrivingstudio-seo-settings',
+        'thrivingstudio_seo_social_preview'
+    );
+
+    add_settings_field(
+        'thrivingstudio_seo_social_image',
+        'Default Social Image URL',
+        'thrivingstudio_seo_social_image_callback',
+        'thrivingstudio-seo-settings',
+        'thrivingstudio_seo_social_preview'
+    );
+
+    add_settings_section(
+        'thrivingstudio_seo_general',
+        'Technical SEO',
+        'thrivingstudio_seo_general_callback',
+        'thrivingstudio-seo-settings'
     );
 
     add_settings_field(
@@ -69,6 +133,47 @@ function thrivingstudio_register_seo_settings() {
     );
 }
 add_action('admin_init', 'thrivingstudio_register_seo_settings');
+
+/**
+ * Sanitize SEO settings before saving.
+ *
+ * @param array $input
+ * @return array
+ */
+function thrivingstudio_sanitize_seo_options($input) {
+    $input = is_array($input) ? $input : [];
+    $output = [];
+
+    $output['homepage_title'] = sanitize_text_field($input['homepage_title'] ?? '');
+    $output['homepage_description'] = sanitize_textarea_field($input['homepage_description'] ?? '');
+    $output['default_description'] = sanitize_textarea_field($input['default_description'] ?? '');
+    $output['site_alternate_name'] = sanitize_text_field($input['site_alternate_name'] ?? '');
+    $output['social_title'] = sanitize_text_field($input['social_title'] ?? '');
+    $output['social_description'] = sanitize_textarea_field($input['social_description'] ?? '');
+    $output['social_image'] = esc_url_raw($input['social_image'] ?? '');
+    $output['google_search_console'] = sanitize_text_field($input['google_search_console'] ?? '');
+
+    $social_media = is_array($input['social_media'] ?? null) ? $input['social_media'] : [];
+    $output['social_media'] = [
+        'facebook' => esc_url_raw($social_media['facebook'] ?? ''),
+        'twitter' => sanitize_text_field($social_media['twitter'] ?? ''),
+        'instagram' => esc_url_raw($social_media['instagram'] ?? ''),
+        'linkedin' => esc_url_raw($social_media['linkedin'] ?? ''),
+    ];
+
+    $structured_data = is_array($input['structured_data'] ?? null) ? $input['structured_data'] : [];
+    $organization_type = sanitize_text_field($structured_data['organization_type'] ?? 'Organization');
+    $allowed_organization_types = ['Organization', 'LocalBusiness', 'Corporation', 'CreativeWork'];
+
+    $output['structured_data'] = [
+        'organization_type' => in_array($organization_type, $allowed_organization_types, true) ? $organization_type : 'Organization',
+        'logo_url' => esc_url_raw($structured_data['logo_url'] ?? ''),
+        'contact_email' => sanitize_email($structured_data['contact_email'] ?? ''),
+        'contact_phone' => sanitize_text_field($structured_data['contact_phone'] ?? ''),
+    ];
+
+    return $output;
+}
 
 /**
  * SEO settings page callback
@@ -158,21 +263,173 @@ function thrivingstudio_seo_settings_page() {
 }
 
 /**
+ * Get SEO settings options for admin fields.
+ *
+ * @return array
+ */
+function thrivingstudio_get_seo_settings_options() {
+    if (function_exists('thrivingstudio_get_seo_options')) {
+        return thrivingstudio_get_seo_options();
+    }
+
+    $options = get_option('thrivingstudio_seo_options', []);
+
+    return is_array($options) ? $options : [];
+}
+
+/**
+ * Search appearance section callback
+ */
+function thrivingstudio_seo_search_appearance_callback() {
+    echo '<p>Control how the homepage and fallback site details are described to search engines.</p>';
+}
+
+/**
+ * Social preview section callback
+ */
+function thrivingstudio_seo_social_preview_callback() {
+    echo '<p>Set the default title, description, and image used when the homepage is shared on social platforms.</p>';
+}
+
+/**
  * General section callback
  */
 function thrivingstudio_seo_general_callback() {
-    echo '<p>Configure basic SEO settings for your website.</p>';
+    echo '<p>Configure verification, social profiles, and structured data used by search engines.</p>';
+}
+
+/**
+ * Homepage title field callback
+ */
+function thrivingstudio_seo_homepage_title_callback() {
+    $options = thrivingstudio_get_seo_settings_options();
+    $homepage_title = $options['homepage_title'] ?? '';
+    $placeholder = function_exists('thrivingstudio_get_homepage_title') ? thrivingstudio_get_homepage_title() : 'Thriving Studio | Clarity Over Noise';
+    ?>
+    <input
+        type="text"
+        name="thrivingstudio_seo_options[homepage_title]"
+        value="<?php echo esc_attr($homepage_title); ?>"
+        class="regular-text"
+        maxlength="70"
+        placeholder="<?php echo esc_attr($placeholder); ?>"
+    />
+    <p class="description">Recommended: 50-60 characters. Current default: <code><?php echo esc_html($placeholder); ?></code></p>
+    <?php
+}
+
+/**
+ * Homepage description field callback
+ */
+function thrivingstudio_seo_homepage_description_callback() {
+    $options = thrivingstudio_get_seo_settings_options();
+    $homepage_description = $options['homepage_description'] ?? '';
+    $placeholder = 'Thriving Studio helps you cut through noise with clear, thoughtful ideas for inner growth, deeper understanding, and what truly matters.';
+    ?>
+    <textarea
+        name="thrivingstudio_seo_options[homepage_description]"
+        rows="3"
+        cols="50"
+        maxlength="220"
+        style="width: 100%; max-width: 720px;"
+        placeholder="<?php echo esc_attr($placeholder); ?>"
+    ><?php echo esc_textarea($homepage_description); ?></textarea>
+    <p class="description">Recommended: clear, page-specific, and around 140-160 characters. Leave empty to use the default brand description.</p>
+    <?php
+}
+
+/**
+ * Alternate site name field callback
+ */
+function thrivingstudio_seo_site_alternate_name_callback() {
+    $options = thrivingstudio_get_seo_settings_options();
+    $alternate_name = $options['site_alternate_name'] ?? '';
+    ?>
+    <input
+        type="text"
+        name="thrivingstudio_seo_options[site_alternate_name]"
+        value="<?php echo esc_attr($alternate_name); ?>"
+        class="regular-text"
+        placeholder="ThrivingStudio"
+    />
+    <p class="description">Optional alternate name used in site-name structured data.</p>
+    <?php
 }
 
 /**
  * Default description field callback
  */
 function thrivingstudio_seo_default_description_callback() {
-    $options = get_option('thrivingstudio_seo_options', []);
+    $options = thrivingstudio_get_seo_settings_options();
     $default_description = isset($options['default_description']) ? $options['default_description'] : '';
     ?>
-    <textarea name="thrivingstudio_seo_options[default_description]" rows="3" cols="50" style="width: 100%;"><?php echo esc_textarea($default_description); ?></textarea>
-    <p class="description">Default meta description for pages without custom descriptions. Leave empty to use site description.</p>
+    <textarea
+        name="thrivingstudio_seo_options[default_description]"
+        rows="3"
+        cols="50"
+        maxlength="220"
+        style="width: 100%; max-width: 720px;"
+        placeholder="Thriving Studio helps you cut through noise with clear, thoughtful ideas for inner growth, deeper understanding, and what truly matters."
+    ><?php echo esc_textarea($default_description); ?></textarea>
+    <p class="description">Fallback meta description for pages without their own description.</p>
+    <?php
+}
+
+/**
+ * Social title field callback
+ */
+function thrivingstudio_seo_social_title_callback() {
+    $options = thrivingstudio_get_seo_settings_options();
+    $social_title = $options['social_title'] ?? '';
+    $placeholder = function_exists('thrivingstudio_get_homepage_title') ? thrivingstudio_get_homepage_title() : 'Thriving Studio | Clarity Over Noise';
+    ?>
+    <input
+        type="text"
+        name="thrivingstudio_seo_options[social_title]"
+        value="<?php echo esc_attr($social_title); ?>"
+        class="regular-text"
+        maxlength="90"
+        placeholder="<?php echo esc_attr($placeholder); ?>"
+    />
+    <p class="description">Leave empty to use the homepage SEO title.</p>
+    <?php
+}
+
+/**
+ * Social description field callback
+ */
+function thrivingstudio_seo_social_description_callback() {
+    $options = thrivingstudio_get_seo_settings_options();
+    $social_description = $options['social_description'] ?? '';
+    ?>
+    <textarea
+        name="thrivingstudio_seo_options[social_description]"
+        rows="3"
+        cols="50"
+        maxlength="220"
+        style="width: 100%; max-width: 720px;"
+        placeholder="Thriving Studio helps you cut through noise with clear, thoughtful ideas for inner growth, deeper understanding, and what truly matters."
+    ><?php echo esc_textarea($social_description); ?></textarea>
+    <p class="description">Leave empty to use the homepage meta description.</p>
+    <?php
+}
+
+/**
+ * Social image field callback
+ */
+function thrivingstudio_seo_social_image_callback() {
+    $options = thrivingstudio_get_seo_settings_options();
+    $social_image = $options['social_image'] ?? '';
+    $default_image = get_template_directory_uri() . '/assets/images/default-og-image.jpg';
+    ?>
+    <input
+        type="url"
+        name="thrivingstudio_seo_options[social_image]"
+        value="<?php echo esc_attr($social_image); ?>"
+        class="regular-text"
+        placeholder="<?php echo esc_url($default_image); ?>"
+    />
+    <p class="description">Recommended size: 1200x630. Leave empty to use the theme default social image.</p>
     <?php
 }
 
@@ -180,7 +437,7 @@ function thrivingstudio_seo_default_description_callback() {
  * Google Search Console field callback
  */
 function thrivingstudio_seo_google_search_console_callback() {
-    $options = get_option('thrivingstudio_seo_options', []);
+    $options = thrivingstudio_get_seo_settings_options();
     $gsc_verification = isset($options['google_search_console']) ? $options['google_search_console'] : '';
     ?>
     <input type="text" name="thrivingstudio_seo_options[google_search_console]" value="<?php echo esc_attr($gsc_verification); ?>" class="regular-text" />
@@ -192,7 +449,7 @@ function thrivingstudio_seo_google_search_console_callback() {
  * Social media field callback
  */
 function thrivingstudio_seo_social_media_callback() {
-    $options = get_option('thrivingstudio_seo_options', []);
+    $options = thrivingstudio_get_seo_settings_options();
     $social_media = isset($options['social_media']) ? $options['social_media'] : [];
     ?>
     <table class="form-table">
@@ -220,7 +477,7 @@ function thrivingstudio_seo_social_media_callback() {
  * Structured data field callback
  */
 function thrivingstudio_seo_structured_data_callback() {
-    $options = get_option('thrivingstudio_seo_options', []);
+    $options = thrivingstudio_get_seo_settings_options();
     $structured_data = isset($options['structured_data']) ? $options['structured_data'] : [];
     ?>
     <table class="form-table">
@@ -255,11 +512,11 @@ function thrivingstudio_seo_structured_data_callback() {
  * Add Google Search Console verification
  */
 function thrivingstudio_add_google_search_console() {
-    $options = get_option('thrivingstudio_seo_options', []);
+    $options = thrivingstudio_get_seo_settings_options();
     $gsc_verification = $options['google_search_console'] ?? '';
     
     if (!empty($gsc_verification)) {
         echo '<meta name="google-site-verification" content="' . esc_attr($gsc_verification) . '" />' . "\n";
     }
 }
-add_action('wp_head', 'thrivingstudio_add_google_search_console', 1); 
+add_action('wp_head', 'thrivingstudio_add_google_search_console', 1);
