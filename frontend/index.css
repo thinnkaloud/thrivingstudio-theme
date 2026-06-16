@@ -979,6 +979,156 @@ body.single-post #site-wrapper {
     transform: translateZ(0) scale(1.015);
 }
 
+/* FAQ / related questions accordion block */
+.ts-faq-block {
+    margin: clamp(2.1rem, 4vw, 3rem) 0;
+    padding: clamp(1rem, 2.2vw, 1.25rem);
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    background: #fff;
+    color: #111827;
+}
+
+.ts-single-content .ts-faq-block {
+    max-width: 100%;
+}
+
+.ts-faq-block-title {
+    margin: 0 0 1rem;
+    color: #111827;
+    font-size: clamp(1.45rem, 2.5vw, 1.75rem);
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: 0;
+}
+
+.ts-faq-list {
+    display: grid;
+    gap: 0.7rem;
+}
+
+.ts-faq-item {
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    background: #f9fafb;
+    overflow: hidden;
+    transition: border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+}
+
+.ts-faq-item[open] {
+    border-color: #d1d5db;
+    background: #fff;
+    box-shadow: 0 8px 18px rgba(17, 24, 39, 0.05);
+}
+
+.ts-faq-question {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.9rem;
+    padding: 0.9rem 1rem;
+    color: #111827;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 750;
+    line-height: 1.35;
+    list-style: none;
+}
+
+.ts-faq-question::-webkit-details-marker {
+    display: none;
+}
+
+.ts-faq-question:focus-visible {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+}
+
+.ts-faq-question-text {
+    min-width: 0;
+}
+
+.ts-faq-icon {
+    position: relative;
+    flex: 0 0 1rem;
+    width: 1rem;
+    height: 1rem;
+    margin-top: 0.15rem;
+}
+
+.ts-faq-icon::before,
+.ts-faq-icon::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    background: #111827;
+    border-radius: 999px;
+    transform: translate(-50%, -50%);
+    transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.ts-faq-icon::before {
+    width: 0.82rem;
+    height: 2px;
+}
+
+.ts-faq-icon::after {
+    width: 2px;
+    height: 0.82rem;
+}
+
+.ts-faq-item[open] .ts-faq-icon::after {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(90deg);
+}
+
+.ts-faq-answer {
+    padding: 0 1rem 1rem;
+    color: #374151;
+    font-size: 1rem;
+    line-height: 1.65;
+}
+
+.ts-faq-answer > :first-child {
+    margin-top: 0;
+}
+
+.ts-faq-answer > :last-child {
+    margin-bottom: 0;
+}
+
+.ts-faq-answer p,
+.ts-faq-answer ul,
+.ts-faq-answer ol {
+    margin-top: 0.65rem;
+    margin-bottom: 0;
+}
+
+.ts-faq-answer ul,
+.ts-faq-answer ol {
+    padding-left: 1.35rem;
+}
+
+.ts-faq-answer ul {
+    list-style: disc;
+}
+
+.ts-faq-answer ol {
+    list-style: decimal;
+}
+
+.ts-faq-answer a {
+    color: #111827;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.ts-faq-answer a:hover,
+.ts-faq-answer a:focus-visible {
+    color: #1d4ed8;
+}
+
 /* Phase 4 Batch 3: post-end conversion + utility */
 .ts-single-post-cta {
     order: 5;

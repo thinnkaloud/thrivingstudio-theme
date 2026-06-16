@@ -5,7 +5,9 @@
     var registerBlockType = blocks.registerBlockType;
     var RichText = blockEditor.RichText;
     var InspectorControls = blockEditor.InspectorControls;
-    var useBlockProps = blockEditor.useBlockProps;
+    var useBlockProps = blockEditor.useBlockProps || function (props) {
+        return props || {};
+    };
     var Button = components.Button;
     var PanelBody = components.PanelBody;
     var ToggleControl = components.ToggleControl;
