@@ -1712,7 +1712,6 @@ body.single-post #site-wrapper {
     .ts-single-article {
         --ts-single-rail-sticky-top: 7rem;
         --ts-single-rail-slot-height: max(28rem, calc(100vh - var(--ts-single-rail-sticky-top) - 1rem));
-        --ts-single-rail-visible-height: min(var(--ts-single-rail-slot-height), var(--ts-single-rail-available-height, var(--ts-single-rail-slot-height)));
         grid-template-columns: minmax(0, var(--ts-single-content-width)) minmax(13rem, var(--ts-single-toc-width));
         column-gap: var(--ts-single-layout-gap);
         align-items: start;
@@ -1754,28 +1753,23 @@ body.single-post #site-wrapper {
         position: sticky;
         top: var(--ts-single-rail-sticky-top);
         gap: 1rem;
-        transition: opacity 0.18s ease, visibility 0.18s ease;
-        will-change: opacity;
+        transform: translateY(calc(var(--ts-single-rail-release-offset, 0px) * -1));
+        transition: transform 0.12s ease-out, opacity 0.18s ease, visibility 0.18s ease;
+        will-change: transform, opacity;
     }
 
     .ts-single-toc {
         transition: opacity 0.18s ease, visibility 0.18s ease;
     }
 
-    .ts-single-article-has-rail-widgets.ts-single-rail-handoff-ready:not(.ts-single-rail-body-active) .ts-single-toc {
-        opacity: 0;
-        visibility: hidden;
-        pointer-events: none;
-    }
-
-    .ts-single-article.ts-single-rail-body-active .ts-single-rail-widgets {
+    .ts-single-article-has-rail-widgets.ts-single-rail-release-ready:not(.ts-single-rail-release-active) .ts-single-toc {
         opacity: 0;
         visibility: hidden;
         pointer-events: none;
     }
 
     .ts-single-rail-widgets-shell .ts-single-rail-widget:first-child:has(img) {
-        height: var(--ts-single-rail-visible-height);
+        height: var(--ts-single-rail-slot-height);
         display: flex;
         flex-direction: column;
     }

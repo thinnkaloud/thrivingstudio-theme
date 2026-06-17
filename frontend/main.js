@@ -118,50 +118,42 @@ function tsRunWhenReady(fn) {
 
 tsRunWhenReady(tsSetupMobileMenu);
 
-function tsSetupSingleRailHandoff() {
+function tsSetupSingleRailRelease() {
     const article = document.querySelector('.ts-single-article');
     const bodyShell = document.querySelector('.ts-single-body-shell');
     const widgetShell = document.querySelector('.ts-single-rail-widgets-shell');
     const toc = document.querySelector('.ts-single-toc');
 
     if (!article || !bodyShell || !widgetShell || !toc) return;
+    if (article._tsRailReleaseBound) return;
 
-    article.classList.add('ts-single-rail-handoff-ready');
-
-    let ticking = false;
+    article._tsRailReleaseBound = true;
+    article.classList.add('ts-single-rail-release-ready');
 
     const update = function() {
-        ticking = false;
-
         if (window.innerWidth < 1100) {
-            article.classList.remove('ts-single-rail-body-active');
-            article.style.removeProperty('--ts-single-rail-available-height');
+            article.classList.remove('ts-single-rail-release-active');
+            article.style.removeProperty('--ts-single-rail-release-offset');
             return;
         }
 
-        const stickyTop = parseFloat(window.getComputedStyle(toc).top) || 0;
         const bodyTop = bodyShell.getBoundingClientRect().top;
-        const railGap = 16;
-        const maxRailHeight = Math.max(0, window.innerHeight - stickyTop - railGap);
-        const availableRailHeight = Math.max(0, Math.min(maxRailHeight, bodyTop - stickyTop - railGap));
+        const releaseStart = window.innerHeight - 24;
+        const releaseOffset = Math.max(0, releaseStart - bodyTop);
 
-        article.style.setProperty('--ts-single-rail-available-height', availableRailHeight + 'px');
-        article.classList.toggle('ts-single-rail-body-active', bodyTop <= window.innerHeight - 24);
+        article.style.setProperty('--ts-single-rail-release-offset', releaseOffset + 'px');
+        article.classList.toggle('ts-single-rail-release-active', releaseOffset > 0);
     };
 
-    const requestUpdate = function() {
-        if (ticking) return;
-        ticking = true;
-        window.requestAnimationFrame(update);
-    };
-
-    window.addEventListener('scroll', requestUpdate, { passive: true });
-    window.addEventListener('resize', requestUpdate);
-    window.addEventListener('load', requestUpdate);
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    window.addEventListener('load', update);
+    window.addEventListener('pageshow', update);
+    window.setInterval(update, 100);
     update();
 }
 
-tsRunWhenReady(tsSetupSingleRailHandoff);
+tsRunWhenReady(tsSetupSingleRailRelease);
 
 // Quote Cards Slider Logic
 (function() {

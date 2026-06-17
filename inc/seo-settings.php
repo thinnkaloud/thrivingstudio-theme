@@ -396,8 +396,8 @@ function thrivingstudio_seo_default_description_callback() {
  */
 function thrivingstudio_seo_social_title_callback() {
     $options = thrivingstudio_get_seo_settings_options();
-    $social_title = $options['social_title'] ?? '';
-    $placeholder = function_exists('thrivingstudio_get_homepage_title') ? thrivingstudio_get_homepage_title() : 'Thriving Studio | Clarity Over Noise';
+    $default_title = function_exists('thrivingstudio_get_homepage_title') ? thrivingstudio_get_homepage_title() : 'Thriving Studio | Clarity Over Noise';
+    $social_title = thrivingstudio_get_seo_settings_field_value($options, 'social_title', $default_title);
     ?>
     <input
         type="text"
@@ -405,9 +405,8 @@ function thrivingstudio_seo_social_title_callback() {
         value="<?php echo esc_attr($social_title); ?>"
         class="regular-text"
         maxlength="90"
-        placeholder="<?php echo esc_attr($placeholder); ?>"
     />
-    <p class="description">Leave empty to use the homepage SEO title.</p>
+    <p class="description">Edit this title directly. Current default: <code><?php echo esc_html($default_title); ?></code></p>
     <?php
 }
 
@@ -416,7 +415,10 @@ function thrivingstudio_seo_social_title_callback() {
  */
 function thrivingstudio_seo_social_description_callback() {
     $options = thrivingstudio_get_seo_settings_options();
-    $social_description = $options['social_description'] ?? '';
+    $default_description = function_exists('thrivingstudio_get_homepage_meta_description')
+        ? thrivingstudio_get_homepage_meta_description()
+        : 'Thriving Studio helps you cut through noise with clear, thoughtful ideas for inner growth, deeper understanding, and what truly matters.';
+    $social_description = thrivingstudio_get_seo_settings_field_value($options, 'social_description', $default_description);
     ?>
     <textarea
         name="thrivingstudio_seo_options[social_description]"
@@ -424,9 +426,8 @@ function thrivingstudio_seo_social_description_callback() {
         cols="50"
         maxlength="220"
         style="width: 100%; max-width: 720px;"
-        placeholder="Thriving Studio helps you cut through noise with clear, thoughtful ideas for inner growth, deeper understanding, and what truly matters."
     ><?php echo esc_textarea($social_description); ?></textarea>
-    <p class="description">Leave empty to use the homepage meta description.</p>
+    <p class="description">Edit this description directly.</p>
     <?php
 }
 
@@ -435,17 +436,16 @@ function thrivingstudio_seo_social_description_callback() {
  */
 function thrivingstudio_seo_social_image_callback() {
     $options = thrivingstudio_get_seo_settings_options();
-    $social_image = $options['social_image'] ?? '';
-    $default_image = get_template_directory_uri() . '/assets/images/default-og-image.jpg';
+    $default_image = function_exists('thrivingstudio_get_og_image') ? thrivingstudio_get_og_image() : get_template_directory_uri() . '/assets/images/default-og-image.jpg';
+    $social_image = thrivingstudio_get_seo_settings_field_value($options, 'social_image', $default_image);
     ?>
     <input
         type="url"
         name="thrivingstudio_seo_options[social_image]"
         value="<?php echo esc_attr($social_image); ?>"
         class="regular-text"
-        placeholder="<?php echo esc_url($default_image); ?>"
     />
-    <p class="description">Recommended size: 1200x630. Leave empty to use the theme default social image.</p>
+    <p class="description">Recommended size: 1200x630. Edit this URL directly.</p>
     <?php
 }
 
