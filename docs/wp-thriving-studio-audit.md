@@ -13,12 +13,11 @@
 
 - **Likely SEO plugin in use:** None. The theme implements custom SEO functionality.
 
-- **Notes:** The project repository does not contain any third-party SEO plugins (Rank Math, Yoast, All in One SEO, etc.). SEO functionality is handled entirely by custom theme code in `inc/seo.php` and `inc/seo-settings.php`.
+- **Notes:** The project repository does not contain any third-party SEO plugins. SEO functionality is handled entirely by custom theme code in `inc/seo.php` and `inc/seo-settings.php`.
 
 - **SEO plugin meta key search results:**
-  - Searched for: `rank_math_title`, `rank_math_description`, `_yoast_wpseo_title`, `_yoast_wpseo_metadesc`, `wpseo_`
-  - **No matches found** - These meta keys are not used anywhere in the codebase
-  - The theme's SEO-GUIDE.md (line 84-86) mentions Yoast SEO and Rank Math as "optional" plugins, but they are not installed or active
+  - Searched for common third-party SEO plugin title/description meta keys and hook prefixes
+  - **No active theme-code matches found** - These plugin meta keys are not used by the theme
   - All SEO meta handling is done via custom functions in `inc/seo.php` using theme-specific meta keys (`_thrivingstudio_meta_description`, `_thrivingstudio_robots_meta`)
 
 ## Title & Meta Output
@@ -96,7 +95,7 @@
     - `index.php` (line 39): Displayed in fallback template
     - `front-page.php` (line 183): Displayed on homepage featured posts
     - `page.php` (line 83): Displayed on page templates
-  - The SEO module (`inc/seo.php` line 70) uses `get_the_excerpt()` as fallback for meta descriptions if custom meta description is not set
+  - The SEO module uses the custom SEO meta description first, then the manual excerpt, then post content
 
 - **Reading time:**
   - **No custom reading time calculation found** in the codebase
@@ -123,7 +122,7 @@
 - **Recommended SEO meta keys to target (based on actual code/plugins in this repo):**
   - `_thrivingstudio_meta_description` - Custom meta description (string, max ~160 chars recommended)
   - `_thrivingstudio_robots_meta` - Robots meta tag (string, e.g., "noindex,nofollow" or "index,follow")
-  - **Note:** The theme does NOT use Rank Math, Yoast, or other SEO plugin meta keys. Use the custom theme meta keys listed above.
+  - **Note:** The theme does NOT use third-party SEO plugin meta keys. Use the custom theme meta keys listed above.
 
 - **Fields that the plugin should always set:**
   - `post_title` - Post title (required)
@@ -152,4 +151,3 @@
   - **Featured images are expected** - The theme templates check for `has_post_thumbnail()` and display images in multiple locations
   - **Do NOT override theme's SEO output** - The theme has its own SEO implementation. Avoid conflicts by using the theme's meta keys (`_thrivingstudio_meta_description`, `_thrivingstudio_robots_meta`) rather than trying to output meta tags directly
   - **Sitemap generation** - The theme auto-generates `sitemap.xml` on post publish/update (inc/seo.php lines 442-506). No manual sitemap handling needed
-

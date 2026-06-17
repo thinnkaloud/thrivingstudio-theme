@@ -278,6 +278,20 @@ function thrivingstudio_get_seo_settings_options() {
 }
 
 /**
+ * Get an editable admin value, falling back to the resolved site default.
+ *
+ * @param array  $options
+ * @param string $key
+ * @param string $fallback
+ * @return string
+ */
+function thrivingstudio_get_seo_settings_field_value($options, $key, $fallback) {
+    $value = $options[$key] ?? '';
+
+    return $value !== '' ? $value : $fallback;
+}
+
+/**
  * Search appearance section callback
  */
 function thrivingstudio_seo_search_appearance_callback() {
@@ -303,8 +317,8 @@ function thrivingstudio_seo_general_callback() {
  */
 function thrivingstudio_seo_homepage_title_callback() {
     $options = thrivingstudio_get_seo_settings_options();
-    $homepage_title = $options['homepage_title'] ?? '';
-    $placeholder = function_exists('thrivingstudio_get_homepage_title') ? thrivingstudio_get_homepage_title() : 'Thriving Studio | Clarity Over Noise';
+    $default_title = function_exists('thrivingstudio_get_homepage_title') ? thrivingstudio_get_homepage_title() : 'Thriving Studio | Clarity Over Noise';
+    $homepage_title = thrivingstudio_get_seo_settings_field_value($options, 'homepage_title', $default_title);
     ?>
     <input
         type="text"
@@ -312,9 +326,8 @@ function thrivingstudio_seo_homepage_title_callback() {
         value="<?php echo esc_attr($homepage_title); ?>"
         class="regular-text"
         maxlength="70"
-        placeholder="<?php echo esc_attr($placeholder); ?>"
     />
-    <p class="description">Recommended: 50-60 characters. Current default: <code><?php echo esc_html($placeholder); ?></code></p>
+    <p class="description">Recommended: 50-60 characters. Current default: <code><?php echo esc_html($default_title); ?></code></p>
     <?php
 }
 
@@ -323,8 +336,10 @@ function thrivingstudio_seo_homepage_title_callback() {
  */
 function thrivingstudio_seo_homepage_description_callback() {
     $options = thrivingstudio_get_seo_settings_options();
-    $homepage_description = $options['homepage_description'] ?? '';
-    $placeholder = 'Thriving Studio helps you cut through noise with clear, thoughtful ideas for inner growth, deeper understanding, and what truly matters.';
+    $default_description = function_exists('thrivingstudio_get_homepage_meta_description')
+        ? thrivingstudio_get_homepage_meta_description()
+        : 'Thriving Studio helps you cut through noise with clear, thoughtful ideas for inner growth, deeper understanding, and what truly matters.';
+    $homepage_description = thrivingstudio_get_seo_settings_field_value($options, 'homepage_description', $default_description);
     ?>
     <textarea
         name="thrivingstudio_seo_options[homepage_description]"
@@ -332,9 +347,8 @@ function thrivingstudio_seo_homepage_description_callback() {
         cols="50"
         maxlength="220"
         style="width: 100%; max-width: 720px;"
-        placeholder="<?php echo esc_attr($placeholder); ?>"
     ><?php echo esc_textarea($homepage_description); ?></textarea>
-    <p class="description">Recommended: clear, page-specific, and around 140-160 characters. Leave empty to use the default brand description.</p>
+    <p class="description">Recommended: clear, page-specific, and around 140-160 characters.</p>
     <?php
 }
 
@@ -343,14 +357,14 @@ function thrivingstudio_seo_homepage_description_callback() {
  */
 function thrivingstudio_seo_site_alternate_name_callback() {
     $options = thrivingstudio_get_seo_settings_options();
-    $alternate_name = $options['site_alternate_name'] ?? '';
+    $default_alternate_name = function_exists('thrivingstudio_get_site_alternate_name') ? thrivingstudio_get_site_alternate_name() : 'ThrivingStudio';
+    $alternate_name = thrivingstudio_get_seo_settings_field_value($options, 'site_alternate_name', $default_alternate_name);
     ?>
     <input
         type="text"
         name="thrivingstudio_seo_options[site_alternate_name]"
         value="<?php echo esc_attr($alternate_name); ?>"
         class="regular-text"
-        placeholder="ThrivingStudio"
     />
     <p class="description">Optional alternate name used in site-name structured data.</p>
     <?php
@@ -361,7 +375,10 @@ function thrivingstudio_seo_site_alternate_name_callback() {
  */
 function thrivingstudio_seo_default_description_callback() {
     $options = thrivingstudio_get_seo_settings_options();
-    $default_description = isset($options['default_description']) ? $options['default_description'] : '';
+    $fallback_description = function_exists('thrivingstudio_get_default_meta_description')
+        ? thrivingstudio_get_default_meta_description()
+        : 'Thriving Studio helps you cut through noise with clear, thoughtful ideas for inner growth, deeper understanding, and what truly matters.';
+    $default_description = thrivingstudio_get_seo_settings_field_value($options, 'default_description', $fallback_description);
     ?>
     <textarea
         name="thrivingstudio_seo_options[default_description]"
@@ -369,7 +386,6 @@ function thrivingstudio_seo_default_description_callback() {
         cols="50"
         maxlength="220"
         style="width: 100%; max-width: 720px;"
-        placeholder="Thriving Studio helps you cut through noise with clear, thoughtful ideas for inner growth, deeper understanding, and what truly matters."
     ><?php echo esc_textarea($default_description); ?></textarea>
     <p class="description">Fallback meta description for pages without their own description.</p>
     <?php

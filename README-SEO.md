@@ -68,7 +68,7 @@ This WordPress theme includes a comprehensive SEO implementation that provides a
 
 1. **Adding SEO to Posts/Pages**
    - When editing a post or page, scroll down to find the "SEO Settings" meta box
-   - Enter a custom meta description (optional - auto-generated if left empty)
+   - Enter a custom meta description (optional - uses the manual excerpt, then post content if left empty)
    - Set custom robots meta if needed (e.g., `noindex,nofollow`)
 
 2. **Best Practices**
@@ -119,7 +119,7 @@ thrivingstudio/
 ## 🔧 Configuration
 
 ### **Automatic Features**
-- Meta descriptions are auto-generated from content
+- Meta descriptions fall back to the manual excerpt, then post content
 - Sitemap is automatically generated and updated
 - Structured data is automatically added
 - Social media tags are automatically generated

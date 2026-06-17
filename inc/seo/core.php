@@ -132,7 +132,7 @@ function thrivingstudio_normalize_meta_description($description) {
 }
 
 /**
- * Read custom SEO descriptions from the theme or a previous Yoast setup.
+ * Read the custom SEO description saved by the theme.
  *
  * @param int $post_id
  * @return string
@@ -143,12 +143,21 @@ function thrivingstudio_get_post_meta_description($post_id) {
         return $custom_description;
     }
 
-    $yoast_description = get_post_meta($post_id, '_yoast_wpseo_metadesc', true);
-    if (!empty($yoast_description)) {
-        return $yoast_description;
+    return '';
+}
+
+/**
+ * Get the fallback description for a singular post or page.
+ *
+ * @param int $post_id
+ * @return string
+ */
+function thrivingstudio_get_singular_fallback_description($post_id) {
+    if (has_excerpt($post_id)) {
+        return get_the_excerpt($post_id);
     }
 
-    return '';
+    return get_post_field('post_content', $post_id);
 }
 
 /**
@@ -179,13 +188,10 @@ function thrivingstudio_get_meta_description() {
     if (is_front_page()) {
         $description = thrivingstudio_get_homepage_meta_description();
     } elseif (is_singular()) {
-        $description = thrivingstudio_get_post_meta_description(get_the_ID());
+        $post_id = get_the_ID();
+        $description = thrivingstudio_get_post_meta_description($post_id);
         if (!$description) {
-            $description = get_the_excerpt();
-            if (!$description) {
-                $content = get_the_content();
-                $description = wp_trim_words(strip_tags($content), 25, '...');
-            }
+            $description = thrivingstudio_get_singular_fallback_description($post_id);
         }
     } elseif (is_home()) {
         $posts_page_id = (int) get_option('page_for_posts');
@@ -796,7 +802,7 @@ function thrivingstudio_seo_meta_box_callback($post) {
             </th>
             <td>
                 <textarea id="thrivingstudio_meta_description" name="thrivingstudio_meta_description" rows="3" cols="50" style="width: 100%;"><?php echo esc_textarea($meta_description); ?></textarea>
-                <p class="description">Leave empty to auto-generate from content. Maximum 160 characters recommended.</p>
+                <p class="description">Leave empty to use the manual excerpt, then the post content. Maximum 160 characters recommended.</p>
             </td>
         </tr>
         <tr>

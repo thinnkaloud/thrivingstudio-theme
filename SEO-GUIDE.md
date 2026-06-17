@@ -80,10 +80,9 @@
 5. **Screaming Frog** - Technical SEO audit
 6. **Ahrefs/SEMrush** - Keyword research and competitor analysis
 
-### **WordPress SEO Plugins** (Optional)
-- **Yoast SEO** - Comprehensive SEO plugin
-- **Rank Math** - Advanced SEO features
-- **All in One SEO** - User-friendly SEO plugin
+### **Theme SEO System**
+- The theme already handles meta descriptions, canonical URLs, Open Graph tags, Twitter Card tags, structured data, and sitemap generation.
+- Avoid adding a separate SEO plugin unless you intentionally replace the theme SEO output, since duplicate tags can create conflicts.
 
 ## 📊 **SEO Monitoring**
 
