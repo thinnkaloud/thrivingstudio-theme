@@ -372,7 +372,7 @@ function thrivingstudio_customize_register($wp_customize) {
         'sanitize_callback' => 'rest_sanitize_boolean',
     ]);
     $wp_customize->add_control('thrivingstudio_single_show_excerpt', [
-        'label' => __('Show excerpt or intro text', 'thrivingstudio'),
+        'label' => __('Show manual excerpt', 'thrivingstudio'),
         'section' => 'thrivingstudio_single_post_section',
         'type' => 'checkbox',
     ]);

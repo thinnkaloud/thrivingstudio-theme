@@ -122,9 +122,10 @@ function tsSetupSingleRailRelease() {
     const article = document.querySelector('.ts-single-article');
     const bodyShell = document.querySelector('.ts-single-body-shell');
     const widgetShell = document.querySelector('.ts-single-rail-widgets-shell');
+    const rail = widgetShell ? widgetShell.querySelector('.ts-single-rail-widgets') : null;
     const toc = document.querySelector('.ts-single-toc');
 
-    if (!article || !bodyShell || !widgetShell || !toc) return;
+    if (!article || !bodyShell || !widgetShell || !rail || !toc) return;
     if (article._tsRailReleaseBound) return;
 
     article._tsRailReleaseBound = true;
@@ -133,6 +134,7 @@ function tsSetupSingleRailRelease() {
     const update = function() {
         if (window.innerWidth < 1100) {
             article.classList.remove('ts-single-rail-release-active');
+            article.classList.remove('ts-single-rail-toc-clear');
             article.style.removeProperty('--ts-single-rail-release-offset');
             return;
         }
@@ -140,9 +142,14 @@ function tsSetupSingleRailRelease() {
         const bodyTop = bodyShell.getBoundingClientRect().top;
         const releaseStart = window.innerHeight - 24;
         const releaseOffset = Math.max(0, releaseStart - bodyTop);
+        const visualReleaseOffset = releaseOffset * 1.25;
 
-        article.style.setProperty('--ts-single-rail-release-offset', releaseOffset + 'px');
+        article.style.setProperty('--ts-single-rail-release-offset', visualReleaseOffset + 'px');
         article.classList.toggle('ts-single-rail-release-active', releaseOffset > 0);
+
+        const railBottom = rail.getBoundingClientRect().bottom;
+        const tocTop = toc.getBoundingClientRect().top;
+        article.classList.toggle('ts-single-rail-toc-clear', releaseOffset > 0 && railBottom + 32 <= tocTop);
     };
 
     window.addEventListener('scroll', update, { passive: true });
@@ -154,6 +161,65 @@ function tsSetupSingleRailRelease() {
 }
 
 tsRunWhenReady(tsSetupSingleRailRelease);
+
+function tsSetupSingleTocActiveState() {
+    const toc = document.querySelector('.ts-single-toc');
+    const links = toc ? Array.from(toc.querySelectorAll('.ts-single-toc-list a[href^="#"]')) : [];
+
+    if (!toc || links.length === 0) return;
+    if (toc._tsActiveStateBound) return;
+
+    const targets = links
+        .map((link) => {
+            const rawId = link.getAttribute('href').slice(1);
+            if (!rawId) return null;
+
+            const id = decodeURIComponent(rawId);
+            const target = document.getElementById(id);
+            return target ? { link, target } : null;
+        })
+        .filter(Boolean);
+
+    if (targets.length === 0) return;
+
+    toc._tsActiveStateBound = true;
+
+    const setActiveLink = function(activeLink) {
+        links.forEach((link) => {
+            const isActive = link === activeLink;
+            link.classList.toggle('ts-single-toc-link-active', isActive);
+            link.parentElement?.classList.toggle('ts-single-toc-item-active', isActive);
+
+            if (isActive) {
+                link.setAttribute('aria-current', 'true');
+            } else {
+                link.removeAttribute('aria-current');
+            }
+        });
+    };
+
+    const update = function() {
+        const offset = Math.max(96, Math.round(window.innerHeight * 0.18));
+        let active = targets[0];
+
+        targets.forEach((item) => {
+            if (item.target.getBoundingClientRect().top <= offset) {
+                active = item;
+            }
+        });
+
+        setActiveLink(active.link);
+    };
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    window.addEventListener('load', update);
+    window.addEventListener('pageshow', update);
+    window.setInterval(update, 250);
+    update();
+}
+
+tsRunWhenReady(tsSetupSingleTocActiveState);
 
 // Quote Cards Slider Logic
 (function() {

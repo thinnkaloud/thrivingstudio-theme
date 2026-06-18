@@ -101,32 +101,6 @@
                         }
                     }
 
-                    if (!$has_custom_excerpt && $post_summary === '') {
-                        $paragraphs = $xpath->query('//p');
-
-                        if ($paragraphs instanceof DOMNodeList) {
-                            $summary_parts = [];
-                            $summary_word_count = 0;
-
-                            foreach ($paragraphs as $paragraph) {
-                                $summary_text = trim(preg_replace('/\s+/', ' ', $paragraph->textContent));
-
-                                if ($summary_text !== '') {
-                                    $summary_parts[] = $summary_text;
-                                    $summary_word_count += str_word_count($summary_text);
-
-                                    if ($summary_word_count >= 34) {
-                                        break;
-                                    }
-                                }
-                            }
-
-                            if (!empty($summary_parts)) {
-                                $post_summary = wp_trim_words(implode(' ', $summary_parts), 34, '...');
-                            }
-                        }
-                    }
-
                     $root = $dom->getElementById('ts-content-root');
                     if ($root) {
                         $html = '';
@@ -331,7 +305,17 @@
                             <p class="ts-single-toc-title"><?php esc_html_e('In this article', 'thrivingstudio'); ?></p>
                             <ul class="ts-single-toc-list">
                                 <?php foreach ($toc_items as $item) : ?>
-                                    <li class="<?php echo $item['level'] === 'h3' ? 'ts-single-toc-subitem' : ''; ?>">
+                                    <?php
+                                    $toc_item_classes = [
+                                        'ts-single-toc-item',
+                                        'ts-single-toc-item-' . $item['level'],
+                                    ];
+
+                                    if ($item['level'] === 'h3') {
+                                        $toc_item_classes[] = 'ts-single-toc-subitem';
+                                    }
+                                    ?>
+                                    <li class="<?php echo esc_attr(implode(' ', $toc_item_classes)); ?>">
                                         <a href="#<?php echo esc_attr($item['id']); ?>">
                                             <?php echo esc_html($item['text']); ?>
                                         </a>
