@@ -1790,13 +1790,6 @@ body.single-post #site-wrapper {
         transition: opacity 0.18s ease, visibility 0.18s ease;
     }
 
-    .ts-single-article-has-rail-widgets.ts-single-rail-release-ready:not(.ts-single-rail-toc-clear) .ts-single-toc {
-        opacity: 0;
-        visibility: hidden;
-        pointer-events: none;
-        transition: none;
-    }
-
     .ts-single-rail-widgets-shell .ts-single-rail-widget:first-child:has(img) {
         height: var(--ts-single-rail-slot-height);
         display: flex;
@@ -1819,7 +1812,7 @@ body.single-post #site-wrapper {
 
     .ts-single-toc {
         position: sticky;
-        top: var(--ts-single-rail-sticky-top);
+        top: var(--ts-single-toc-sticky-top, var(--ts-single-rail-sticky-top));
         padding: 0.15rem 0 0.15rem 1rem;
         border-top: 0;
         border-bottom: 0;

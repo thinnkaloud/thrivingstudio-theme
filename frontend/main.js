@@ -136,6 +136,7 @@ function tsSetupSingleRailRelease() {
             article.classList.remove('ts-single-rail-release-active');
             article.classList.remove('ts-single-rail-toc-clear');
             article.style.removeProperty('--ts-single-rail-release-offset');
+            article.style.removeProperty('--ts-single-toc-sticky-top');
             return;
         }
 
@@ -148,8 +149,11 @@ function tsSetupSingleRailRelease() {
         article.classList.toggle('ts-single-rail-release-active', releaseOffset > 0);
 
         const railBottom = rail.getBoundingClientRect().bottom;
-        const tocTop = toc.getBoundingClientRect().top;
-        article.classList.toggle('ts-single-rail-toc-clear', releaseOffset > 0 && railBottom + 32 <= tocTop);
+        const baseStickyTop = parseFloat(getComputedStyle(article).getPropertyValue('--ts-single-rail-sticky-top')) || 112;
+        const tocStickyTop = Math.max(baseStickyTop, Math.ceil(railBottom + 32));
+
+        article.style.setProperty('--ts-single-toc-sticky-top', tocStickyTop + 'px');
+        article.classList.toggle('ts-single-rail-toc-clear', releaseOffset > 0 && tocStickyTop <= baseStickyTop + 1);
     };
 
     window.addEventListener('scroll', update, { passive: true });
