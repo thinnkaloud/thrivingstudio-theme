@@ -120,12 +120,10 @@ tsRunWhenReady(tsSetupMobileMenu);
 
 function tsSetupSingleRailRelease() {
     const article = document.querySelector('.ts-single-article');
-    const bodyShell = document.querySelector('.ts-single-body-shell');
     const widgetShell = document.querySelector('.ts-single-rail-widgets-shell');
-    const rail = widgetShell ? widgetShell.querySelector('.ts-single-rail-widgets') : null;
-    const toc = document.querySelector('.ts-single-toc');
+    const tocShell = document.querySelector('.ts-single-toc-shell');
 
-    if (!article || !bodyShell || !widgetShell || !rail || !toc) return;
+    if (!article || !widgetShell || !tocShell) return;
     if (article._tsRailReleaseBound) return;
 
     article._tsRailReleaseBound = true;
@@ -134,33 +132,19 @@ function tsSetupSingleRailRelease() {
     const update = function() {
         if (window.innerWidth < 1100) {
             article.classList.remove('ts-single-rail-release-active');
-            article.classList.remove('ts-single-rail-toc-clear');
-            article.style.removeProperty('--ts-single-rail-release-offset');
-            article.style.removeProperty('--ts-single-toc-sticky-top');
             return;
         }
 
-        const bodyTop = bodyShell.getBoundingClientRect().top;
+        const outlineTop = tocShell.getBoundingClientRect().top;
         const releaseStart = window.innerHeight - 24;
-        const releaseOffset = Math.max(0, releaseStart - bodyTop);
-        const visualReleaseOffset = releaseOffset * 1.25;
 
-        article.style.setProperty('--ts-single-rail-release-offset', visualReleaseOffset + 'px');
-        article.classList.toggle('ts-single-rail-release-active', releaseOffset > 0);
-
-        const railBottom = rail.getBoundingClientRect().bottom;
-        const baseStickyTop = parseFloat(getComputedStyle(article).getPropertyValue('--ts-single-rail-sticky-top')) || 112;
-        const tocStickyTop = Math.max(baseStickyTop, Math.ceil(railBottom + 32));
-
-        article.style.setProperty('--ts-single-toc-sticky-top', tocStickyTop + 'px');
-        article.classList.toggle('ts-single-rail-toc-clear', releaseOffset > 0 && tocStickyTop <= baseStickyTop + 1);
+        article.classList.toggle('ts-single-rail-release-active', outlineTop <= releaseStart);
     };
 
     window.addEventListener('scroll', update, { passive: true });
     window.addEventListener('resize', update);
     window.addEventListener('load', update);
     window.addEventListener('pageshow', update);
-    window.setInterval(update, 100);
     update();
 }
 
@@ -225,106 +209,129 @@ function tsSetupSingleTocActiveState() {
 
 tsRunWhenReady(tsSetupSingleTocActiveState);
 
-// Quote Cards Slider Logic
-(function() {
-    const slider = document.getElementById('quote-slider');
-    if (!slider) return;
+function tsSetupQuoteCarousels() {
+    const carousels = document.querySelectorAll('[data-quote-carousel]');
 
-    const prevBtn = document.getElementById('quote-slider-prev');
-    const nextBtn = document.getElementById('quote-slider-next');
+    carousels.forEach((carousel) => {
+        if (carousel._tsQuoteCarouselBound) return;
 
-    // Find the width of one card
-    function getCardWidth() {
-        const card = slider.querySelector('div.snap-center');
-        return card ? card.offsetWidth : slider.clientWidth;
-    }
+        const track = carousel.querySelector('[data-quote-track]');
+        const slides = Array.from(carousel.querySelectorAll('[data-quote-slide]'));
+        const dots = Array.from(carousel.querySelectorAll('[data-quote-dot]'));
+        const prevBtn = carousel.querySelector('[data-quote-prev]');
+        const nextBtn = carousel.querySelector('[data-quote-next]');
 
-    // Make only the centered card clickable on mobile, all clickable on desktop
-    function updatePointerEvents() {
-        const cards = slider.querySelectorAll('div.snap-center');
-        if (window.innerWidth < 768) { // Mobile: only center card clickable
-            let minDist = Infinity;
-            let centerCard = null;
-            const sliderRect = slider.getBoundingClientRect();
-            const sliderCenter = sliderRect.left + sliderRect.width / 2;
-            cards.forEach(card => {
-                const cardRect = card.getBoundingClientRect();
-                const cardCenter = cardRect.left + cardRect.width / 2;
-                const dist = Math.abs(cardCenter - sliderCenter);
-                if (dist < minDist) {
-                    minDist = dist;
-                    centerCard = card;
+        if (!track || slides.length === 0) return;
+
+        carousel._tsQuoteCarouselBound = true;
+        let activeIndex = 0;
+        let ticking = false;
+
+        const canScroll = () => track.scrollWidth > track.clientWidth + 2;
+
+        const nearestIndex = () => {
+            const trackRect = track.getBoundingClientRect();
+            const trackStart = trackRect.left;
+            let closestIndex = 0;
+            let closestDistance = Infinity;
+
+            slides.forEach((slide, index) => {
+                const slideRect = slide.getBoundingClientRect();
+                const distance = Math.abs(slideRect.left - trackStart);
+
+                if (distance < closestDistance) {
+                    closestDistance = distance;
+                    closestIndex = index;
                 }
-                card.style.pointerEvents = 'none';
-                const link = card.querySelector('a');
-                if (link) link.style.pointerEvents = 'none';
             });
-            if (centerCard) {
-                centerCard.style.pointerEvents = 'auto';
-                const link = centerCard.querySelector('a');
-                if (link) link.style.pointerEvents = 'auto';
-            }
-            // Add touch/click to previews to scroll them to center
-            cards.forEach(card => {
-                card.removeEventListener('click', card._scrollToCenterHandler || (() => {}));
-                if (card !== centerCard) {
-                    const handler = function(e) {
-                        e.preventDefault();
-                        // Center the card in the slider using scrollTo
-                        const cardRect = card.getBoundingClientRect();
-                        const sliderRect = slider.getBoundingClientRect();
-                        // Card's left relative to slider
-                        const cardLeft = card.offsetLeft;
-                        const cardWidth = card.offsetWidth;
-                        const sliderWidth = slider.clientWidth;
-                        // Target scrollLeft to center the card
-                        const targetScrollLeft = cardLeft - (sliderWidth / 2) + (cardWidth / 2);
-                        slider.scrollTo({ left: targetScrollLeft, behavior: 'smooth' });
-                    };
-                    card.addEventListener('click', handler);
-                    card._scrollToCenterHandler = handler;
+
+            return closestIndex;
+        };
+
+        const setActive = (index) => {
+            activeIndex = Math.max(0, Math.min(index, slides.length - 1));
+
+            dots.forEach((dot, dotIndex) => {
+                const isActive = dotIndex === activeIndex;
+                dot.classList.toggle('is-active', isActive);
+
+                if (isActive) {
+                    dot.setAttribute('aria-current', 'true');
                 } else {
-                    card._scrollToCenterHandler = null;
+                    dot.removeAttribute('aria-current');
                 }
             });
-        } else { // Desktop: all cards clickable
-            cards.forEach(card => {
-                card.style.pointerEvents = 'auto';
-                const link = card.querySelector('a');
-                if (link) link.style.pointerEvents = 'auto';
-                // Remove mobile-only handler if present
-                if (card._scrollToCenterHandler) {
-                    card.removeEventListener('click', card._scrollToCenterHandler);
-                    card._scrollToCenterHandler = null;
-                }
+        };
+
+        const updateControls = () => {
+            const scrollable = canScroll();
+            const atStart = track.scrollLeft <= 2;
+            const atEnd = track.scrollLeft + track.clientWidth >= track.scrollWidth - 2;
+
+            carousel.classList.toggle('is-static', !scrollable);
+
+            if (prevBtn) prevBtn.disabled = !scrollable || atStart;
+            if (nextBtn) nextBtn.disabled = !scrollable || atEnd;
+
+            setActive(nearestIndex());
+        };
+
+        const requestUpdate = () => {
+            if (ticking) return;
+
+            ticking = true;
+            window.requestAnimationFrame(() => {
+                ticking = false;
+                updateControls();
             });
+        };
+
+        const scrollToIndex = (index) => {
+            const target = slides[Math.max(0, Math.min(index, slides.length - 1))];
+            if (!target) return;
+
+            target.scrollIntoView({
+                behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+                block: 'nearest',
+                inline: 'start'
+            });
+        };
+
+        if (prevBtn) {
+            prevBtn.addEventListener('click', () => scrollToIndex(activeIndex - 1));
         }
-    }
 
-    const scroll = () => {
-        const isEnd = slider.scrollWidth - slider.scrollLeft === slider.clientWidth;
-        const isStart = slider.scrollLeft === 0;
-        if (prevBtn) prevBtn.style.display = isStart ? 'none' : 'flex';
-        if (nextBtn) nextBtn.style.display = isEnd ? 'none' : 'flex';
-        updatePointerEvents();
-    };
+        if (nextBtn) {
+            nextBtn.addEventListener('click', () => scrollToIndex(activeIndex + 1));
+        }
 
-    const scrollNext = () => {
-        slider.scrollBy({ left: getCardWidth(), behavior: 'smooth' });
-    };
+        dots.forEach((dot) => {
+            dot.addEventListener('click', () => {
+                scrollToIndex(Number(dot.dataset.quoteIndex || 0));
+            });
+        });
 
-    const scrollPrev = () => {
-        slider.scrollBy({ left: -getCardWidth(), behavior: 'smooth' });
-    };
+        track.addEventListener('keydown', (event) => {
+            if (event.key === 'ArrowLeft') {
+                event.preventDefault();
+                scrollToIndex(activeIndex - 1);
+            }
 
-    slider.addEventListener('scroll', scroll);
-    if (nextBtn) nextBtn.addEventListener('click', scrollNext);
-    if (prevBtn) prevBtn.addEventListener('click', scrollPrev);
-    window.addEventListener('load', scroll);
-    window.addEventListener('resize', scroll);
-    // Initial pointer events setup
-    updatePointerEvents();
-})();
+            if (event.key === 'ArrowRight') {
+                event.preventDefault();
+                scrollToIndex(activeIndex + 1);
+            }
+        });
+
+        track.addEventListener('scroll', requestUpdate, { passive: true });
+        window.addEventListener('resize', requestUpdate);
+        window.addEventListener('load', requestUpdate);
+        window.addEventListener('pageshow', requestUpdate);
+        updateControls();
+    });
+}
+
+tsRunWhenReady(tsSetupQuoteCarousels);
 
 // Category Menu Dropdown Functionality - Industry Standard
 document.addEventListener('DOMContentLoaded', function() {

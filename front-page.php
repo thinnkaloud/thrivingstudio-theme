@@ -182,89 +182,101 @@
         </section>
 
         <!-- Featured Quote Cards Slider -->
-        <section class="mb-16">
-            <div class="text-center mb-6">
-                <h2 class="text-2xl font-bold text-black">Featured Quote Cards</h2>
-            </div>
-            
-            <!-- Desktop Slider (3 cards) -->
-            <div class="quote-desktop-track hidden md:flex md:justify-between">
-                    <?php
-                    $quote_query = new WP_Query([
-                        'post_type' => 'quote_card',
-                        'posts_per_page' => 3,
-                        'post_status' => 'publish',
-                        'orderby' => 'date',
-                        'order' => 'DESC',
-                    ]);
-                    
-                    if ($quote_query->have_posts()) :
-                        while ($quote_query->have_posts()) : $quote_query->the_post();
-                            if (has_post_thumbnail()) : ?>
-                                <div class="rounded-xl shadow-lg overflow-hidden transform hover:-translate-y-2 transition-all duration-300">
-                                    <a href="<?php the_permalink(); ?>" class="block">
-                                        <img src="<?php echo get_the_post_thumbnail_url(get_the_ID(), 'full'); ?>" 
-                                             alt="<?php the_title_attribute(); ?>" 
-                                             class="w-full h-auto object-contain">
+        <section class="ts-quote-section mb-16" aria-labelledby="featured-quote-cards-title">
+            <?php
+            $quote_archive_link = get_post_type_archive_link('quote_card');
+            $quote_query = new WP_Query([
+                'post_type' => 'quote_card',
+                'posts_per_page' => 6,
+                'post_status' => 'publish',
+                'orderby' => 'date',
+                'order' => 'DESC',
+                'ignore_sticky_posts' => true,
+                'no_found_rows' => true,
+                'meta_query' => [
+                    [
+                        'key' => '_thumbnail_id',
+                        'compare' => 'EXISTS',
+                    ],
+                ],
+            ]);
+            $quote_total = (int) $quote_query->post_count;
+            ?>
 
-                                    </a>
-                                </div>
-                            <?php endif;
+            <div class="ts-quote-header">
+                <div class="ts-quote-heading">
+                    <h2 id="featured-quote-cards-title" class="ts-quote-title">Featured Quote Cards</h2>
+                </div>
+                <?php if ($quote_archive_link) : ?>
+                    <a class="ts-quote-archive-link" href="<?php echo esc_url($quote_archive_link); ?>">
+                        <?php esc_html_e('View all', 'thrivingstudio'); ?>
+                    </a>
+                <?php endif; ?>
+            </div>
+
+            <?php if ($quote_query->have_posts()) : ?>
+                <div class="ts-quote-carousel" data-quote-carousel>
+                    <div class="ts-quote-track" data-quote-track role="list" tabindex="0" aria-label="<?php esc_attr_e('Featured quote cards', 'thrivingstudio'); ?>">
+                        <?php
+                        $quote_index = 0;
+                        while ($quote_query->have_posts()) : $quote_query->the_post();
+                            $quote_image_id = get_post_thumbnail_id();
+                            ?>
+                            <article <?php post_class('ts-quote-slide'); ?> role="listitem" data-quote-slide>
+                                <a href="<?php the_permalink(); ?>" class="ts-quote-card-link" aria-label="<?php echo esc_attr(sprintf(__('Open quote card: %s', 'thrivingstudio'), get_the_title())); ?>">
+                                    <span class="ts-quote-card-frame">
+                                        <?php
+                                        echo wp_get_attachment_image(
+                                            $quote_image_id,
+                                            'medium_large',
+                                            false,
+                                            [
+                                                'class' => 'ts-quote-card-image',
+                                                'loading' => 'lazy',
+                                                'decoding' => 'async',
+                                                'alt' => the_title_attribute(['echo' => false]),
+                                                'sizes' => '(min-width: 1024px) 360px, (min-width: 768px) 32vw, 84vw',
+                                            ]
+                                        );
+                                        ?>
+                                    </span>
+                                </a>
+                            </article>
+                            <?php
+                            $quote_index++;
                         endwhile;
                         wp_reset_postdata();
-                    else : ?>
-                        <div class="text-center py-12">
-                            <p class="text-gray-500">No quote cards found. Add some quote cards to see them here!</p>
+                        ?>
+                    </div>
+
+                    <?php if ($quote_total > 1) : ?>
+                        <div class="ts-quote-controls" aria-label="<?php esc_attr_e('Quote card carousel controls', 'thrivingstudio'); ?>">
+                            <button class="ts-quote-nav-btn" type="button" data-quote-prev aria-label="<?php esc_attr_e('Previous quote card', 'thrivingstudio'); ?>">
+                                <span aria-hidden="true">&lsaquo;</span>
+                            </button>
+                            <div class="ts-quote-dots" data-quote-dots>
+                                <?php for ($i = 0; $i < $quote_total; $i++) : ?>
+                                    <button
+                                        class="ts-quote-dot<?php echo $i === 0 ? ' is-active' : ''; ?>"
+                                        type="button"
+                                        data-quote-dot
+                                        data-quote-index="<?php echo esc_attr($i); ?>"
+                                        aria-label="<?php echo esc_attr(sprintf(__('Show quote card %d', 'thrivingstudio'), $i + 1)); ?>"
+                                        <?php echo $i === 0 ? 'aria-current="true"' : ''; ?>
+                                    ></button>
+                                <?php endfor; ?>
+                            </div>
+                            <button class="ts-quote-nav-btn" type="button" data-quote-next aria-label="<?php esc_attr_e('Next quote card', 'thrivingstudio'); ?>">
+                                <span aria-hidden="true">&rsaquo;</span>
+                            </button>
                         </div>
                     <?php endif; ?>
                 </div>
-
-                <!-- Mobile Slider (Single card with navigation) -->
-                <div class="md:hidden">
-                    <div class="relative">
-                        <div class="overflow-hidden">
-                            <div id="mobile-quote-slider" class="flex transition-transform duration-300">
-                                <?php
-                                $mobile_quote_query = new WP_Query([
-                                    'post_type' => 'quote_card',
-                                    'posts_per_page' => 6,
-                                    'post_status' => 'publish',
-                                    'orderby' => 'date',
-                                    'order' => 'DESC',
-                                ]);
-                                
-                                if ($mobile_quote_query->have_posts()) :
-                                    while ($mobile_quote_query->have_posts()) : $mobile_quote_query->the_post();
-                                        if (has_post_thumbnail()) : ?>
-                                            <div class="w-full flex-shrink-0 px-2">
-                                                <div class="rounded-xl shadow-lg overflow-hidden w-full">
-                                                    <a href="<?php the_permalink(); ?>" class="block">
-                                                        <img src="<?php echo get_the_post_thumbnail_url(get_the_ID(), 'full'); ?>" 
-                                                             alt="<?php the_title_attribute(); ?>" 
-                                                             class="w-full h-auto object-contain">
-
-                                                    </a>
-                                                </div>
-                                            </div>
-                                        <?php endif;
-                                    endwhile;
-                                    wp_reset_postdata();
-                                endif; ?>
-                            </div>
-                        </div>
-                        
-                        <!-- Mobile Navigation Dots -->
-                        <?php 
-                        $total_slides = $mobile_quote_query->found_posts;
-                        if ($total_slides > 0) : ?>
-                            <div class="flex justify-center mt-6 space-x-2">
-                                <?php for ($i = 0; $i < min($total_slides, 6); $i++) : ?>
-                                    <button class="w-3 h-3 rounded-full bg-gray-300 quote-slider-dot <?php echo $i === 0 ? 'active' : ''; ?>" data-slide="<?php echo $i; ?>"></button>
-                                <?php endfor; ?>
-                            </div>
-                        <?php endif; ?>
-                    </div>
+            <?php else : ?>
+                <div class="ts-empty-state text-center">
+                    <p class="ts-empty-state-text">No quote cards found. Add quote card images to feature them here.</p>
                 </div>
+            <?php endif; ?>
         </section>
 
         <!-- Subscribe Section -->
@@ -280,39 +292,5 @@
         </section>
     </div>
 </main>
-
-<script>
-    // Mobile Quote Slider Functionality
-    document.addEventListener('DOMContentLoaded', function() {
-        const slider = document.getElementById('mobile-quote-slider');
-        const dots = document.querySelectorAll('.quote-slider-dot');
-        
-        if (slider && dots.length > 0) {
-            let currentSlide = 0;
-            const totalSlides = dots.length;
-
-            function goToSlide(slideIndex) {
-                currentSlide = slideIndex;
-                slider.style.transform = `translateX(-${slideIndex * 100}%)`;
-                
-                // Update dots
-                dots.forEach((dot, index) => {
-                    dot.classList.toggle('active', index === slideIndex);
-                    dot.classList.toggle('bg-gray-300', index !== slideIndex);
-                    dot.classList.toggle('bg-gray-600', index === slideIndex);
-                });
-            }
-
-            // Dot navigation
-            dots.forEach((dot, index) => {
-                dot.addEventListener('click', () => goToSlide(index));
-            });
-
-            // Auto-advance slider removed - now only manual navigation
-        }
-    });
-</script>
-
-
 
 <?php get_footer(); ?> 
