@@ -42,13 +42,24 @@ function thrivingstudio_enqueue_block_editor_styles() {
 add_action('enqueue_block_editor_assets', 'thrivingstudio_enqueue_block_editor_styles');
 
 /**
+ * Shared guidance for the single post right rail image slot.
+ */
+function thrivingstudio_get_right_rail_banner_guidance() {
+    return __('For the first image widget, use a portrait banner: 800 x 1800 px minimum, 1200 x 2700 px ideal, 4:9 ratio. Keep the subject centered because the image crops to fill the sticky desktop rail.', 'thrivingstudio');
+}
+
+/**
  * Register widget areas used by the theme.
  */
 function thrivingstudio_register_widget_areas() {
     register_sidebar([
         'name'          => __('Single Post Right Rail', 'thrivingstudio'),
         'id'            => 'single-post-right-rail',
-        'description'   => __('Optional modules shown above the article outline on single blog posts. Use this for ads, custom banners, social links, or small calls to action.', 'thrivingstudio'),
+        'description'   => sprintf(
+            '%s %s',
+            __('Optional modules shown above the article outline on single blog posts. Use this for ads, custom banners, social links, or small calls to action.', 'thrivingstudio'),
+            thrivingstudio_get_right_rail_banner_guidance()
+        ),
         'before_widget' => '<section id="%1$s" class="widget ts-single-rail-widget %2$s">',
         'after_widget'  => '</section>',
         'before_title'  => '<h2 class="ts-single-rail-widget-title">',

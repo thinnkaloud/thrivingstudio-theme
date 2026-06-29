@@ -79,9 +79,12 @@
                                     <h2 class="text-2xl font-bold mb-2">
                                         <a href="<?php the_permalink(); ?>" class="hover:text-indigo-600 dark:text-white dark:hover:text-indigo-400"><?php the_title(); ?></a>
                                     </h2>
-                                    <div class="text-gray-600 dark:text-gray-300 mb-4">
-                                        <?php the_excerpt(); ?>
-                                    </div>
+                                    <?php $manual_excerpt = thrivingstudio_get_manual_excerpt(); ?>
+                                    <?php if ($manual_excerpt !== '') : ?>
+                                        <div class="text-gray-600 dark:text-gray-300 mb-4">
+                                            <p><?php echo esc_html($manual_excerpt); ?></p>
+                                        </div>
+                                    <?php endif; ?>
                                     <a href="<?php the_permalink(); ?>" class="text-indigo-600 hover:text-indigo-800 dark:hover:text-indigo-400 font-semibold">
                                         Read More &rarr;
                                     </a>
@@ -138,4 +141,4 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
-</script> 
+</script>

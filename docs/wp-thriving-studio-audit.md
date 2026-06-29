@@ -88,14 +88,8 @@
 ## Content Workflow Details
 
 - **Excerpt handling:**
-  - The theme displays `the_excerpt()` in multiple locations:
-    - `single.php` (line 48): Displayed on single post pages if excerpt exists
-    - `home.php` (line 73): Displayed in blog index/archive cards
-    - `archive.php` (line 63): Displayed in category archive cards
-    - `index.php` (line 39): Displayed in fallback template
-    - `front-page.php` (line 183): Displayed on homepage featured posts
-    - `page.php` (line 83): Displayed on page templates
-  - The SEO module uses the custom SEO meta description first, then the manual excerpt, then post content
+  - The theme uses `thrivingstudio_get_manual_excerpt()` for visible article subtitles/cards, so excerpts are shown only when the editor manually fills the WordPress Excerpt field.
+  - Singular post/page meta descriptions are read only from `_thrivingstudio_meta_description`; they no longer fall back to the excerpt or post content.
 
 - **Reading time:**
   - **No custom reading time calculation found** in the codebase
@@ -128,7 +122,7 @@
   - `post_title` - Post title (required)
   - `post_name` - Post slug/permalink (auto-generated from title if not provided)
   - `post_content` - Post content/body
-  - `post_excerpt` - Post excerpt (used in archives and as SEO fallback)
+  - `post_excerpt` - Manual post excerpt/subtitle (used in archives and article headers only)
   - `post_status` - Typically 'publish' for published posts
   - `post_type` - 'post' for blog articles
   - `post_author` - Author ID
@@ -147,7 +141,7 @@
   - **Do NOT manually output `<title>` tags** - The theme uses WordPress core `title-tag` support, so titles are handled automatically
   - **Do NOT output duplicate meta descriptions** - The theme's SEO module (`inc/seo.php`) already outputs meta descriptions via `wp_head()`. If setting `_thrivingstudio_meta_description`, it will be used automatically
   - **Categories are important** - Always assign at least one category to posts, as the theme displays categories prominently and uses them for filtering/navigation
-  - **Excerpts are used** - Set `post_excerpt` when available, as it's displayed in archive views and used as SEO fallback
+  - **Excerpts are used** - Set `post_excerpt` when available, as it's displayed in archive views and article headers. Set `_thrivingstudio_meta_description` separately for SEO.
   - **Featured images are expected** - The theme templates check for `has_post_thumbnail()` and display images in multiple locations
   - **Do NOT override theme's SEO output** - The theme has its own SEO implementation. Avoid conflicts by using the theme's meta keys (`_thrivingstudio_meta_description`, `_thrivingstudio_robots_meta`) rather than trying to output meta tags directly
   - **Sitemap generation** - The theme auto-generates `sitemap.xml` on post publish/update (inc/seo.php lines 442-506). No manual sitemap handling needed

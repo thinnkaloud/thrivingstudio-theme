@@ -24,9 +24,10 @@
                             <h2 class="text-lg font-bold mb-4 text-center leading-tight">
                                 <a href="<?php the_permalink(); ?>" class="hover:text-indigo-600 transition-colors duration-200"><?php the_title(); ?></a>
                             </h2>
-                            <?php if (has_excerpt()) : ?>
+                            <?php $manual_excerpt = thrivingstudio_get_manual_excerpt(); ?>
+                            <?php if ($manual_excerpt !== '') : ?>
                                 <div class="text-sm text-gray-500 mb-4 text-center italic leading-relaxed">
-                                    <?php echo get_the_excerpt(); ?>
+                                    <?php echo esc_html($manual_excerpt); ?>
                                 </div>
                             <?php endif; ?>
                             <div class="text-xs text-gray-400 text-center mt-auto pt-4 border-t border-gray-100">
@@ -42,4 +43,4 @@
     </div>
 </main>
 
-<?php get_footer(); ?> 
+<?php get_footer(); ?>

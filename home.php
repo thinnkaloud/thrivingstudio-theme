@@ -84,9 +84,12 @@ foreach ($home_filter_categories as $category) {
                             <h2 class="text-2xl font-bold mb-2 ts-blog-card-title">
                                 <a href="<?php the_permalink(); ?>" class="ts-blog-card-title-link hover:text-indigo-600 dark:text-white dark:hover:text-indigo-400"><?php the_title(); ?></a>
                             </h2>
-                            <div class="text-gray-600 dark:text-gray-300 mb-4 ts-blog-card-excerpt">
-                                <?php the_excerpt(); ?>
-                            </div>
+                            <?php $manual_excerpt = thrivingstudio_get_manual_excerpt(); ?>
+                            <?php if ($manual_excerpt !== '') : ?>
+                                <div class="text-gray-600 dark:text-gray-300 mb-4 ts-blog-card-excerpt">
+                                    <p><?php echo esc_html($manual_excerpt); ?></p>
+                                </div>
+                            <?php endif; ?>
                             <a href="<?php the_permalink(); ?>" class="text-indigo-600 hover:text-indigo-800 dark:hover:text-indigo-400 font-semibold ts-blog-card-link">
                                 Read More &rarr;
                             </a>

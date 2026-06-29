@@ -28,7 +28,7 @@ This WordPress theme includes a comprehensive SEO implementation that provides a
 ## ✨ Features Included
 
 ### 1. **Meta Tags & Head Optimization**
-- ✅ Auto-generated meta descriptions
+- ✅ Manual meta descriptions for posts/pages
 - ✅ Custom meta descriptions for posts/pages
 - ✅ Canonical URLs
 - ✅ Robots meta tags
@@ -68,7 +68,8 @@ This WordPress theme includes a comprehensive SEO implementation that provides a
 
 1. **Adding SEO to Posts/Pages**
    - When editing a post or page, scroll down to find the "SEO Settings" meta box
-   - Enter a custom meta description (optional - uses the manual excerpt, then post content if left empty)
+   - Enter a custom meta description manually. If left empty, singular posts/pages do not fall back to the excerpt or post content.
+   - The SEO Settings box shows a warning when the manual meta description is empty.
    - Set custom robots meta if needed (e.g., `noindex,nofollow`)
 
 2. **Best Practices**
@@ -119,7 +120,7 @@ thrivingstudio/
 ## 🔧 Configuration
 
 ### **Automatic Features**
-- Meta descriptions fall back to the manual excerpt, then post content
+- Singular post/page meta descriptions are manual-only and do not fall back to excerpts or post content
 - Sitemap is automatically generated and updated
 - Structured data is automatically added
 - Social media tags are automatically generated

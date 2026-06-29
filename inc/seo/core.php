@@ -66,6 +66,109 @@ function thrivingstudio_get_seo_options() {
 }
 
 /**
+ * Restrict robots choices to values the editor UI supports.
+ *
+ * @param string $robots_meta
+ * @return string
+ */
+function thrivingstudio_sanitize_robots_meta($robots_meta) {
+    $robots_meta = strtolower(sanitize_text_field((string) $robots_meta));
+    $robots_meta = preg_replace('/\s*,\s*/', ',', $robots_meta);
+    $robots_meta = trim($robots_meta, ', ');
+
+    if ($robots_meta === '') {
+        return '';
+    }
+
+    $allowed_tokens = [
+        'index',
+        'noindex',
+        'follow',
+        'nofollow',
+        'noarchive',
+        'nosnippet',
+        'noimageindex',
+        'max-snippet:-1',
+        'max-image-preview:large',
+        'max-video-preview:-1',
+    ];
+    $tokens = array_filter(explode(',', $robots_meta));
+    $clean_tokens = [];
+
+    foreach ($tokens as $token) {
+        if (in_array($token, $allowed_tokens, true)) {
+            $clean_tokens[] = $token;
+        }
+    }
+
+    return implode(',', array_unique($clean_tokens));
+}
+
+/**
+ * Register SEO fields so the block editor can save them through REST.
+ */
+function thrivingstudio_register_seo_post_meta() {
+    $meta_fields = [
+        '_thrivingstudio_seo_title'          => 'sanitize_text_field',
+        '_thrivingstudio_meta_description'  => 'sanitize_textarea_field',
+        '_thrivingstudio_focus_keyword'     => 'sanitize_text_field',
+        '_thrivingstudio_canonical_url'     => 'esc_url_raw',
+        '_thrivingstudio_robots_meta'       => 'thrivingstudio_sanitize_robots_meta',
+        '_thrivingstudio_social_title'      => 'sanitize_text_field',
+        '_thrivingstudio_social_description' => 'sanitize_textarea_field',
+        '_thrivingstudio_social_image'      => 'esc_url_raw',
+    ];
+
+    foreach (['post', 'page'] as $post_type) {
+        foreach ($meta_fields as $meta_key => $sanitize_callback) {
+            register_post_meta(
+                $post_type,
+                $meta_key,
+                [
+                    'type'              => 'string',
+                    'single'            => true,
+                    'show_in_rest'      => true,
+                    'sanitize_callback' => $sanitize_callback,
+                    'auth_callback'     => function ($allowed = false, $meta_key = '', $post_id = 0) {
+                        $post_id = (int) $post_id;
+
+                        return $post_id > 0 ? current_user_can('edit_post', $post_id) : current_user_can('edit_posts');
+                    },
+                ]
+            );
+        }
+    }
+}
+add_action('init', 'thrivingstudio_register_seo_post_meta');
+
+/**
+ * Load the SEO tab controls in the block editor.
+ */
+function thrivingstudio_enqueue_seo_editor_tab() {
+    $script_path = THRIVINGSTUDIO_DIR . '/assets/js/editor-seo-tab.js';
+
+    if (!file_exists($script_path)) {
+        return;
+    }
+
+    wp_enqueue_script(
+        'thrivingstudio-seo-editor-tab',
+        THRIVINGSTUDIO_URI . '/assets/js/editor-seo-tab.js',
+        [
+            'wp-components',
+            'wp-data',
+            'wp-edit-post',
+            'wp-element',
+            'wp-i18n',
+            'wp-plugins',
+        ],
+        filemtime($script_path),
+        true
+    );
+}
+add_action('enqueue_block_editor_assets', 'thrivingstudio_enqueue_seo_editor_tab');
+
+/**
  * Brand-level SEO copy used when a page has no custom description.
  */
 function thrivingstudio_get_default_meta_description() {
@@ -147,17 +250,27 @@ function thrivingstudio_get_post_meta_description($post_id) {
 }
 
 /**
- * Get the fallback description for a singular post or page.
+ * Read the optional custom SEO title for a post or page.
  *
  * @param int $post_id
  * @return string
  */
-function thrivingstudio_get_singular_fallback_description($post_id) {
-    if (has_excerpt($post_id)) {
-        return get_the_excerpt($post_id);
-    }
+function thrivingstudio_get_post_seo_title($post_id) {
+    $seo_title = get_post_meta($post_id, '_thrivingstudio_seo_title', true);
 
-    return get_post_field('post_content', $post_id);
+    return trim(wp_strip_all_tags((string) $seo_title));
+}
+
+/**
+ * Read an optional canonical URL override for a post or page.
+ *
+ * @param int $post_id
+ * @return string
+ */
+function thrivingstudio_get_post_canonical_url($post_id) {
+    $canonical_url = esc_url_raw((string) get_post_meta($post_id, '_thrivingstudio_canonical_url', true));
+
+    return $canonical_url ?: '';
 }
 
 /**
@@ -169,6 +282,14 @@ function thrivingstudio_get_singular_fallback_description($post_id) {
 function thrivingstudio_filter_document_title($title) {
     if (is_admin() || is_feed()) {
         return $title;
+    }
+
+    if (is_singular()) {
+        $seo_title = thrivingstudio_get_post_seo_title(get_queried_object_id());
+
+        if ($seo_title !== '') {
+            return $seo_title;
+        }
     }
 
     if (is_front_page()) {
@@ -190,9 +311,6 @@ function thrivingstudio_get_meta_description() {
     } elseif (is_singular()) {
         $post_id = get_the_ID();
         $description = thrivingstudio_get_post_meta_description($post_id);
-        if (!$description) {
-            $description = thrivingstudio_get_singular_fallback_description($post_id);
-        }
     } elseif (is_home()) {
         $posts_page_id = (int) get_option('page_for_posts');
         $description = $posts_page_id ? thrivingstudio_get_post_meta_description($posts_page_id) : '';
@@ -228,6 +346,12 @@ function thrivingstudio_get_canonical_url() {
         $posts_page_id = (int) get_option('page_for_posts');
         return $posts_page_id ? get_permalink($posts_page_id) : home_url('/');
     } elseif (is_singular()) {
+        $custom_canonical = thrivingstudio_get_post_canonical_url(get_queried_object_id());
+
+        if ($custom_canonical !== '') {
+            return $custom_canonical;
+        }
+
         return get_permalink();
     } elseif (is_category() || is_tag()) {
         return get_term_link(get_queried_object());
@@ -378,6 +502,30 @@ function thrivingstudio_get_twitter_card_tags() {
  * Title used for social previews.
  */
 function thrivingstudio_get_social_title() {
+    if (is_singular()) {
+        $post_id = get_queried_object_id();
+        $social_title = trim(wp_strip_all_tags((string) get_post_meta($post_id, '_thrivingstudio_social_title', true)));
+
+        if ($social_title !== '') {
+            return $social_title;
+        }
+
+        $seo_title = thrivingstudio_get_post_seo_title($post_id);
+
+        if ($seo_title !== '') {
+            return $seo_title;
+        }
+
+        if (is_front_page()) {
+            $options = thrivingstudio_get_seo_options();
+            $homepage_social_title = $options['social_title'] ?? '';
+
+            return $homepage_social_title ?: thrivingstudio_get_homepage_title();
+        }
+
+        return get_the_title($post_id);
+    }
+
     if (is_front_page()) {
         $options = thrivingstudio_get_seo_options();
         $social_title = $options['social_title'] ?? '';
@@ -385,13 +533,28 @@ function thrivingstudio_get_social_title() {
         return $social_title ?: thrivingstudio_get_homepage_title();
     }
 
-    return is_singular() ? get_the_title() : get_bloginfo('name');
+    return get_bloginfo('name');
 }
 
 /**
  * Description used for social previews.
  */
 function thrivingstudio_get_social_description() {
+    if (is_singular()) {
+        $social_description = get_post_meta(get_queried_object_id(), '_thrivingstudio_social_description', true);
+
+        if (!empty($social_description)) {
+            return thrivingstudio_normalize_meta_description($social_description);
+        }
+
+        if (is_front_page()) {
+            $options = thrivingstudio_get_seo_options();
+            $homepage_social_description = $options['social_description'] ?? '';
+
+            return thrivingstudio_normalize_meta_description($homepage_social_description ?: thrivingstudio_get_homepage_meta_description());
+        }
+    }
+
     if (is_front_page()) {
         $options = thrivingstudio_get_seo_options();
         $social_description = $options['social_description'] ?? '';
@@ -424,6 +587,15 @@ function thrivingstudio_get_twitter_handle() {
  * Get Open Graph image
  */
 function thrivingstudio_get_og_image() {
+    if (is_singular()) {
+        $post_id = get_queried_object_id();
+        $social_image = esc_url_raw((string) get_post_meta($post_id, '_thrivingstudio_social_image', true));
+
+        if ($social_image !== '') {
+            return $social_image;
+        }
+    }
+
     if (is_singular() && has_post_thumbnail()) {
         $image_id = get_post_thumbnail_id();
         $image_url = wp_get_attachment_image_src($image_id, 'large');
@@ -792,17 +964,67 @@ function thrivingstudio_seo_meta_box_callback($post) {
     }
     wp_nonce_field('thrivingstudio_seo_meta_box', 'thrivingstudio_seo_meta_box_nonce');
 
+    $seo_title = get_post_meta($post->ID, '_thrivingstudio_seo_title', true);
     $meta_description = get_post_meta($post->ID, '_thrivingstudio_meta_description', true);
+    $focus_keyword = get_post_meta($post->ID, '_thrivingstudio_focus_keyword', true);
+    $canonical_url = get_post_meta($post->ID, '_thrivingstudio_canonical_url', true);
     $robots_meta = get_post_meta($post->ID, '_thrivingstudio_robots_meta', true);
+    $social_title = get_post_meta($post->ID, '_thrivingstudio_social_title', true);
+    $social_description = get_post_meta($post->ID, '_thrivingstudio_social_description', true);
+    $social_image = get_post_meta($post->ID, '_thrivingstudio_social_image', true);
+    $has_meta_description = trim((string) $meta_description) !== '';
+    $front_page_id = (int) get_option('page_on_front');
+    $posts_page_id = (int) get_option('page_for_posts');
+    $empty_meta_description_notice = '';
+
+    if (!$has_meta_description) {
+        if ($front_page_id === (int) $post->ID) {
+            $empty_meta_description_notice = __('Homepage SEO settings or the default site description will be used unless this field is filled.', 'thrivingstudio');
+        } elseif ($posts_page_id === (int) $post->ID) {
+            $empty_meta_description_notice = __('The site tagline may be used for the blog index unless this field is filled.', 'thrivingstudio');
+        } else {
+            $empty_meta_description_notice = __('No meta description will be output for this post/page until this field is filled.', 'thrivingstudio');
+        }
+    }
     ?>
     <table class="form-table">
+        <tr>
+            <th scope="row">
+                <label for="thrivingstudio_seo_title">SEO Title</label>
+            </th>
+            <td>
+                <input type="text" id="thrivingstudio_seo_title" name="thrivingstudio_seo_title" value="<?php echo esc_attr($seo_title); ?>" class="regular-text" />
+                <p class="description">Optional search title. Leave empty to use the post title.</p>
+            </td>
+        </tr>
         <tr>
             <th scope="row">
                 <label for="thrivingstudio_meta_description">Meta Description</label>
             </th>
             <td>
                 <textarea id="thrivingstudio_meta_description" name="thrivingstudio_meta_description" rows="3" cols="50" style="width: 100%;"><?php echo esc_textarea($meta_description); ?></textarea>
-                <p class="description">Leave empty to use the manual excerpt, then the post content. Maximum 160 characters recommended.</p>
+                <p class="description">Manual field only. Leave empty to output no meta description for this post/page. Maximum 160 characters recommended.</p>
+                <?php if ($empty_meta_description_notice !== '') : ?>
+                    <p class="description" style="color: #8a5a00;"><strong><?php esc_html_e('Heads up:', 'thrivingstudio'); ?></strong> <?php echo esc_html($empty_meta_description_notice); ?></p>
+                <?php endif; ?>
+            </td>
+        </tr>
+        <tr>
+            <th scope="row">
+                <label for="thrivingstudio_focus_keyword">Focus Keyword</label>
+            </th>
+            <td>
+                <input type="text" id="thrivingstudio_focus_keyword" name="thrivingstudio_focus_keyword" value="<?php echo esc_attr($focus_keyword); ?>" class="regular-text" />
+                <p class="description">Editorial reference only. This is not output as a meta keywords tag.</p>
+            </td>
+        </tr>
+        <tr>
+            <th scope="row">
+                <label for="thrivingstudio_canonical_url">Canonical URL</label>
+            </th>
+            <td>
+                <input type="url" id="thrivingstudio_canonical_url" name="thrivingstudio_canonical_url" value="<?php echo esc_attr($canonical_url); ?>" class="regular-text" />
+                <p class="description">Optional override. Leave empty to use the post permalink.</p>
             </td>
         </tr>
         <tr>
@@ -812,6 +1034,33 @@ function thrivingstudio_seo_meta_box_callback($post) {
             <td>
                 <input type="text" id="thrivingstudio_robots_meta" name="thrivingstudio_robots_meta" value="<?php echo esc_attr($robots_meta); ?>" class="regular-text" />
                 <p class="description">e.g., noindex,nofollow or index,follow (default)</p>
+            </td>
+        </tr>
+        <tr>
+            <th scope="row">
+                <label for="thrivingstudio_social_title">Social Title</label>
+            </th>
+            <td>
+                <input type="text" id="thrivingstudio_social_title" name="thrivingstudio_social_title" value="<?php echo esc_attr($social_title); ?>" class="regular-text" />
+                <p class="description">Optional Open Graph and Twitter title. Leave empty to use the SEO title or post title.</p>
+            </td>
+        </tr>
+        <tr>
+            <th scope="row">
+                <label for="thrivingstudio_social_description">Social Description</label>
+            </th>
+            <td>
+                <textarea id="thrivingstudio_social_description" name="thrivingstudio_social_description" rows="3" cols="50" style="width: 100%;"><?php echo esc_textarea($social_description); ?></textarea>
+                <p class="description">Optional Open Graph and Twitter description. Leave empty to use the meta description.</p>
+            </td>
+        </tr>
+        <tr>
+            <th scope="row">
+                <label for="thrivingstudio_social_image">Social Image URL</label>
+            </th>
+            <td>
+                <input type="url" id="thrivingstudio_social_image" name="thrivingstudio_social_image" value="<?php echo esc_attr($social_image); ?>" class="regular-text" />
+                <p class="description">Optional Open Graph and Twitter image. Leave empty to use the featured image or site default.</p>
             </td>
         </tr>
     </table>
@@ -834,12 +1083,26 @@ function thrivingstudio_save_seo_meta_box_data($post_id) {
         return;
     }
 
-    if (isset($_POST['thrivingstudio_meta_description'])) {
-        update_post_meta($post_id, '_thrivingstudio_meta_description', sanitize_textarea_field($_POST['thrivingstudio_meta_description']));
-    }
+    $field_map = [
+        'thrivingstudio_seo_title'          => ['_thrivingstudio_seo_title', 'sanitize_text_field'],
+        'thrivingstudio_meta_description'  => ['_thrivingstudio_meta_description', 'sanitize_textarea_field'],
+        'thrivingstudio_focus_keyword'     => ['_thrivingstudio_focus_keyword', 'sanitize_text_field'],
+        'thrivingstudio_canonical_url'     => ['_thrivingstudio_canonical_url', 'esc_url_raw'],
+        'thrivingstudio_robots_meta'       => ['_thrivingstudio_robots_meta', 'thrivingstudio_sanitize_robots_meta'],
+        'thrivingstudio_social_title'      => ['_thrivingstudio_social_title', 'sanitize_text_field'],
+        'thrivingstudio_social_description' => ['_thrivingstudio_social_description', 'sanitize_textarea_field'],
+        'thrivingstudio_social_image'      => ['_thrivingstudio_social_image', 'esc_url_raw'],
+    ];
 
-    if (isset($_POST['thrivingstudio_robots_meta'])) {
-        update_post_meta($post_id, '_thrivingstudio_robots_meta', sanitize_text_field($_POST['thrivingstudio_robots_meta']));
+    foreach ($field_map as $field_name => $field_config) {
+        if (!isset($_POST[$field_name])) {
+            continue;
+        }
+
+        $meta_key = $field_config[0];
+        $sanitize_callback = $field_config[1];
+
+        update_post_meta($post_id, $meta_key, call_user_func($sanitize_callback, wp_unslash($_POST[$field_name])));
     }
 }
 add_action('save_post', 'thrivingstudio_save_seo_meta_box_data');

@@ -14,8 +14,7 @@
             $modified_iso = get_the_modified_date('c');
             $modified_label = get_the_modified_date('M j, Y');
             $show_modified = get_the_modified_date('Y-m-d') !== get_the_date('Y-m-d');
-            $has_custom_excerpt = has_excerpt();
-            $post_summary = $has_custom_excerpt ? get_the_excerpt() : '';
+            $post_summary = thrivingstudio_get_manual_excerpt();
             $toc_items = [];
             $has_featured_image = has_post_thumbnail();
             $single_layout = get_theme_mod('thrivingstudio_single_layout', 'content_rail');
@@ -112,10 +111,6 @@
                         }
                     }
                 }
-            }
-
-            if ($post_summary === '') {
-                $post_summary = wp_trim_words(wp_strip_all_tags(strip_shortcodes($raw_content)), 34, '...');
             }
 
             $layout_supports_right_rail = $single_layout === 'content_rail';
@@ -336,6 +331,12 @@
                     </div>
                 </div>
 
+                <?php
+                if (comments_open() || get_comments_number()) :
+                    comments_template();
+                endif;
+                ?>
+
                 <?php if ($show_post_cta && ($post_cta_title !== '' || $post_cta_text !== '' || ($post_cta_primary_label !== '' && $post_cta_primary_link !== '') || ($post_cta_secondary_label !== '' && $post_cta_secondary_link !== ''))) : ?>
                     <section class="ts-single-post-cta" aria-label="<?php echo esc_attr($post_cta_title !== '' ? $post_cta_title : __('Post call to action', 'thrivingstudio')); ?>">
                         <?php if ($post_cta_title !== '') : ?>
@@ -446,14 +447,9 @@
                 endif;
                 ?>
 
-                <?php
-                if (comments_open() || get_comments_number()) :
-                    comments_template();
-                endif;
-                ?>
             </article>
         <?php endwhile; endif; ?>
     </div>
 </main>
 
-<?php get_footer(); ?> 
+<?php get_footer(); ?>

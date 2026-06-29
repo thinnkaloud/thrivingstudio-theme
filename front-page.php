@@ -167,9 +167,12 @@
                                 <h2 class="text-2xl font-bold mb-2 ts-blog-card-title">
                                     <a href="<?php the_permalink(); ?>" class="ts-blog-card-title-link hover:text-indigo-600"><?php the_title(); ?></a>
                                 </h2>
-                                <div class="text-gray-600 mb-4 ts-blog-card-excerpt">
-                                    <?php the_excerpt(); ?>
-                                </div>
+                                <?php $manual_excerpt = thrivingstudio_get_manual_excerpt(); ?>
+                                <?php if ($manual_excerpt !== '') : ?>
+                                    <div class="text-gray-600 mb-4 ts-blog-card-excerpt">
+                                        <p><?php echo esc_html($manual_excerpt); ?></p>
+                                    </div>
+                                <?php endif; ?>
                                 <a href="<?php the_permalink(); ?>" class="text-indigo-600 hover:text-indigo-800 font-semibold ts-blog-card-link"><?php esc_html_e('Read More', 'thrivingstudio'); ?> &rarr;</a>
                             </div>
                         </article>

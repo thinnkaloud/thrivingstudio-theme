@@ -83,6 +83,32 @@ function thrivingstudio_register_faq_block() {
 add_action('init', 'thrivingstudio_register_faq_block');
 
 /**
+ * Load the inline citation format in the block editor.
+ */
+function thrivingstudio_enqueue_citation_format() {
+    $script_path = THRIVINGSTUDIO_DIR . '/assets/js/editor-citation-format.js';
+
+    if (!file_exists($script_path)) {
+        return;
+    }
+
+    wp_enqueue_script(
+        'thrivingstudio-citation-format',
+        THRIVINGSTUDIO_URI . '/assets/js/editor-citation-format.js',
+        [
+            'wp-block-editor',
+            'wp-components',
+            'wp-element',
+            'wp-i18n',
+            'wp-rich-text',
+        ],
+        filemtime($script_path),
+        true
+    );
+}
+add_action('enqueue_block_editor_assets', 'thrivingstudio_enqueue_citation_format');
+
+/**
  * Normalize and sanitize accordion rows from block attributes.
  *
  * @param mixed $items Raw block attribute data.

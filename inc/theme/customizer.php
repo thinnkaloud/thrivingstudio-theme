@@ -323,7 +323,7 @@ function thrivingstudio_customize_register($wp_customize) {
             'centered' => __('Centered article', 'thrivingstudio'),
             'wide' => __('Wide article', 'thrivingstudio'),
         ],
-        'description' => __('The right rail layout can show widgets and the article outline beside the post on desktop.', 'thrivingstudio'),
+        'description' => __('The right rail layout can show widgets and the article outline beside the post on desktop. Manage banner content in Appearance > Widgets > Single Post Right Rail.', 'thrivingstudio'),
     ]);
 
     $wp_customize->add_setting('thrivingstudio_single_content_width', [
@@ -499,7 +499,11 @@ function thrivingstudio_customize_register($wp_customize) {
         'label' => __('Show right rail widgets', 'thrivingstudio'),
         'section' => 'thrivingstudio_single_post_section',
         'type' => 'checkbox',
-        'description' => __('Widget content is managed in Appearance > Widgets > Single Post Right Rail.', 'thrivingstudio'),
+        'description' => sprintf(
+            '%s %s',
+            __('Widget content is managed in Appearance > Widgets > Single Post Right Rail.', 'thrivingstudio'),
+            thrivingstudio_get_right_rail_banner_guidance()
+        ),
     ]);
 
     $wp_customize->add_setting('thrivingstudio_single_rail_show_mobile', [
@@ -510,7 +514,7 @@ function thrivingstudio_customize_register($wp_customize) {
         'label' => __('Show right rail widgets on mobile', 'thrivingstudio'),
         'section' => 'thrivingstudio_single_post_section',
         'type' => 'checkbox',
-        'description' => __('Widget content is managed in Appearance > Widgets > Single Post Right Rail. Leave this off to keep those modules desktop-only.', 'thrivingstudio'),
+        'description' => __('Leave this off to keep those modules desktop-only. If enabled, the right rail widgets appear between the post header media and article content on smaller screens.', 'thrivingstudio'),
     ]);
 
     $wp_customize->add_setting('thrivingstudio_single_show_related_posts', [
