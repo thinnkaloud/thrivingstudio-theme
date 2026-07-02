@@ -79,12 +79,16 @@ function thrivingstudio_quote_card_verification_status_options() {
 /**
  * Get the server-side OpenAI API key for quote verification.
  *
- * Define THRIVINGSTUDIO_OPENAI_API_KEY in wp-config.php, or set OPENAI_API_KEY
- * / THRIVINGSTUDIO_OPENAI_API_KEY as an environment variable.
+ * Define THRIVINGSTUDIO_OPENAI_API_KEY or OPENAI_API_KEY in wp-config.php,
+ * or set either value as an environment variable.
  */
 function thrivingstudio_quote_card_ai_api_key() {
     if (defined('THRIVINGSTUDIO_OPENAI_API_KEY') && THRIVINGSTUDIO_OPENAI_API_KEY) {
         return trim((string) THRIVINGSTUDIO_OPENAI_API_KEY);
+    }
+
+    if (defined('OPENAI_API_KEY') && OPENAI_API_KEY) {
+        return trim((string) OPENAI_API_KEY);
     }
 
     $api_key = getenv('THRIVINGSTUDIO_OPENAI_API_KEY');
@@ -104,7 +108,15 @@ function thrivingstudio_quote_card_ai_model() {
         return sanitize_text_field((string) THRIVINGSTUDIO_OPENAI_MODEL);
     }
 
+    if (defined('OPENAI_MODEL') && OPENAI_MODEL) {
+        return sanitize_text_field((string) OPENAI_MODEL);
+    }
+
     $model = getenv('THRIVINGSTUDIO_OPENAI_MODEL');
+
+    if (!$model) {
+        $model = getenv('OPENAI_MODEL');
+    }
 
     if (!$model) {
         $model = 'gpt-5.5';
@@ -204,7 +216,7 @@ function thrivingstudio_quote_card_verification_box($post) {
         </p>
         <?php if (!$ai_available) : ?>
             <p class="description ts-quote-ai-config-note">
-                <?php esc_html_e('To enable this button, define THRIVINGSTUDIO_OPENAI_API_KEY in wp-config.php or set OPENAI_API_KEY on the server.', 'thrivingstudio'); ?>
+                <?php esc_html_e('To enable this button, define THRIVINGSTUDIO_OPENAI_API_KEY or OPENAI_API_KEY in wp-config.php, or set either value on the server.', 'thrivingstudio'); ?>
             </p>
         <?php endif; ?>
         <div id="quote-card-ai-result" class="ts-quote-ai-result" aria-live="polite" hidden></div>
