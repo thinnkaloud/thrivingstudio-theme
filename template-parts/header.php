@@ -167,10 +167,15 @@ body.admin-bar #masthead {
                 <!-- CTA (right on desktop), Hamburger on mobile -->
                 <div class="flex items-center md:justify-end w-auto md:min-w-[160px]">
                     <!-- Desktop CTA -->
-                    <div class="hidden md:flex items-center space-x-4">
-                    <a href="<?php echo esc_url(get_theme_mod('thrivingstudio_header_cta_link', '#')); ?>" class="ts-header-cta inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium w-full text-center">
-                        <?php echo esc_html(get_theme_mod('thrivingstudio_header_cta_text', __('Get In Touch', 'thrivingstudio'))); ?>
-                    </a>
+                    <div class="ts-header-actions hidden md:flex items-center">
+                        <a href="<?php echo esc_url(get_theme_mod('thrivingstudio_header_cta_link', '#')); ?>" class="ts-header-cta inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-center">
+                            <?php echo esc_html(get_theme_mod('thrivingstudio_header_cta_text', __('Get In Touch', 'thrivingstudio'))); ?>
+                        </a>
+                        <?php
+                        if (function_exists('thrivingstudio_render_account_nav')) {
+                            thrivingstudio_render_account_nav('desktop');
+                        }
+                        ?>
                     </div>
                     <!-- Mobile Hamburger Button (hidden on desktop) -->
                     <button id="mobile-menu-button" type="button" class="mobile-menu-btn ts-mobile-menu-button inline-flex md:hidden items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 ml-2" aria-controls="mobile-menu" aria-expanded="false">
@@ -207,6 +212,15 @@ body.admin-bar #masthead {
                      <a href="<?php echo esc_url(get_theme_mod('thrivingstudio_header_cta_link', '#')); ?>" class="ts-header-cta w-full text-center inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium w-full text-center">
                         <?php echo esc_html(get_theme_mod('thrivingstudio_header_cta_text', __('Get In Touch', 'thrivingstudio'))); ?>
                     </a>
+                </div>
+            </div>
+            <div class="pt-4 pb-3 border-t border-gray-200">
+                <div class="px-5">
+                    <?php
+                    if (function_exists('thrivingstudio_render_account_nav')) {
+                        thrivingstudio_render_account_nav('mobile');
+                    }
+                    ?>
                 </div>
             </div>
         </div>

@@ -11,6 +11,7 @@ if (post_password_required()) {
         $commenter = wp_get_current_commenter();
         $req = get_option('require_name_email');
         $required_attr = ($req ? " required='required' aria-required='true'" : '');
+        $comment_redirect_url = get_permalink();
 
         $fields = [
             'author' => '<p class="comment-form-author"><label for="author" class="ts-comment-label">' . esc_html__('Name', 'thrivingstudio') . ($req ? ' <span class="required">*</span>' : '') . '</label>' .
@@ -21,6 +22,10 @@ if (post_password_required()) {
                         '<input id="url" name="url" type="url" value="' . esc_attr($commenter['comment_author_url']) . '" autocomplete="url" size="30" class="ts-comment-input" /></p>',
         ];
 
+        if (function_exists('thrivingstudio_render_comment_login_prompt')) {
+            thrivingstudio_render_comment_login_prompt($comment_redirect_url);
+        }
+
         comment_form([
             'title_reply_before'   => '<h2 id="reply-title" class="comment-reply-title">',
             'title_reply_after'    => '</h2>',
@@ -29,16 +34,10 @@ if (post_password_required()) {
             'cancel_reply_link'    => esc_html__('Cancel Reply', 'thrivingstudio'),
             'comment_field'        => '<p class="comment-form-comment"><label for="comment" class="ts-comment-label">' . esc_html__('Comment', 'thrivingstudio') . ' <span class="required">*</span></label><textarea id="comment" name="comment" cols="45" rows="6" maxlength="65525" required="required" class="ts-comment-input ts-comment-textarea" placeholder="' . esc_attr__('Share a thoughtful response...', 'thrivingstudio') . '"></textarea></p>',
             'fields'               => $fields,
-            'logged_in_as'         => '<p class="logged-in-as">' .
-                sprintf(
-                    __('Logged in as <a href="%1$s" class="hover:underline font-semibold">%2$s</a>. <a href="%3$s" class="hover:underline font-semibold">Log out?</a>', 'thrivingstudio'),
-                    get_edit_user_link(),
-                    wp_get_current_user()->display_name,
-                    wp_logout_url(apply_filters('the_permalink', get_permalink()))
-                ) .
-                '</p>',
+            'logged_in_as'         => function_exists('thrivingstudio_get_comment_logged_in_as') ? thrivingstudio_get_comment_logged_in_as($comment_redirect_url) : '',
+            'must_log_in'          => function_exists('thrivingstudio_get_comment_must_log_in') ? thrivingstudio_get_comment_must_log_in($comment_redirect_url) : '',
             'comment_notes_before' => '<p class="comment-notes">' .
-                                      esc_html__('Your email address stays private.', 'thrivingstudio') .
+                                      (is_user_logged_in() ? esc_html__('Your profile will be attached to this comment.', 'thrivingstudio') : esc_html__('Your email address stays private. Google login can fill your profile details automatically.', 'thrivingstudio')) .
                                       ($req ? ' ' . esc_html__('Required fields are marked', 'thrivingstudio') . ' <span class="required">*</span>.' : '') .
                                       '</p>',
             'class_form'           => 'comment-form ts-comment-form',
