@@ -333,6 +333,147 @@ function tsSetupQuoteCarousels() {
 
 tsRunWhenReady(tsSetupQuoteCarousels);
 
+function tsCopyText(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+        return navigator.clipboard.writeText(text);
+    }
+
+    return new Promise((resolve, reject) => {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.setAttribute('readonly', '');
+        textarea.style.position = 'fixed';
+        textarea.style.left = '-9999px';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+
+        try {
+            const copied = document.execCommand('copy');
+            document.body.removeChild(textarea);
+            copied ? resolve() : reject(new Error('Copy command failed'));
+        } catch (error) {
+            document.body.removeChild(textarea);
+            reject(error);
+        }
+    });
+}
+
+function tsSetupSingleQuoteCard() {
+    const actionRoot = document.querySelector('[data-quote-actions]');
+    const lightbox = document.querySelector('[data-quote-lightbox]');
+
+    if (actionRoot && !actionRoot._tsQuoteActionsBound) {
+        actionRoot._tsQuoteActionsBound = true;
+
+        const quoteText = actionRoot.dataset.quoteText || document.title;
+        const quoteUrl = actionRoot.dataset.quoteUrl || window.location.href;
+        const status = actionRoot.querySelector('[data-quote-status]');
+        let statusTimeout;
+
+        const setStatus = (message, isError = false) => {
+            if (!status) return;
+
+            window.clearTimeout(statusTimeout);
+            status.textContent = message;
+            status.classList.toggle('is-error', isError);
+            statusTimeout = window.setTimeout(() => {
+                status.textContent = '';
+                status.classList.remove('is-error');
+            }, 2800);
+        };
+
+        actionRoot.querySelectorAll('[data-quote-copy]').forEach((button) => {
+            button.addEventListener('click', async () => {
+                const copyType = button.dataset.quoteCopy;
+                const value = copyType === 'link' ? quoteUrl : quoteText;
+
+                try {
+                    await tsCopyText(value);
+                    setStatus(copyType === 'link' ? 'Link copied.' : 'Quote copied.');
+                } catch (error) {
+                    setStatus('Copy failed. Please try again.', true);
+                }
+            });
+        });
+
+        const shareButton = actionRoot.querySelector('[data-quote-share]');
+
+        if (shareButton) {
+            shareButton.addEventListener('click', async () => {
+                if (navigator.share) {
+                    try {
+                        await navigator.share({
+                            title: document.title,
+                            text: quoteText,
+                            url: quoteUrl
+                        });
+                        setStatus('Share sheet opened.');
+                        return;
+                    } catch (error) {
+                        if (error && error.name === 'AbortError') {
+                            return;
+                        }
+                    }
+                }
+
+                try {
+                    await tsCopyText(quoteUrl);
+                    setStatus('Link copied for sharing.');
+                } catch (error) {
+                    setStatus('Sharing is not available here.', true);
+                }
+            });
+        }
+    }
+
+    if (lightbox && !lightbox._tsQuoteLightboxBound) {
+        lightbox._tsQuoteLightboxBound = true;
+
+        const openButtons = document.querySelectorAll('[data-quote-lightbox-open]');
+        const closeButtons = lightbox.querySelectorAll('[data-quote-lightbox-close]');
+        const closeButton = lightbox.querySelector('.ts-quote-lightbox-close');
+        let previousFocus = null;
+
+        const openLightbox = () => {
+            previousFocus = document.activeElement;
+            lightbox.classList.add('is-open');
+            lightbox.setAttribute('aria-hidden', 'false');
+            document.body.classList.add('ts-quote-lightbox-open');
+
+            if (closeButton) {
+                closeButton.focus();
+            }
+        };
+
+        const closeLightbox = () => {
+            lightbox.classList.remove('is-open');
+            lightbox.setAttribute('aria-hidden', 'true');
+            document.body.classList.remove('ts-quote-lightbox-open');
+
+            if (previousFocus && typeof previousFocus.focus === 'function') {
+                previousFocus.focus();
+            }
+        };
+
+        openButtons.forEach((button) => {
+            button.addEventListener('click', openLightbox);
+        });
+
+        closeButtons.forEach((button) => {
+            button.addEventListener('click', closeLightbox);
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && lightbox.classList.contains('is-open')) {
+                closeLightbox();
+            }
+        });
+    }
+}
+
+tsRunWhenReady(tsSetupSingleQuoteCard);
+
 // Category Menu Dropdown Functionality - Industry Standard
 document.addEventListener('DOMContentLoaded', function() {
     const categoryMenuItems = document.querySelectorAll('.category-menu-list .has-dropdown');

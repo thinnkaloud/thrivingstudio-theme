@@ -119,7 +119,7 @@ function thrivingstudio_register_seo_post_meta() {
         '_thrivingstudio_social_image'      => 'esc_url_raw',
     ];
 
-    foreach (['post', 'page'] as $post_type) {
+    foreach (['post', 'page', 'quote_card'] as $post_type) {
         foreach ($meta_fields as $meta_key => $sanitize_callback) {
             register_post_meta(
                 $post_type,
@@ -250,6 +250,29 @@ function thrivingstudio_get_post_meta_description($post_id) {
 }
 
 /**
+ * Build a useful fallback description for individual quote card pages.
+ *
+ * @param int $post_id
+ * @return string
+ */
+function thrivingstudio_get_quote_card_meta_description($post_id) {
+    $caption = get_post_meta($post_id, '_quote_card_caption', true);
+
+    if (!empty($caption)) {
+        return $caption;
+    }
+
+    $title = get_the_title($post_id);
+    $author = trim((string) get_post_meta($post_id, '_quote_card_author', true));
+
+    if ($author !== '') {
+        return sprintf('Quote card featuring "%1$s" by %2$s from %3$s.', $title, $author, get_bloginfo('name'));
+    }
+
+    return sprintf('Quote card featuring "%1$s" from %2$s.', $title, get_bloginfo('name'));
+}
+
+/**
  * Read the optional custom SEO title for a post or page.
  *
  * @param int $post_id
@@ -311,6 +334,10 @@ function thrivingstudio_get_meta_description() {
     } elseif (is_singular()) {
         $post_id = get_the_ID();
         $description = thrivingstudio_get_post_meta_description($post_id);
+
+        if (!$description && is_singular('quote_card')) {
+            $description = thrivingstudio_get_quote_card_meta_description($post_id);
+        }
     } elseif (is_home()) {
         $posts_page_id = (int) get_option('page_for_posts');
         $description = $posts_page_id ? thrivingstudio_get_post_meta_description($posts_page_id) : '';
@@ -426,7 +453,7 @@ function thrivingstudio_get_open_graph_tags() {
     $og_tags = [];
 
     // Basic OG tags
-    $og_tags[] = '<meta property="og:type" content="' . (is_singular('post') ? 'article' : 'website') . '">';
+    $og_tags[] = '<meta property="og:type" content="' . (is_singular(['post', 'quote_card']) ? 'article' : 'website') . '">';
     $og_tags[] = '<meta property="og:site_name" content="' . esc_attr(get_bloginfo('name')) . '">';
     $og_tags[] = '<meta property="og:url" content="' . esc_url(thrivingstudio_get_canonical_url()) . '">';
 
@@ -444,8 +471,9 @@ function thrivingstudio_get_open_graph_tags() {
     $image = thrivingstudio_get_og_image();
     if ($image) {
         $og_tags[] = '<meta property="og:image" content="' . esc_url($image) . '">';
-        $og_tags[] = '<meta property="og:image:width" content="1200">';
-        $og_tags[] = '<meta property="og:image:height" content="630">';
+        $image_dimensions = thrivingstudio_get_og_image_dimensions();
+        $og_tags[] = '<meta property="og:image:width" content="' . esc_attr($image_dimensions['width'] ?? 1200) . '">';
+        $og_tags[] = '<meta property="og:image:height" content="' . esc_attr($image_dimensions['height'] ?? 630) . '">';
     }
 
     // Article specific tags
@@ -516,6 +544,14 @@ function thrivingstudio_get_social_title() {
             return $seo_title;
         }
 
+        if (get_post_type($post_id) === 'quote_card') {
+            $quote_author = trim((string) get_post_meta($post_id, '_quote_card_author', true));
+
+            if ($quote_author !== '') {
+                return sprintf('%1$s - %2$s', get_the_title($post_id), $quote_author);
+            }
+        }
+
         if (is_front_page()) {
             $options = thrivingstudio_get_seo_options();
             $homepage_social_title = $options['social_title'] ?? '';
@@ -553,6 +589,10 @@ function thrivingstudio_get_social_description() {
 
             return thrivingstudio_normalize_meta_description($homepage_social_description ?: thrivingstudio_get_homepage_meta_description());
         }
+
+        if (is_singular('quote_card')) {
+            return thrivingstudio_normalize_meta_description(thrivingstudio_get_quote_card_meta_description(get_queried_object_id()));
+        }
     }
 
     if (is_front_page()) {
@@ -581,6 +621,26 @@ function thrivingstudio_get_twitter_handle() {
     $twitter = preg_replace('/[^A-Za-z0-9_]/', '', $twitter);
 
     return $twitter ? '@' . $twitter : '';
+}
+
+/**
+ * Get Open Graph image dimensions when the image comes from the current post thumbnail.
+ *
+ * @return array
+ */
+function thrivingstudio_get_og_image_dimensions() {
+    if (is_singular() && has_post_thumbnail()) {
+        $image = wp_get_attachment_image_src(get_post_thumbnail_id(), 'full');
+
+        if ($image && !empty($image[1]) && !empty($image[2])) {
+            return [
+                'width' => (int) $image[1],
+                'height' => (int) $image[2],
+            ];
+        }
+    }
+
+    return [];
 }
 
 /**
@@ -747,6 +807,67 @@ function thrivingstudio_add_structured_data() {
         $structured_data[] = $article_data;
     }
 
+    // CreativeWork schema for individual quote cards
+    if (is_singular('quote_card')) {
+        $post_id = get_queried_object_id();
+        $quote_author = trim((string) get_post_meta($post_id, '_quote_card_author', true));
+        $quote_description = thrivingstudio_normalize_meta_description(thrivingstudio_get_quote_card_meta_description($post_id));
+        $quote_source_title = trim((string) get_post_meta($post_id, '_quote_card_source_title', true));
+        $quote_source_name = trim((string) get_post_meta($post_id, '_quote_card_source_name', true));
+        $quote_source_url = esc_url_raw((string) get_post_meta($post_id, '_quote_card_source_url', true));
+
+        $quote_data = [
+            '@context' => 'https://schema.org',
+            '@type' => 'CreativeWork',
+            'headline' => get_the_title($post_id),
+            'text' => get_the_title($post_id),
+            'description' => $quote_description,
+            'url' => get_permalink($post_id),
+            'datePublished' => get_the_date('c', $post_id),
+            'dateModified' => get_the_modified_date('c', $post_id),
+            'publisher' => [
+                '@id' => home_url('/#organization')
+            ],
+        ];
+
+        if ($quote_author !== '') {
+            $quote_data['author'] = [
+                '@type' => 'Person',
+                'name' => $quote_author,
+            ];
+        }
+
+        if (has_post_thumbnail($post_id)) {
+            $image = wp_get_attachment_image_src(get_post_thumbnail_id($post_id), 'full');
+
+            if ($image) {
+                $quote_data['image'] = [
+                    '@type' => 'ImageObject',
+                    'url' => $image[0],
+                    'width' => (int) $image[1],
+                    'height' => (int) $image[2],
+                ];
+            }
+        }
+
+        if ($quote_source_url) {
+            $quote_data['citation'] = [
+                '@type' => 'CreativeWork',
+                'name' => $quote_source_title ?: ($quote_source_name ?: $quote_source_url),
+                'url' => $quote_source_url,
+            ];
+
+            if ($quote_source_name) {
+                $quote_data['citation']['publisher'] = [
+                    '@type' => 'Organization',
+                    'name' => $quote_source_name,
+                ];
+            }
+        }
+
+        $structured_data[] = $quote_data;
+    }
+
     // Add breadcrumb schema for better SEO
     if (is_singular() || is_category() || is_tag()) {
         $breadcrumb_data = [
@@ -778,6 +899,22 @@ function thrivingstudio_add_structured_data() {
             }
             
             // Post
+            $breadcrumb_data['itemListElement'][] = [
+                '@type' => 'ListItem',
+                'position' => $position,
+                'name' => get_the_title(),
+                'item' => get_permalink()
+            ];
+        } elseif (is_singular('quote_card')) {
+            $quote_archive_link = get_post_type_archive_link('quote_card') ?: home_url('/quotecards/');
+
+            $breadcrumb_data['itemListElement'][] = [
+                '@type' => 'ListItem',
+                'position' => $position++,
+                'name' => 'Quote Cards',
+                'item' => $quote_archive_link
+            ];
+
             $breadcrumb_data['itemListElement'][] = [
                 '@type' => 'ListItem',
                 'position' => $position,
