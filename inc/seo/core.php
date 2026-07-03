@@ -118,9 +118,14 @@ function thrivingstudio_register_seo_post_meta() {
         '_thrivingstudio_social_description' => 'sanitize_textarea_field',
         '_thrivingstudio_social_image'      => 'esc_url_raw',
     ];
+    $post_meta_fields = [
+        '_thrivingstudio_article_subtitle' => 'sanitize_textarea_field',
+    ];
 
     foreach (['post', 'page', 'quote_card'] as $post_type) {
-        foreach ($meta_fields as $meta_key => $sanitize_callback) {
+        $post_type_meta_fields = $post_type === 'post' ? array_merge($post_meta_fields, $meta_fields) : $meta_fields;
+
+        foreach ($post_type_meta_fields as $meta_key => $sanitize_callback) {
             register_post_meta(
                 $post_type,
                 $meta_key,
@@ -1102,6 +1107,10 @@ function thrivingstudio_seo_meta_box_callback($post) {
     wp_nonce_field('thrivingstudio_seo_meta_box', 'thrivingstudio_seo_meta_box_nonce');
 
     $seo_title = get_post_meta($post->ID, '_thrivingstudio_seo_title', true);
+    $article_subtitle = get_post_meta($post->ID, '_thrivingstudio_article_subtitle', true);
+    if ($article_subtitle === '' && !metadata_exists('post', $post->ID, '_thrivingstudio_article_subtitle')) {
+        $article_subtitle = trim((string) $post->post_excerpt);
+    }
     $meta_description = get_post_meta($post->ID, '_thrivingstudio_meta_description', true);
     $focus_keyword = get_post_meta($post->ID, '_thrivingstudio_focus_keyword', true);
     $canonical_url = get_post_meta($post->ID, '_thrivingstudio_canonical_url', true);
@@ -1125,9 +1134,20 @@ function thrivingstudio_seo_meta_box_callback($post) {
     }
     ?>
     <table class="form-table">
+        <?php if ($post->post_type === 'post') : ?>
+            <tr>
+                <th scope="row">
+                    <label for="thrivingstudio_article_subtitle">Subtitle Under Title</label>
+                </th>
+                <td>
+                    <textarea id="thrivingstudio_article_subtitle" name="thrivingstudio_article_subtitle" rows="3" cols="50" style="width: 100%;"><?php echo esc_textarea($article_subtitle); ?></textarea>
+                    <p class="description">Shown below the H1 on the article page and reused on blog cards.</p>
+                </td>
+            </tr>
+        <?php endif; ?>
         <tr>
             <th scope="row">
-                <label for="thrivingstudio_seo_title">SEO Title</label>
+                <label for="thrivingstudio_seo_title">Meta Title (SEO Title)</label>
             </th>
             <td>
                 <input type="text" id="thrivingstudio_seo_title" name="thrivingstudio_seo_title" value="<?php echo esc_attr($seo_title); ?>" class="regular-text" />
@@ -1216,11 +1236,16 @@ function thrivingstudio_save_seo_meta_box_data($post_id) {
         return;
     }
 
+    if (wp_is_post_revision($post_id)) {
+        return;
+    }
+
     if (!current_user_can('edit_post', $post_id)) {
         return;
     }
 
     $field_map = [
+        'thrivingstudio_article_subtitle'   => ['_thrivingstudio_article_subtitle', 'sanitize_textarea_field'],
         'thrivingstudio_seo_title'          => ['_thrivingstudio_seo_title', 'sanitize_text_field'],
         'thrivingstudio_meta_description'  => ['_thrivingstudio_meta_description', 'sanitize_textarea_field'],
         'thrivingstudio_focus_keyword'     => ['_thrivingstudio_focus_keyword', 'sanitize_text_field'],

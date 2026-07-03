@@ -1,10 +1,11 @@
 <?php
 
 /**
- * Get only the manually entered WordPress excerpt.
+ * Get the editorial subtitle shown beneath article titles.
  *
- * WordPress can generate excerpts from post content. This helper intentionally
- * avoids that fallback so editorial subtitles stay separate from the body copy.
+ * New articles use the dedicated subtitle meta field. Older articles may still
+ * have this copy in the manual WordPress excerpt, so keep that as a fallback.
+ * This intentionally avoids generated excerpts from the post body.
  *
  * @param int|WP_Post|null $post_id Optional post ID or post object.
  * @return string
@@ -16,7 +17,13 @@ function thrivingstudio_get_manual_excerpt($post_id = null) {
         return '';
     }
 
-    $excerpt = trim((string) $post->post_excerpt);
+    $excerpt = get_post_meta($post->ID, '_thrivingstudio_article_subtitle', true);
+
+    if ($excerpt === '' && !metadata_exists('post', $post->ID, '_thrivingstudio_article_subtitle')) {
+        $excerpt = $post->post_excerpt;
+    }
+
+    $excerpt = trim((string) $excerpt);
 
     if ($excerpt === '') {
         return '';

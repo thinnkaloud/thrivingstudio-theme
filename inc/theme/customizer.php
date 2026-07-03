@@ -372,7 +372,7 @@ function thrivingstudio_customize_register($wp_customize) {
         'sanitize_callback' => 'rest_sanitize_boolean',
     ]);
     $wp_customize->add_control('thrivingstudio_single_show_excerpt', [
-        'label' => __('Show manual excerpt', 'thrivingstudio'),
+        'label' => __('Show article subtitle', 'thrivingstudio'),
         'section' => 'thrivingstudio_single_post_section',
         'type' => 'checkbox',
     ]);
@@ -448,7 +448,7 @@ function thrivingstudio_customize_register($wp_customize) {
         'sanitize_callback' => $sanitize_int_range,
     ]);
     $wp_customize->add_control('thrivingstudio_single_excerpt_size', [
-        'label' => __('Excerpt size', 'thrivingstudio'),
+        'label' => __('Subtitle size', 'thrivingstudio'),
         'section' => 'thrivingstudio_single_post_section',
         'type' => 'range',
         'input_attrs' => [

@@ -25,6 +25,7 @@
     var SEO_TAB_READY_CLASS = 'thrivingstudio-seo-tab-ready';
     var SEO_TAB_ACTIVE_CLASS = 'thrivingstudio-seo-tab-active';
     var SEO_META_KEYS = {
+        articleSubtitle: '_thrivingstudio_article_subtitle',
         title: '_thrivingstudio_seo_title',
         description: '_thrivingstudio_meta_description',
         focusKeyword: '_thrivingstudio_focus_keyword',
@@ -60,6 +61,22 @@
 
         if (title && typeof title.rendered === 'string') {
             return stripHtml(title.rendered);
+        }
+
+        return '';
+    }
+
+    function getPlainPostText(value) {
+        if (typeof value === 'string') {
+            return stripHtml(value);
+        }
+
+        if (value && typeof value.raw === 'string') {
+            return stripHtml(value.raw);
+        }
+
+        if (value && typeof value.rendered === 'string') {
+            return stripHtml(value.rendered);
         }
 
         return '';
@@ -357,20 +374,25 @@
             var editor = select('core/editor');
             var meta = editor.getEditedPostAttribute('meta') || {};
             var permalink = typeof editor.getPermalink === 'function' ? editor.getPermalink() : '';
+            var postType = typeof editor.getCurrentPostType === 'function' ? editor.getCurrentPostType() : '';
 
             return {
+                excerpt: getPlainPostText(editor.getEditedPostAttribute('excerpt')),
                 meta: meta,
                 permalink: permalink,
+                postType: postType,
                 title: getPlainTitle(editor.getEditedPostAttribute('title'))
             };
         });
         var editorActions = useDispatch('core/editor');
         var meta = editorState.meta;
+        var articleSubtitle = getMetaValue(meta, SEO_META_KEYS.articleSubtitle) || editorState.excerpt;
         var seoTitle = getMetaValue(meta, SEO_META_KEYS.title);
         var metaDescription = getMetaValue(meta, SEO_META_KEYS.description);
         var canonicalUrl = getMetaValue(meta, SEO_META_KEYS.canonical);
         var socialTitle = getMetaValue(meta, SEO_META_KEYS.socialTitle);
         var socialDescription = getMetaValue(meta, SEO_META_KEYS.socialDescription);
+        var isPost = editorState.postType === 'post';
         var previewTitle = socialTitle || seoTitle || editorState.title || __('Untitled post', 'thrivingstudio');
         var previewDescription = socialDescription || metaDescription || __('Add a meta description to preview the search and social snippet.', 'thrivingstudio');
         var previewUrl = canonicalUrl || editorState.permalink || __('Draft URL', 'thrivingstudio');
@@ -387,6 +409,18 @@
         return el(
             'div',
             { className: 'ts-seo-sidebar' },
+            isPost && el('h3', { className: 'ts-seo-section-title' }, __('Article display', 'thrivingstudio')),
+            isPost && el(TextareaControl, {
+                label: __('Subtitle under title', 'thrivingstudio'),
+                value: articleSubtitle,
+                help: __('Shows below the H1 on the article page and on blog cards.', 'thrivingstudio'),
+                placeholder: __('A simple guide to understanding your emotions, your reactions, and the space between feeling and action.', 'thrivingstudio'),
+                rows: 3,
+                onChange: function (value) {
+                    updateMeta(SEO_META_KEYS.articleSubtitle, value);
+                }
+            }),
+            el('h3', { className: 'ts-seo-section-title' }, __('Search preview', 'thrivingstudio')),
             el(
                 'div',
                 {
@@ -398,7 +432,7 @@
                 el('p', { className: 'ts-seo-preview-description' }, previewDescription)
             ),
             el(TextControl, {
-                label: __('SEO title', 'thrivingstudio'),
+                label: __('Meta title (SEO title)', 'thrivingstudio'),
                 value: seoTitle,
                 help: getCharacterHelp(seoTitle, 60),
                 placeholder: editorState.title || __('Search title', 'thrivingstudio'),

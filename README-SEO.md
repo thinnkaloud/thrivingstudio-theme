@@ -11,7 +11,10 @@
 - (Reference files like inc/seo.php, inc/seo-settings.php)
 
 ## How to Set SEO Titles & Descriptions
-- (Instructions for editors/developers)
+- In the block editor, open the **SEO** tab in the post sidebar.
+- Fill **Subtitle under title** for the human subtitle shown beneath the H1 and on blog cards.
+- Fill **Meta title (SEO title)** for the search/browser title when it should differ from the H1.
+- Fill **Meta description** for the search snippet.
 
 ## Social Sharing
 - (How Open Graph/Twitter Card tags are handled)
@@ -67,7 +70,9 @@ This WordPress theme includes a comprehensive SEO implementation that provides a
 ### **For Content Creators**
 
 1. **Adding SEO to Posts/Pages**
-   - When editing a post or page, scroll down to find the "SEO Settings" meta box
+   - When editing a post or page, use the sidebar "SEO" tab or scroll down to find the "SEO Settings" meta box
+   - On posts, use "Subtitle under title" for the subtitle shown below the H1
+   - Enter a custom meta title when the search/browser title should differ from the post title
    - Enter a custom meta description manually. If left empty, singular posts/pages do not fall back to the excerpt or post content.
    - The SEO Settings box shows a warning when the manual meta description is empty.
    - Set custom robots meta if needed (e.g., `noindex,nofollow`)
