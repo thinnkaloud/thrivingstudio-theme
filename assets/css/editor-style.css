@@ -359,6 +359,21 @@ body.thrivingstudio-seo-tab-active [role="tablist"] button:not([data-thrivingstu
     color: #1e1e1e !important;
 }
 
+body.thrivingstudio-seo-tab-active .thrivingstudio-seo-native-tab-inactive {
+    border-bottom-color: transparent !important;
+    box-shadow: none !important;
+    color: #1e1e1e !important;
+}
+
+body.thrivingstudio-seo-tab-active .thrivingstudio-seo-native-tab-inactive::before,
+body.thrivingstudio-seo-tab-active .thrivingstudio-seo-native-tab-inactive::after {
+    display: none !important;
+    opacity: 0 !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    background: transparent !important;
+}
+
 button[data-thrivingstudio-seo-tab="true"].is-active {
     box-shadow: inset 0 -3px var(--wp-admin-theme-color, #3858e9);
     color: var(--wp-admin-theme-color, #3858e9);

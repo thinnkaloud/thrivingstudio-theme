@@ -24,6 +24,7 @@
     var SEO_TAB_PANEL_ID = 'thrivingstudio-seo-tab-panel';
     var SEO_TAB_READY_CLASS = 'thrivingstudio-seo-tab-ready';
     var SEO_TAB_ACTIVE_CLASS = 'thrivingstudio-seo-tab-active';
+    var SEO_NATIVE_TAB_INACTIVE_CLASS = 'thrivingstudio-seo-native-tab-inactive';
     var SEO_META_KEYS = {
         articleSubtitle: '_thrivingstudio_article_subtitle',
         title: '_thrivingstudio_seo_title',
@@ -243,13 +244,28 @@
         Array.prototype.slice.call(container.querySelectorAll('button')).forEach(function (button) {
             var isSeoButton = button.getAttribute(SEO_TAB_ATTRIBUTE) === 'true';
             var label = getButtonText(button);
+            var isNativeDocumentTab = label === 'post' || label === 'block';
+            var nativeTabWrapper = button.parentElement && button.parentElement !== container ? button.parentElement : null;
 
             if (isSeoButton) {
                 button.classList.toggle('is-active', isActive);
                 button.setAttribute('aria-selected', isActive ? 'true' : 'false');
-            } else if (isActive && (label === 'post' || label === 'block')) {
-                button.classList.remove('is-active');
-                button.setAttribute('aria-selected', 'false');
+            } else if (isNativeDocumentTab) {
+                button.classList.toggle(SEO_NATIVE_TAB_INACTIVE_CLASS, isActive);
+
+                if (nativeTabWrapper) {
+                    nativeTabWrapper.classList.toggle(SEO_NATIVE_TAB_INACTIVE_CLASS, isActive);
+                }
+
+                if (isActive) {
+                    button.classList.remove('is-active');
+                    button.setAttribute('aria-selected', 'false');
+
+                    if (nativeTabWrapper) {
+                        nativeTabWrapper.classList.remove('is-active');
+                        nativeTabWrapper.setAttribute('aria-selected', 'false');
+                    }
+                }
             }
         });
 
