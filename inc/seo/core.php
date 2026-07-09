@@ -302,6 +302,305 @@ function thrivingstudio_get_post_canonical_url($post_id) {
 }
 
 /**
+ * Append the site name to a route-level title when it is not already present.
+ *
+ * @param string $title
+ * @return string
+ */
+function thrivingstudio_append_site_name_to_title($title) {
+    $title = trim(wp_strip_all_tags((string) $title));
+    $site_name = trim((string) get_bloginfo('name'));
+
+    if ($title === '' || $site_name === '') {
+        return $title ?: $site_name;
+    }
+
+    if (stripos($title, $site_name) !== false) {
+        return $title;
+    }
+
+    return sprintf('%1$s | %2$s', $title, $site_name);
+}
+
+/**
+ * Remove WordPress archive prefixes from titles before using them in SEO copy.
+ *
+ * @param string $title
+ * @return string
+ */
+function thrivingstudio_clean_archive_title($title) {
+    $title = wp_strip_all_tags((string) $title);
+    $title = html_entity_decode($title, ENT_QUOTES, get_bloginfo('charset'));
+    $title = preg_replace('/^\s*(Category|Tag|Author|Year|Month|Day|Archives):\s*/i', '', $title);
+
+    return trim((string) $title);
+}
+
+/**
+ * SEO copy for virtual account routes that do not have saved post metadata.
+ *
+ * @return array<string, string>
+ */
+function thrivingstudio_get_account_route_seo_copy() {
+    if (!function_exists('thrivingstudio_account_request_path_matches')) {
+        return [];
+    }
+
+    if (thrivingstudio_account_request_path_matches('profile')) {
+        return [
+            'title'       => __('Profile', 'thrivingstudio'),
+            'description' => __('Manage your Thriving Studio reader profile, public identity, comment history, and account settings from one focused place.', 'thrivingstudio'),
+            'canonical'   => home_url('/profile/'),
+        ];
+    }
+
+    if (thrivingstudio_account_request_path_matches('sign-in')) {
+        return [
+            'title'       => __('Sign in', 'thrivingstudio'),
+            'description' => __('Sign in or create a Thriving Studio reader profile to keep your avatar, comments, and account access connected across the site.', 'thrivingstudio'),
+            'canonical'   => home_url('/sign-in/'),
+        ];
+    }
+
+    return [];
+}
+
+/**
+ * Human-readable label for date archives.
+ *
+ * @return string
+ */
+function thrivingstudio_get_date_archive_label() {
+    if (is_year()) {
+        return (string) get_query_var('year');
+    }
+
+    if (is_month()) {
+        $year = (int) get_query_var('year');
+        $month = (int) get_query_var('monthnum');
+
+        if ($year && $month) {
+            return date_i18n('F Y', mktime(0, 0, 0, $month, 1, $year));
+        }
+    }
+
+    if (is_day()) {
+        $year = (int) get_query_var('year');
+        $month = (int) get_query_var('monthnum');
+        $day = (int) get_query_var('day');
+
+        if ($year && $month && $day) {
+            return date_i18n(get_option('date_format'), mktime(0, 0, 0, $month, $day, $year));
+        }
+    }
+
+    return thrivingstudio_clean_archive_title(get_the_archive_title());
+}
+
+/**
+ * Build a sensible route-level title for non-singular pages and virtual routes.
+ *
+ * @param bool $include_site_name
+ * @return string
+ */
+function thrivingstudio_get_contextual_seo_title($include_site_name = false) {
+    $account_copy = thrivingstudio_get_account_route_seo_copy();
+
+    if (!empty($account_copy['title'])) {
+        $title = $account_copy['title'];
+
+        return $include_site_name ? thrivingstudio_append_site_name_to_title($title) : $title;
+    }
+
+    if (is_front_page()) {
+        return thrivingstudio_get_homepage_title();
+    }
+
+    if (is_home()) {
+        $posts_page_id = (int) get_option('page_for_posts');
+        $title = $posts_page_id ? thrivingstudio_get_post_seo_title($posts_page_id) : '';
+
+        if ($title === '' && $posts_page_id) {
+            $title = get_the_title($posts_page_id);
+        }
+
+        $title = $title ?: __('Blog', 'thrivingstudio');
+
+        return $include_site_name ? thrivingstudio_append_site_name_to_title($title) : $title;
+    }
+
+    if (is_post_type_archive('quote_card')) {
+        $title = __('Quote Cards', 'thrivingstudio');
+
+        return $include_site_name ? thrivingstudio_append_site_name_to_title($title) : $title;
+    }
+
+    if (is_post_type_archive()) {
+        $title = thrivingstudio_clean_archive_title(post_type_archive_title('', false));
+
+        return $include_site_name ? thrivingstudio_append_site_name_to_title($title) : $title;
+    }
+
+    if (is_category() || is_tag() || is_tax()) {
+        $title = thrivingstudio_clean_archive_title(single_term_title('', false));
+
+        return $include_site_name ? thrivingstudio_append_site_name_to_title($title) : $title;
+    }
+
+    if (is_author()) {
+        $author = get_queried_object();
+        $title = $author instanceof WP_User ? $author->display_name : get_the_author_meta('display_name');
+
+        return $include_site_name ? thrivingstudio_append_site_name_to_title($title) : $title;
+    }
+
+    if (is_search()) {
+        $query = trim((string) get_search_query());
+        $title = $query !== ''
+            ? sprintf(__('Search Results for "%s"', 'thrivingstudio'), $query)
+            : __('Search Results', 'thrivingstudio');
+
+        return $include_site_name ? thrivingstudio_append_site_name_to_title($title) : $title;
+    }
+
+    if (is_404()) {
+        $title = __('Page Not Found', 'thrivingstudio');
+
+        return $include_site_name ? thrivingstudio_append_site_name_to_title($title) : $title;
+    }
+
+    if (is_date()) {
+        $title = thrivingstudio_get_date_archive_label();
+
+        return $include_site_name ? thrivingstudio_append_site_name_to_title($title) : $title;
+    }
+
+    if (is_archive()) {
+        $title = thrivingstudio_clean_archive_title(get_the_archive_title());
+
+        return $include_site_name ? thrivingstudio_append_site_name_to_title($title) : $title;
+    }
+
+    return '';
+}
+
+/**
+ * Build a strong fallback description for taxonomy archives.
+ *
+ * @param WP_Term|null $term
+ * @return string
+ */
+function thrivingstudio_get_term_archive_meta_description($term = null) {
+    if (!($term instanceof WP_Term)) {
+        $term = get_queried_object();
+    }
+
+    if (!($term instanceof WP_Term)) {
+        return '';
+    }
+
+    $term_description = term_description($term);
+
+    if (!empty($term_description)) {
+        return $term_description;
+    }
+
+    $term_name = thrivingstudio_clean_archive_title($term->name);
+
+    if ($term->taxonomy === 'post_tag') {
+        return sprintf(
+            __('Browse Thriving Studio articles tagged %s, gathering related ideas on clarity, growth, creativity, and thoughtful living.', 'thrivingstudio'),
+            $term_name
+        );
+    }
+
+    return sprintf(
+        __('Explore %s articles from Thriving Studio, with thoughtful stories, research, and practical ideas for clearer thinking, deeper growth, and creative living.', 'thrivingstudio'),
+        $term_name
+    );
+}
+
+/**
+ * Build route-level descriptions for archives, virtual pages, and utility routes.
+ *
+ * @return string
+ */
+function thrivingstudio_get_contextual_meta_description() {
+    $account_copy = thrivingstudio_get_account_route_seo_copy();
+
+    if (!empty($account_copy['description'])) {
+        return $account_copy['description'];
+    }
+
+    if (is_post_type_archive('quote_card')) {
+        return __('Browse Thriving Studio quote cards: visual excerpts, clear attribution where available, and shareable ideas for reflection, creativity, and growth.', 'thrivingstudio');
+    }
+
+    if (is_post_type_archive()) {
+        $title = thrivingstudio_get_contextual_seo_title(false);
+
+        return sprintf(
+            __('Browse %s from Thriving Studio, with thoughtful ideas, stories, and research for clearer thinking and meaningful growth.', 'thrivingstudio'),
+            $title
+        );
+    }
+
+    if (is_category() || is_tag() || is_tax()) {
+        return thrivingstudio_get_term_archive_meta_description();
+    }
+
+    if (is_author()) {
+        $author = get_queried_object();
+        $author_name = $author instanceof WP_User ? $author->display_name : get_the_author_meta('display_name');
+        $author_description = $author instanceof WP_User ? get_the_author_meta('description', $author->ID) : '';
+
+        if (!empty($author_description)) {
+            return $author_description;
+        }
+
+        return sprintf(
+            __('Read articles by %s on Thriving Studio, covering clarity, personal growth, creativity, research, and stories worth returning to.', 'thrivingstudio'),
+            $author_name ?: get_bloginfo('name')
+        );
+    }
+
+    if (is_date()) {
+        return sprintf(
+            __('Browse Thriving Studio articles from %s, with essays and stories on clarity, growth, creativity, wellbeing, and meaningful progress.', 'thrivingstudio'),
+            thrivingstudio_get_date_archive_label()
+        );
+    }
+
+    if (is_search()) {
+        $query = trim((string) get_search_query());
+
+        if ($query !== '') {
+            return sprintf(
+                __('Search results for "%s" on Thriving Studio, with related essays, ideas, and stories from the archive.', 'thrivingstudio'),
+                $query
+            );
+        }
+
+        return __('Search Thriving Studio for essays, ideas, and stories on clarity, growth, creativity, wellbeing, and meaningful progress.', 'thrivingstudio');
+    }
+
+    if (is_404()) {
+        return __('This Thriving Studio page could not be found. Search or browse essays on clarity, growth, creativity, wellbeing, and meaningful progress.', 'thrivingstudio');
+    }
+
+    if (is_archive()) {
+        $title = thrivingstudio_get_contextual_seo_title(false);
+
+        return sprintf(
+            __('Browse %s on Thriving Studio, with thoughtful ideas, stories, and research for clearer thinking and meaningful growth.', 'thrivingstudio'),
+            $title ?: __('the archive', 'thrivingstudio')
+        );
+    }
+
+    return '';
+}
+
+/**
  * Keep the static homepage title brand-forward instead of "Home".
  *
  * @param string $title
@@ -310,6 +609,12 @@ function thrivingstudio_get_post_canonical_url($post_id) {
 function thrivingstudio_filter_document_title($title) {
     if (is_admin() || is_feed()) {
         return $title;
+    }
+
+    $account_copy = thrivingstudio_get_account_route_seo_copy();
+
+    if (!empty($account_copy['title'])) {
+        return thrivingstudio_append_site_name_to_title($account_copy['title']);
     }
 
     if (is_singular()) {
@@ -333,8 +638,11 @@ add_filter('pre_get_document_title', 'thrivingstudio_filter_document_title', 20)
  */
 function thrivingstudio_get_meta_description() {
     $description = '';
+    $contextual_description = thrivingstudio_get_contextual_meta_description();
 
-    if (is_front_page()) {
+    if ($contextual_description !== '') {
+        $description = $contextual_description;
+    } elseif (is_front_page()) {
         $description = thrivingstudio_get_homepage_meta_description();
     } elseif (is_singular()) {
         $post_id = get_the_ID();
@@ -346,8 +654,9 @@ function thrivingstudio_get_meta_description() {
     } elseif (is_home()) {
         $posts_page_id = (int) get_option('page_for_posts');
         $description = $posts_page_id ? thrivingstudio_get_post_meta_description($posts_page_id) : '';
+
         if (!$description) {
-            $description = get_bloginfo('description');
+            $description = __('Read the latest Thriving Studio essays on clarity, personal growth, psychology, creativity, and progress, curated to help you think and live with intention.', 'thrivingstudio');
         }
     } elseif (is_category() || is_tag()) {
         $description = category_description();
@@ -372,6 +681,12 @@ function thrivingstudio_get_meta_description() {
 function thrivingstudio_get_canonical_url() {
     global $wp;
 
+    $account_copy = thrivingstudio_get_account_route_seo_copy();
+
+    if (!empty($account_copy['canonical'])) {
+        return $account_copy['canonical'];
+    }
+
     if (is_front_page()) {
         return home_url('/');
     } elseif (is_home()) {
@@ -393,7 +708,9 @@ function thrivingstudio_get_canonical_url() {
         return home_url('/?s=' . urlencode(get_search_query()));
     }
 
-    return home_url($wp->request);
+    $request_path = isset($wp->request) ? trim((string) $wp->request, '/') : '';
+
+    return $request_path !== '' ? home_url(user_trailingslashit($request_path)) : home_url('/');
 }
 
 /**
@@ -535,6 +852,12 @@ function thrivingstudio_get_twitter_card_tags() {
  * Title used for social previews.
  */
 function thrivingstudio_get_social_title() {
+    $account_copy = thrivingstudio_get_account_route_seo_copy();
+
+    if (!empty($account_copy['title'])) {
+        return thrivingstudio_append_site_name_to_title($account_copy['title']);
+    }
+
     if (is_singular()) {
         $post_id = get_queried_object_id();
         $social_title = trim(wp_strip_all_tags((string) get_post_meta($post_id, '_thrivingstudio_social_title', true)));
@@ -572,6 +895,12 @@ function thrivingstudio_get_social_title() {
         $social_title = $options['social_title'] ?? '';
 
         return $social_title ?: thrivingstudio_get_homepage_title();
+    }
+
+    $contextual_title = thrivingstudio_get_contextual_seo_title(true);
+
+    if ($contextual_title !== '') {
+        return $contextual_title;
     }
 
     return get_bloginfo('name');
@@ -1127,7 +1456,7 @@ function thrivingstudio_seo_meta_box_callback($post) {
         if ($front_page_id === (int) $post->ID) {
             $empty_meta_description_notice = __('Homepage SEO settings or the default site description will be used unless this field is filled.', 'thrivingstudio');
         } elseif ($posts_page_id === (int) $post->ID) {
-            $empty_meta_description_notice = __('The site tagline may be used for the blog index unless this field is filled.', 'thrivingstudio');
+            $empty_meta_description_notice = __('The curated blog index description will be used unless this field is filled.', 'thrivingstudio');
         } else {
             $empty_meta_description_notice = __('No meta description will be output for this post/page until this field is filled.', 'thrivingstudio');
         }

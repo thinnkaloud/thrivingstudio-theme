@@ -6,7 +6,7 @@
 <?php get_header(); ?>
 
 <main class="flex-1 bg-white">
-    <div class="site-content container mx-auto px-4 sm:px-6 lg:px-8 pt-0 flex-1 relative">
+    <div class="site-content ts-front-page-content container mx-auto px-4 sm:px-6 lg:px-8 pt-0 flex-1 relative">
         <!-- Hero Section (Aligned with header) -->
         <section class="hero-section ts-surface-card ts-section-spacing overflow-hidden mb-16 bg-white">
             <div class="text-center px-4 sm:px-8">
@@ -283,7 +283,7 @@
         </section>
 
         <!-- Subscribe Section -->
-        <section id="subscribe" class="mb-8">
+        <section id="subscribe" class="ts-home-subscribe">
             <div class="subscribe-section ts-subscribe-panel bg-[#f8fafc] rounded-xl p-10 text-center border border-gray-200 shadow-sm">
                 <h2 class="text-2xl font-bold mb-4 text-gray-900">Stay Inspired!</h2>
                 <p class="mb-6 text-gray-700">Subscribe to our newsletter for the latest articles, quotes, and creative tips.</p>

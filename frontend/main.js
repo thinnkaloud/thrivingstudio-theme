@@ -474,6 +474,259 @@ function tsSetupSingleQuoteCard() {
 
 tsRunWhenReady(tsSetupSingleQuoteCard);
 
+function tsFormatEngagementCount(count) {
+    const numericCount = Math.max(0, Number(count) || 0);
+
+    try {
+        return new Intl.NumberFormat(document.documentElement.lang || undefined).format(numericCount);
+    } catch (error) {
+        return String(numericCount);
+    }
+}
+
+function tsSetupPostEngagement() {
+    const roots = document.querySelectorAll('[data-post-engagement]');
+    if (!roots.length) return;
+
+    const config = window.thrivingstudioPostEngagement || {};
+    const strings = Object.assign({
+        thanks: 'Thanks for the signal.',
+        removed: 'Signal removed.',
+        saved: 'Saved on this device.',
+        error: 'Could not save that signal. Please try again.',
+        copied: 'Link copied.',
+        copyError: 'Copy failed. Please try again.',
+        shared: 'Share sheet opened.',
+        shareFallback: 'Link copied.',
+        shareError: 'Sharing is not available here.'
+    }, config.strings || {});
+
+    roots.forEach((root) => {
+        if (root._tsPostEngagementBound) return;
+        root._tsPostEngagementBound = true;
+
+        const postId = root.dataset.postId;
+        const postUrl = root.dataset.postUrl || window.location.href;
+        const postShareUrl = root.dataset.postShareUrl || postUrl;
+        const postTitle = root.dataset.postTitle || document.title;
+        const usefulButton = root.querySelector('[data-post-useful]');
+        const usefulCount = root.querySelector('[data-useful-count]');
+        const copyButton = root.querySelector('[data-post-copy]');
+        const shareButton = root.querySelector('[data-post-share]');
+        const usefulStatus = root.querySelector('[data-post-useful-status]');
+        const copyStatus = root.querySelector('[data-post-copy-status]');
+        const shareStatus = root.querySelector('[data-post-share-status]');
+        const shareMenu = root.querySelector('[data-post-share-menu]');
+        const shareWrap = shareButton ? shareButton.closest('.ts-single-engagement-action-wrap') : null;
+        const storageKey = postId ? `thrivingstudio:post-useful:${postId}` : '';
+        const statusTimeouts = new WeakMap();
+
+        const clearStatusTimers = (target) => {
+            const timers = statusTimeouts.get(target);
+            if (!timers) return;
+
+            timers.forEach((timer) => window.clearTimeout(timer));
+            statusTimeouts.delete(target);
+        };
+
+        const setStatus = (target, message, isError = false) => {
+            if (!target) return;
+
+            clearStatusTimers(target);
+            target.textContent = message;
+            target.classList.toggle('is-error', isError);
+            target.classList.remove('is-visible');
+
+            window.requestAnimationFrame(() => {
+                target.classList.add('is-visible');
+            });
+
+            const hideTimer = window.setTimeout(() => {
+                target.classList.remove('is-visible');
+
+                const clearTimer = window.setTimeout(() => {
+                    if (!target.classList.contains('is-visible')) {
+                        target.textContent = '';
+                        target.classList.remove('is-error');
+                    }
+                }, 220);
+
+                statusTimeouts.set(target, [clearTimer]);
+            }, 2300);
+
+            statusTimeouts.set(target, [hideTimer]);
+        };
+
+        const clearStatus = (target) => {
+            if (!target) return;
+
+            clearStatusTimers(target);
+            target.classList.remove('is-visible', 'is-error');
+            target.textContent = '';
+        };
+
+        const setShareMenuOpen = (isOpen) => {
+            if (!shareMenu || !shareButton) return;
+
+            shareMenu.hidden = !isOpen;
+            shareButton.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+
+            if (shareWrap) {
+                shareWrap.classList.toggle('is-open', isOpen);
+            }
+        };
+
+        const getStoredUseful = () => {
+            if (!storageKey) return false;
+
+            try {
+                return window.localStorage.getItem(storageKey) === '1';
+            } catch (error) {
+                return false;
+            }
+        };
+
+        const setStoredUseful = (selected) => {
+            if (!storageKey) return;
+
+            try {
+                if (selected) {
+                    window.localStorage.setItem(storageKey, '1');
+                } else {
+                    window.localStorage.removeItem(storageKey);
+                }
+            } catch (error) {}
+        };
+
+        const setUsefulState = (selected, count) => {
+            if (usefulButton) {
+                usefulButton.classList.toggle('is-active', selected);
+                usefulButton.setAttribute('aria-pressed', selected ? 'true' : 'false');
+            }
+
+            if (usefulCount && typeof count !== 'undefined') {
+                const numericCount = Math.max(0, Number(count) || 0);
+                usefulCount.textContent = tsFormatEngagementCount(numericCount);
+                usefulCount.classList.toggle('is-empty', numericCount === 0);
+            }
+        };
+
+        setUsefulState(getStoredUseful());
+
+        if (usefulButton) {
+            usefulButton.addEventListener('click', async () => {
+                const nextSelected = usefulButton.getAttribute('aria-pressed') !== 'true';
+                const previousSelected = !nextSelected;
+
+                setUsefulState(nextSelected);
+                setStoredUseful(nextSelected);
+
+                if (!config.ajaxUrl || !config.nonce || !window.fetch || !postId) {
+                    setStatus(usefulStatus, strings.saved);
+                    return;
+                }
+
+                usefulButton.disabled = true;
+
+                try {
+                    const body = new URLSearchParams();
+                    body.set('action', 'thrivingstudio_toggle_post_useful');
+                    body.set('nonce', config.nonce);
+                    body.set('post_id', postId);
+                    body.set('selected', nextSelected ? '1' : '0');
+
+                    const response = await window.fetch(config.ajaxUrl, {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+                        },
+                        body: body.toString()
+                    });
+                    const payload = await response.json();
+
+                    if (!response.ok || !payload.success) {
+                        throw new Error('Post engagement failed');
+                    }
+
+                    setUsefulState(Boolean(payload.data && payload.data.selected), payload.data ? payload.data.count : undefined);
+                    setStatus(usefulStatus, nextSelected ? strings.thanks : strings.removed);
+                } catch (error) {
+                    setUsefulState(previousSelected);
+                    setStoredUseful(previousSelected);
+                    setStatus(usefulStatus, strings.error, true);
+                } finally {
+                    usefulButton.disabled = false;
+                }
+            });
+        }
+
+        if (copyButton) {
+            copyButton.addEventListener('click', async () => {
+                try {
+                    await tsCopyText(postUrl);
+                    setStatus(copyStatus, strings.copied);
+                } catch (error) {
+                    setStatus(copyStatus, strings.copyError, true);
+                }
+            });
+        }
+
+        if (shareButton) {
+            shareButton.addEventListener('click', async (event) => {
+                event.preventDefault();
+
+                const shareData = {
+                    title: postTitle,
+                    url: postShareUrl
+                };
+                const prefersNativeShare = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+                const canUseNativeShare = prefersNativeShare
+                    && typeof navigator.share === 'function'
+                    && (!navigator.canShare || navigator.canShare(shareData));
+
+                if (canUseNativeShare) {
+                    try {
+                        await navigator.share(shareData);
+                        setShareMenuOpen(false);
+                        setStatus(shareStatus, strings.shared);
+                        return;
+                    } catch (error) {
+                        if (error && error.name === 'AbortError') {
+                            return;
+                        }
+                    }
+                }
+
+                clearStatus(shareStatus);
+                setShareMenuOpen(!(shareMenu && !shareMenu.hidden));
+            });
+        }
+
+        if (shareMenu) {
+            shareMenu.addEventListener('click', (event) => {
+                if (event.target.closest('a')) {
+                    setShareMenuOpen(false);
+                }
+            });
+
+            document.addEventListener('click', (event) => {
+                if (shareWrap && !shareWrap.contains(event.target)) {
+                    setShareMenuOpen(false);
+                }
+            });
+
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape') {
+                    setShareMenuOpen(false);
+                }
+            });
+        }
+    });
+}
+
+tsRunWhenReady(tsSetupPostEngagement);
+
 // Category Menu Dropdown Functionality - Industry Standard
 document.addEventListener('DOMContentLoaded', function() {
     const categoryMenuItems = document.querySelectorAll('.category-menu-list .has-dropdown');

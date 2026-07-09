@@ -35,7 +35,7 @@
     font-weight: 700;
     line-height: 1.16 !important;
     letter-spacing: 0;
-    text-wrap: balance;
+    text-wrap: wrap;
 }
 
 .editor-styles-wrapper .block-editor-block-list__layout.is-root-container {

@@ -7,6 +7,9 @@
             $raw_content = get_the_content();
             $rendered_content = apply_filters('the_content', $raw_content);
             $reading_time = max(1, (int) ceil(str_word_count(wp_strip_all_tags($raw_content)) / 200));
+            $post_id = get_the_ID();
+            $post_permalink = get_permalink($post_id);
+            $post_title_plain = wp_strip_all_tags(get_the_title($post_id));
             $author_id = get_the_author_meta('ID');
             $author_name = get_the_author();
             $published_iso = get_the_date('c');
@@ -52,6 +55,28 @@
             $post_cta_secondary_link = trim((string) get_theme_mod('thrivingstudio_single_cta_secondary_link', home_url('/contact')));
             $show_related_posts = (bool) get_theme_mod('thrivingstudio_single_show_related_posts', true);
             $related_posts_count = max(2, min(6, (int) get_theme_mod('thrivingstudio_single_related_posts_count', 3)));
+            $show_post_engagement = get_post_type($post_id) === 'post';
+            $post_reaction_count = function_exists('thrivingstudio_get_post_useful_count') ? thrivingstudio_get_post_useful_count($post_id) : max(0, (int) get_post_meta($post_id, '_thrivingstudio_useful_count', true));
+            $post_discussion_url = (comments_open($post_id) || get_comments_number($post_id)) ? $post_permalink . '#comments' : home_url('/contact/');
+            $post_discussion_label = comments_open($post_id) || get_comments_number($post_id) ? __('Discuss', 'thrivingstudio') : __('Talk to us', 'thrivingstudio');
+            $post_share_menu_id = 'ts-post-share-menu-' . $post_id;
+            $post_external_share_url = $post_permalink;
+            $post_permalink_host = (string) wp_parse_url($post_permalink, PHP_URL_HOST);
+            $post_permalink_path = (string) wp_parse_url($post_permalink, PHP_URL_PATH);
+            $post_permalink_query = (string) wp_parse_url($post_permalink, PHP_URL_QUERY);
+            $post_local_hosts = ['localhost', '127.0.0.1', '::1'];
+            $post_is_local_share_url = in_array($post_permalink_host, $post_local_hosts, true) || substr($post_permalink_host, -6) === '.local';
+
+            if ($post_is_local_share_url && $post_permalink_path !== '') {
+                $public_share_base_url = apply_filters('thrivingstudio_public_share_base_url', 'https://thrivingstudio.xyz');
+                $post_external_share_url = trailingslashit(untrailingslashit((string) $public_share_base_url)) . ltrim($post_permalink_path, '/');
+
+                if ($post_permalink_query !== '') {
+                    $post_external_share_url .= '?' . $post_permalink_query;
+                }
+            }
+
+            $post_share_text = trim($post_title_plain . ' ' . $post_external_share_url);
 
             if (class_exists('DOMDocument')) {
                 $dom = new DOMDocument();
@@ -330,6 +355,55 @@
                         <?php echo $rendered_content; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
                     </div>
                 </div>
+
+                <?php if ($show_post_engagement) : ?>
+                    <section
+                        class="ts-single-engagement"
+                        data-post-engagement
+                        data-post-id="<?php echo esc_attr((string) $post_id); ?>"
+                        data-post-url="<?php echo esc_url($post_permalink); ?>"
+                        data-post-share-url="<?php echo esc_url($post_external_share_url); ?>"
+                        data-post-title="<?php echo esc_attr($post_title_plain); ?>"
+                        aria-label="<?php esc_attr_e('Post engagement', 'thrivingstudio'); ?>"
+                    >
+                        <div class="ts-single-engagement-copy">
+                            <p class="ts-single-engagement-eyebrow"><?php esc_html_e('Was this useful?', 'thrivingstudio'); ?></p>
+                            <p class="ts-single-engagement-text"><?php esc_html_e('Send a small signal, save the link, or keep the conversation going.', 'thrivingstudio'); ?></p>
+                        </div>
+                        <div class="ts-single-engagement-actions">
+                            <div class="ts-single-engagement-action-wrap">
+                                <button class="ts-single-engagement-action ts-single-engagement-useful" type="button" data-post-useful aria-pressed="false">
+                                    <span><?php esc_html_e('Useful', 'thrivingstudio'); ?></span>
+                                    <span class="ts-single-engagement-count<?php echo $post_reaction_count > 0 ? '' : ' is-empty'; ?>" data-useful-count><?php echo esc_html(number_format_i18n($post_reaction_count)); ?></span>
+                                </button>
+                                <p class="ts-single-engagement-action-status" data-post-useful-status aria-live="polite"></p>
+                            </div>
+                            <div class="ts-single-engagement-action-wrap">
+                                <button class="ts-single-engagement-action" type="button" data-post-copy>
+                                    <?php esc_html_e('Copy link', 'thrivingstudio'); ?>
+                                </button>
+                                <p class="ts-single-engagement-action-status" data-post-copy-status aria-live="polite"></p>
+                            </div>
+                            <div class="ts-single-engagement-action-wrap">
+                                <button class="ts-single-engagement-action" type="button" data-post-share aria-expanded="false" aria-controls="<?php echo esc_attr($post_share_menu_id); ?>">
+                                    <?php esc_html_e('Share', 'thrivingstudio'); ?>
+                                </button>
+                                <p class="ts-single-engagement-action-status" data-post-share-status aria-live="polite"></p>
+                                <div id="<?php echo esc_attr($post_share_menu_id); ?>" class="ts-single-share-menu" data-post-share-menu hidden>
+                                    <a href="<?php echo esc_url('https://www.linkedin.com/sharing/share-offsite/?url=' . rawurlencode($post_external_share_url)); ?>" target="_blank" rel="noopener noreferrer nofollow"><?php esc_html_e('LinkedIn', 'thrivingstudio'); ?></a>
+                                    <a href="<?php echo esc_url('https://www.facebook.com/sharer/sharer.php?u=' . rawurlencode($post_external_share_url) . '&quote=' . rawurlencode($post_title_plain)); ?>" target="_blank" rel="noopener noreferrer nofollow"><?php esc_html_e('Facebook', 'thrivingstudio'); ?></a>
+                                    <a href="<?php echo esc_url('https://api.whatsapp.com/send?text=' . rawurlencode($post_share_text)); ?>" target="_blank" rel="noopener noreferrer nofollow"><?php esc_html_e('WhatsApp', 'thrivingstudio'); ?></a>
+                                    <a href="<?php echo esc_url('mailto:?subject=' . rawurlencode($post_title_plain) . '&body=' . rawurlencode($post_external_share_url)); ?>"><?php esc_html_e('Email', 'thrivingstudio'); ?></a>
+                                </div>
+                            </div>
+                            <div class="ts-single-engagement-action-wrap">
+                                <a class="ts-single-engagement-action ts-single-engagement-link" href="<?php echo esc_url($post_discussion_url); ?>">
+                                    <?php echo esc_html($post_discussion_label); ?>
+                                </a>
+                            </div>
+                        </div>
+                    </section>
+                <?php endif; ?>
 
                 <?php
                 if (comments_open() || get_comments_number()) :

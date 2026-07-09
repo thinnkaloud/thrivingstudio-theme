@@ -13,6 +13,8 @@
                 'verified' => __('Verified source', 'thrivingstudio'),
                 'source_backed' => __('Source-backed', 'thrivingstudio'),
                 'attributed' => __('Attributed', 'thrivingstudio'),
+                'unverified' => __('Unverified', 'thrivingstudio'),
+                'disputed' => __('Disputed', 'thrivingstudio'),
             ];
             $verification_status = sanitize_key((string) get_post_meta($post_id, '_quote_card_verification_status', true));
             $quote_source_title = trim((string) get_post_meta($post_id, '_quote_card_source_title', true));
@@ -27,7 +29,7 @@
                 $verification_status = '';
             }
 
-            $show_quote_verification = $verification_status !== '' && $quote_has_source;
+            $show_quote_verification = $verification_status !== '' && $verification_status !== 'unverified' && $quote_has_source;
             $verification_label = $show_quote_verification ? $verification_statuses[$verification_status] : '';
             $verified_date_label = '';
 

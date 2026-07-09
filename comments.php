@@ -8,43 +8,41 @@ if (post_password_required()) {
 
     <?php if (comments_open()) : ?>
         <?php
-        $commenter = wp_get_current_commenter();
-        $req = get_option('require_name_email');
-        $required_attr = ($req ? " required='required' aria-required='true'" : '');
         $comment_redirect_url = get_permalink();
+        $comment_redirect_url = $comment_redirect_url ? $comment_redirect_url . '#comments' : home_url('/#comments');
 
-        $fields = [
-            'author' => '<p class="comment-form-author"><label for="author" class="ts-comment-label">' . esc_html__('Name', 'thrivingstudio') . ($req ? ' <span class="required">*</span>' : '') . '</label>' .
-                        '<input id="author" name="author" type="text" value="' . esc_attr($commenter['comment_author']) . '" autocomplete="name" size="30"' . $required_attr . ' class="ts-comment-input" /></p>',
-            'email'  => '<p class="comment-form-email"><label for="email" class="ts-comment-label">' . esc_html__('Email', 'thrivingstudio') . ($req ? ' <span class="required">*</span>' : '') . '</label>' .
-                        '<input id="email" name="email" type="email" value="' . esc_attr($commenter['comment_author_email']) . '" autocomplete="email" size="30"' . $required_attr . ' class="ts-comment-input" /></p>',
-            'url'    => '<p class="comment-form-url"><label for="url" class="ts-comment-label">' . esc_html__('Website', 'thrivingstudio') . '</label>' .
-                        '<input id="url" name="url" type="url" value="' . esc_attr($commenter['comment_author_url']) . '" autocomplete="url" size="30" class="ts-comment-input" /></p>',
-        ];
-
-        if (function_exists('thrivingstudio_render_comment_login_prompt')) {
+        if (!is_user_logged_in() && function_exists('thrivingstudio_render_comment_login_prompt')) {
             thrivingstudio_render_comment_login_prompt($comment_redirect_url);
-        }
+        } else {
+            $comment_avatar = '';
+            $comment_identity = function_exists('thrivingstudio_get_comment_composer_identity')
+                ? thrivingstudio_get_comment_composer_identity($comment_redirect_url)
+                : '';
 
-        comment_form([
-            'title_reply_before'   => '<h2 id="reply-title" class="comment-reply-title">',
-            'title_reply_after'    => '</h2>',
-            'title_reply'          => esc_html__('Join the Conversation', 'thrivingstudio'),
-            'title_reply_to'       => esc_html__('Reply to %s', 'thrivingstudio'),
-            'cancel_reply_link'    => esc_html__('Cancel Reply', 'thrivingstudio'),
-            'comment_field'        => '<p class="comment-form-comment"><label for="comment" class="ts-comment-label">' . esc_html__('Comment', 'thrivingstudio') . ' <span class="required">*</span></label><textarea id="comment" name="comment" cols="45" rows="6" maxlength="65525" required="required" class="ts-comment-input ts-comment-textarea" placeholder="' . esc_attr__('Share a thoughtful response...', 'thrivingstudio') . '"></textarea></p>',
-            'fields'               => $fields,
-            'logged_in_as'         => function_exists('thrivingstudio_get_comment_logged_in_as') ? thrivingstudio_get_comment_logged_in_as($comment_redirect_url) : '',
-            'must_log_in'          => function_exists('thrivingstudio_get_comment_must_log_in') ? thrivingstudio_get_comment_must_log_in($comment_redirect_url) : '',
-            'comment_notes_before' => '<p class="comment-notes">' .
-                                      (is_user_logged_in() ? esc_html__('Your profile will be attached to this comment.', 'thrivingstudio') : esc_html__('Your email address stays private. Google login can fill your profile details automatically.', 'thrivingstudio')) .
-                                      ($req ? ' ' . esc_html__('Required fields are marked', 'thrivingstudio') . ' <span class="required">*</span>.' : '') .
-                                      '</p>',
-            'class_form'           => 'comment-form ts-comment-form',
-            'class_submit'         => 'ts-comment-submit',
-            'submit_button'        => '<button name="%1$s" type="submit" id="%2$s" class="%3$s">%4$s</button>',
-            'submit_field'         => '<p class="form-submit">%1$s %2$s</p>',
-        ]);
+            if (is_user_logged_in()) {
+                $comment_user = wp_get_current_user();
+                $comment_display_name = $comment_user->display_name ?: $comment_user->user_login;
+                $comment_avatar = get_avatar($comment_user->ID, 44, '', $comment_display_name, ['class' => 'ts-comment-composer-avatar']);
+            }
+
+            comment_form([
+                'title_reply_before'   => '<h2 id="reply-title" class="comment-reply-title">',
+                'title_reply_after'    => '</h2>',
+                'title_reply'          => esc_html__('Join the conversation', 'thrivingstudio'),
+                'title_reply_to'       => esc_html__('Reply to %s', 'thrivingstudio'),
+                'cancel_reply_link'    => esc_html__('Cancel Reply', 'thrivingstudio'),
+                'comment_field'        => '<div class="ts-comment-composer">' . $comment_avatar . '<div class="ts-comment-composer-body">' . $comment_identity . '<p class="comment-form-comment"><label for="comment" class="ts-comment-label ts-comment-label--sr">' . esc_html__('Comment', 'thrivingstudio') . ' <span class="required">*</span></label><textarea id="comment" name="comment" cols="45" rows="3" maxlength="65525" required="required" class="ts-comment-input ts-comment-textarea" placeholder="' . esc_attr__('What do you think?', 'thrivingstudio') . '"></textarea></p></div></div>',
+                'fields'               => [],
+                'logged_in_as'         => '',
+                'must_log_in'          => function_exists('thrivingstudio_get_comment_must_log_in') ? thrivingstudio_get_comment_must_log_in($comment_redirect_url) : '',
+                'comment_notes_before' => '',
+                'class_form'           => 'comment-form ts-comment-form',
+                'class_submit'         => 'ts-comment-submit',
+                'label_submit'         => esc_html__('Post', 'thrivingstudio'),
+                'submit_button'        => '<button name="%1$s" type="submit" id="%2$s" class="%3$s">%4$s</button>',
+                'submit_field'         => '<p class="form-submit">%1$s %2$s</p>',
+            ]);
+        }
         ?>
     <?php endif; ?>
 

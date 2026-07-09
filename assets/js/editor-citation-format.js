@@ -109,6 +109,22 @@
         return text.slice(start, end);
     }
 
+    function getInsertionRange(range, isEditingCitation) {
+        if (!isEditingCitation && range.start !== range.end) {
+            return { start: range.end, end: range.end };
+        }
+
+        return range;
+    }
+
+    function needsLeadingSpace(text, index) {
+        return index > 0 && !/\s/.test(text.charAt(index - 1));
+    }
+
+    function needsTrailingSpace(text, index) {
+        return index < text.length && !/[\s,.;:!?)\]\}"']/.test(text.charAt(index));
+    }
+
     function getRelTokens(rel) {
         return (rel || '').split(/\s+/).filter(Boolean);
     }
@@ -133,14 +149,28 @@
     }
 
     function CitationForm(props) {
-        var value = props.value;
+        var activeAttributes = props.activeAttributes || {};
+        var citationContextState = useState(function () {
+            var initialRange = getCitationRange(props.value, props.isActive, activeAttributes);
+
+            return {
+                value: props.value,
+                range: initialRange,
+                selectedText: getSelectedText(props.value, initialRange).trim(),
+                isEditingCitation: !!props.isActive,
+                activeAttributes: activeAttributes
+            };
+        });
+        var citationContext = citationContextState[0];
+        var value = citationContext.value || props.value;
         var onChange = props.onChange;
         var onClose = props.onClose;
-        var activeAttributes = props.activeAttributes || {};
-        var citationRange = getCitationRange(value, props.isActive, activeAttributes);
-        var selectedText = getSelectedText(value, citationRange).trim();
+        var citationRange = citationContext.range;
+        var selectedText = citationContext.selectedText;
+        var isEditingCitation = citationContext.isEditingCitation;
+        activeAttributes = citationContext.activeAttributes || {};
         var initialUrl = activeAttributes.href || '';
-        var initialLabel = selectedText || getSourceLabel(initialUrl);
+        var initialLabel = isEditingCitation ? selectedText : getSourceLabel(initialUrl);
         var urlState = useState(initialUrl);
         var url = urlState[0];
         var setUrl = urlState[1];
@@ -165,11 +195,12 @@
                 return;
             }
 
-            var start = citationRange.start;
-            var end = citationRange.end;
             var text = value.text || '';
-            var prefix = start === end && start > 0 && !/\s/.test(text.charAt(start - 1)) ? ' ' : '';
-            var suffix = end < text.length && !/\s/.test(text.charAt(end)) ? ' ' : '';
+            var insertionRange = getInsertionRange(citationRange, isEditingCitation);
+            var start = insertionRange.start;
+            var end = insertionRange.end;
+            var prefix = needsLeadingSpace(text, start) ? ' ' : '';
+            var suffix = needsTrailingSpace(text, end) ? ' ' : '';
             var replacement = prefix + finalLabel + suffix;
             var citationStart = start + prefix.length;
             var citationEnd = citationStart + finalLabel.length;
@@ -276,7 +307,7 @@
             el(
                 'div',
                 { className: 'ts-citation-popover-actions' },
-                props.isActive && el(
+                isEditingCitation && el(
                     Button,
                     {
                         variant: 'tertiary',
@@ -294,7 +325,7 @@
                         variant: 'primary',
                         type: 'submit'
                     },
-                    props.isActive
+                    isEditingCitation
                         ? __('Update citation', 'thrivingstudio')
                         : __('Add citation', 'thrivingstudio')
                 )

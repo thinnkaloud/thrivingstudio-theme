@@ -73,6 +73,8 @@ function thrivingstudio_quote_card_verification_status_options() {
         'verified' => __('Verified source', 'thrivingstudio'),
         'source_backed' => __('Source-backed', 'thrivingstudio'),
         'attributed' => __('Attributed', 'thrivingstudio'),
+        'unverified' => __('Unverified', 'thrivingstudio'),
+        'disputed' => __('Disputed', 'thrivingstudio'),
     ];
 }
 
@@ -329,17 +331,79 @@ function thrivingstudio_quote_card_ai_prompt($post_id) {
     $caption = trim((string) get_post_meta($post_id, '_quote_card_caption', true));
 
     return sprintf(
-        "You are an editorial quote-verification assistant for Thriving Studio.\n\n" .
         "Use web search to find supporting evidence for the quote. Prefer original, primary, archival, publisher, transcript, interview, book, speech, court, institutional, or author-controlled sources. Treat quote-aggregator pages as weak evidence.\n\n" .
         "Do not overclaim. Use status \"verified\" only when the exact wording, or a clearly equivalent original wording, is supported by an authoritative source. Use \"source_backed\" when a reputable secondary source supports the quote but the original source is not available. Use \"attributed\" when the attribution is common but weak. Use \"unverified\" when no reliable source is found. Use \"disputed\" when evidence suggests the quote is false, misattributed, or materially altered.\n\n" .
-        "Return only a valid JSON object with these keys: status, source_title, source_name, source_url, verified_date, note, confidence, evidence, needs_editor_review.\n" .
-        "The evidence key must be an array of up to 4 objects with title, url, and why_it_matters. The verified_date must be today's date in YYYY-MM-DD format. The note must be concise and editor-facing.\n\n" .
+        "For verified, source_backed, or attributed results, include a source_url. For unverified or disputed results, use empty strings for unavailable source fields. The evidence array can be empty when no reliable source exists. The note must be concise and editor-facing.\n\n" .
         "Quote: %s\nAuthor: %s\nExisting caption/context: %s\nToday: %s",
         $quote,
         $author ?: 'Unknown',
         $caption ?: 'None',
         current_time('Y-m-d')
     );
+}
+
+/**
+ * Build the strict schema expected from the quote verification model response.
+ *
+ * @return array<string, mixed>
+ */
+function thrivingstudio_quote_card_ai_response_schema() {
+    return [
+        'type' => 'json_schema',
+        'name' => 'quote_card_verification',
+        'schema' => [
+            'type' => 'object',
+            'properties' => [
+                'status' => [
+                    'type' => 'string',
+                    'enum' => ['verified', 'source_backed', 'attributed', 'unverified', 'disputed'],
+                ],
+                'source_title' => ['type' => 'string'],
+                'source_name' => ['type' => 'string'],
+                'source_url' => ['type' => 'string'],
+                'verified_date' => ['type' => 'string'],
+                'note' => ['type' => 'string'],
+                'confidence' => ['type' => 'integer'],
+                'evidence' => [
+                    'type' => 'array',
+                    'items' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'title' => ['type' => 'string'],
+                            'url' => ['type' => 'string'],
+                            'why_it_matters' => ['type' => 'string'],
+                        ],
+                        'required' => ['title', 'url', 'why_it_matters'],
+                        'additionalProperties' => false,
+                    ],
+                ],
+                'needs_editor_review' => ['type' => 'boolean'],
+            ],
+            'required' => [
+                'status',
+                'source_title',
+                'source_name',
+                'source_url',
+                'verified_date',
+                'note',
+                'confidence',
+                'evidence',
+                'needs_editor_review',
+            ],
+            'additionalProperties' => false,
+        ],
+        'strict' => true,
+    ];
+}
+
+/**
+ * Check whether the configured model supports reasoning options.
+ *
+ * @param string $model
+ * @return bool
+ */
+function thrivingstudio_quote_card_ai_model_supports_reasoning($model) {
+    return (bool) preg_match('/^(gpt-5|o[0-9])/', $model);
 }
 
 /**
@@ -420,8 +484,12 @@ function thrivingstudio_quote_card_ai_normalize_result($result) {
     $public_statuses = thrivingstudio_quote_card_verification_status_options();
     $source_url = esc_url_raw((string) ($result['source_url'] ?? ''));
 
-    if (!array_key_exists($status, $public_statuses) || !$source_url) {
-        $status = '';
+    if (!array_key_exists($status, $public_statuses) || $status === '') {
+        $status = 'unverified';
+    }
+
+    if (in_array($status, ['verified', 'source_backed', 'attributed'], true) && !$source_url) {
+        $status = 'unverified';
     }
 
     $verified_date = sanitize_text_field((string) ($result['verified_date'] ?? ''));
@@ -484,14 +552,32 @@ function thrivingstudio_ajax_verify_quote_card() {
         wp_send_json_error(['message' => __('OpenAI API key is not configured on the server.', 'thrivingstudio')], 400);
     }
 
+    $model = thrivingstudio_quote_card_ai_model();
     $payload = [
-        'model' => thrivingstudio_quote_card_ai_model(),
+        'model' => $model,
         'tools' => [
             ['type' => 'web_search'],
         ],
-        'input' => thrivingstudio_quote_card_ai_prompt($post_id),
+        'tool_choice' => 'required',
+        'input' => [
+            [
+                'role' => 'system',
+                'content' => 'You are an editorial quote-verification assistant for Thriving Studio. Return only the structured fields requested by the schema. Never claim a quote is verified without reliable supporting evidence.',
+            ],
+            [
+                'role' => 'user',
+                'content' => thrivingstudio_quote_card_ai_prompt($post_id),
+            ],
+        ],
+        'text' => [
+            'format' => thrivingstudio_quote_card_ai_response_schema(),
+        ],
         'store' => false,
     ];
+
+    if (thrivingstudio_quote_card_ai_model_supports_reasoning($model)) {
+        $payload['reasoning'] = ['effort' => 'low'];
+    }
 
     $response = wp_remote_post(
         'https://api.openai.com/v1/responses',
@@ -519,11 +605,45 @@ function thrivingstudio_ajax_verify_quote_card() {
             $message = sanitize_text_field((string) $response_data['error']['message']);
         }
 
-        wp_send_json_error(['message' => $message], $status_code ?: 500);
+        wp_send_json_error(
+            [
+                'message' => sprintf(
+                    /* translators: 1: HTTP status code, 2: OpenAI error message. */
+                    __('OpenAI request failed (%1$d): %2$s', 'thrivingstudio'),
+                    $status_code,
+                    $message
+                ),
+                'status_code' => $status_code,
+            ],
+            $status_code ?: 500
+        );
     }
 
     if (!is_array($response_data)) {
         wp_send_json_error(['message' => __('AI verification returned an unreadable response.', 'thrivingstudio')], 500);
+    }
+
+    if (!empty($response_data['status']) && $response_data['status'] !== 'completed') {
+        $reason = '';
+        if (!empty($response_data['incomplete_details']['reason'])) {
+            $reason = sanitize_text_field((string) $response_data['incomplete_details']['reason']);
+        } elseif (!empty($response_data['error']['message'])) {
+            $reason = sanitize_text_field((string) $response_data['error']['message']);
+        }
+
+        wp_send_json_error(
+            [
+                'message' => $reason
+                    ? sprintf(
+                        /* translators: %s: OpenAI response status or reason. */
+                        __('AI verification did not complete: %s', 'thrivingstudio'),
+                        $reason
+                    )
+                    : __('AI verification did not complete.', 'thrivingstudio'),
+                'status_code' => $status_code,
+            ],
+            500
+        );
     }
 
     $output_text = thrivingstudio_quote_card_ai_extract_output_text($response_data);
@@ -694,7 +814,11 @@ function thrivingstudio_admin_quote_card_ai_verifier_script($hook) {
                     })
                     .then(function(json) {
                         if (!json || !json.success) {
-                            throw new Error(json && json.data && json.data.message ? json.data.message : "AI verification failed.");
+                            var message = json && json.data && json.data.message ? json.data.message : "AI verification failed.";
+                            if (json && json.data && json.data.raw_excerpt) {
+                                message += " Raw response: " + json.data.raw_excerpt;
+                            }
+                            throw new Error(message);
                         }
 
                         applyDraft(json.data);

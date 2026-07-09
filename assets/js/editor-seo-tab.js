@@ -35,6 +35,7 @@
         socialDescription: '_thrivingstudio_social_description',
         socialImage: '_thrivingstudio_social_image'
     };
+    var SEO_META_BOX_FIELDS = {};
     var ROBOTS_OPTIONS = [
         { label: __('Default: index, follow', 'thrivingstudio'), value: '' },
         { label: __('Index, follow', 'thrivingstudio'), value: 'index,follow' },
@@ -42,6 +43,16 @@
         { label: __('Index, nofollow', 'thrivingstudio'), value: 'index,nofollow' },
         { label: __('Noindex, nofollow', 'thrivingstudio'), value: 'noindex,nofollow' }
     ];
+
+    SEO_META_BOX_FIELDS[SEO_META_KEYS.articleSubtitle] = 'thrivingstudio_article_subtitle';
+    SEO_META_BOX_FIELDS[SEO_META_KEYS.title] = 'thrivingstudio_seo_title';
+    SEO_META_BOX_FIELDS[SEO_META_KEYS.description] = 'thrivingstudio_meta_description';
+    SEO_META_BOX_FIELDS[SEO_META_KEYS.focusKeyword] = 'thrivingstudio_focus_keyword';
+    SEO_META_BOX_FIELDS[SEO_META_KEYS.canonical] = 'thrivingstudio_canonical_url';
+    SEO_META_BOX_FIELDS[SEO_META_KEYS.robots] = 'thrivingstudio_robots_meta';
+    SEO_META_BOX_FIELDS[SEO_META_KEYS.socialTitle] = 'thrivingstudio_social_title';
+    SEO_META_BOX_FIELDS[SEO_META_KEYS.socialDescription] = 'thrivingstudio_social_description';
+    SEO_META_BOX_FIELDS[SEO_META_KEYS.socialImage] = 'thrivingstudio_social_image';
 
     function stripHtml(value) {
         var wrapper = document.createElement('div');
@@ -84,6 +95,35 @@
 
     function getMetaValue(meta, key) {
         return meta && typeof meta[key] === 'string' ? meta[key] : '';
+    }
+
+    function findLegacyMetaBoxField(key) {
+        var fieldName = SEO_META_BOX_FIELDS[key];
+
+        if (!fieldName) {
+            return null;
+        }
+
+        return document.getElementById(fieldName) || document.querySelector('[name="' + fieldName + '"]');
+    }
+
+    function syncLegacyMetaBoxField(key, value) {
+        var field = findLegacyMetaBoxField(key);
+        var nextValue = value || '';
+
+        if (!field || typeof field.value === 'undefined' || field.value === nextValue) {
+            return;
+        }
+
+        field.value = nextValue;
+        field.dispatchEvent(new Event('input', { bubbles: true }));
+        field.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    function syncLegacyMetaBoxFields(meta) {
+        Object.keys(SEO_META_BOX_FIELDS).forEach(function (key) {
+            syncLegacyMetaBoxField(key, getMetaValue(meta, key));
+        });
     }
 
     function getCharacterHelp(value, idealLength) {
@@ -404,7 +444,27 @@
             if (editorActions && typeof editorActions.editPost === 'function') {
                 editorActions.editPost({ meta: nextMeta });
             }
+
+            syncLegacyMetaBoxField(key, value);
         }
+
+        useEffect(function () {
+            var observer;
+            var sync = function () {
+                syncLegacyMetaBoxFields(meta);
+            };
+
+            sync();
+            observer = new MutationObserver(sync);
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true
+            });
+
+            return function () {
+                observer.disconnect();
+            };
+        }, [meta]);
 
         return el(
             'div',
