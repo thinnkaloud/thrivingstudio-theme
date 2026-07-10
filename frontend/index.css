@@ -386,22 +386,50 @@ html {
 }
 
 .ts-newsletter-form form,
-.ts-newsletter-form .sib_signup_form {
+.ts-newsletter-form .sib_signup_form,
+.ts-newsletter-form [class^="sib_signup_box_inside_"] {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
     gap: 1rem;
 }
 
+.ts-newsletter-form .sib_signup_form {
+    display: block;
+}
+
+.ts-newsletter-form [class^="sib_signup_box_inside_"] {
+    align-items: stretch;
+}
+
 .ts-newsletter-form p {
     margin: 0;
 }
 
+.ts-newsletter-form .sib_msg_disp {
+    flex: 0 0 100%;
+}
+
+.ts-newsletter-form p.sib-email-area {
+    flex: 1 1 28rem;
+    min-width: 0;
+    color: transparent;
+    font-size: 0;
+    line-height: 0;
+}
+
+.ts-newsletter-form p.sib-FIRSTNAME-area,
+.ts-newsletter-form p.sib-LASTNAME-area {
+    display: none;
+}
+
 .ts-newsletter-form input[type="email"] {
-    width: min(100%, 28rem);
+    width: 100%;
     min-height: 3rem;
     padding: .75rem 1rem;
     color: #111827;
+    font-size: 1rem;
+    line-height: 1.5;
     background: #fff;
     border: 1px solid #d1d5db;
     border-radius: .5rem;
@@ -449,6 +477,7 @@ html {
 @media (max-width: 767px) {
     .ts-newsletter-form form,
     .ts-newsletter-form .sib_signup_form,
+    .ts-newsletter-form [class^="sib_signup_box_inside_"],
     .ts-newsletter-form input[type="email"],
     .ts-newsletter-form input[type="submit"],
     .ts-newsletter-form button[type="submit"] {

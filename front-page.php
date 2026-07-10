@@ -289,7 +289,25 @@
                 <p class="mb-6 text-gray-700">Subscribe to our newsletter for the latest articles, quotes, and creative tips.</p>
                 <div class="ts-newsletter-form">
                     <?php if (shortcode_exists('sibwp_form')) : ?>
-                        <?php echo do_shortcode('[sibwp_form id=2]'); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Trusted Brevo plugin shortcode output. ?>
+                        <?php
+                        $newsletter_form = do_shortcode('[sibwp_form id=2]');
+
+                        if (class_exists('WP_HTML_Tag_Processor')) {
+                            $newsletter_form_processor = new WP_HTML_Tag_Processor($newsletter_form);
+
+                            while ($newsletter_form_processor->next_tag('input')) {
+                                if ($newsletter_form_processor->get_attribute('name') === 'email') {
+                                    $newsletter_form_processor->set_attribute('placeholder', __('Your email address', 'thrivingstudio'));
+                                    $newsletter_form_processor->set_attribute('aria-label', __('Email address', 'thrivingstudio'));
+                                    break;
+                                }
+                            }
+
+                            $newsletter_form = $newsletter_form_processor->get_updated_html();
+                        }
+
+                        echo $newsletter_form; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Trusted Brevo plugin shortcode output.
+                        ?>
                     <?php else : ?>
                         <form class="ts-newsletter-preview" aria-label="<?php esc_attr_e('Newsletter signup preview', 'thrivingstudio'); ?>">
                             <label class="screen-reader-text" for="ts-newsletter-preview-email"><?php esc_html_e('Email address', 'thrivingstudio'); ?></label>
