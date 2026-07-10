@@ -287,10 +287,18 @@
             <div class="subscribe-section ts-subscribe-panel bg-[#f8fafc] rounded-xl p-10 text-center border border-gray-200 shadow-sm">
                 <h2 class="text-2xl font-bold mb-4 text-gray-900">Stay Inspired!</h2>
                 <p class="mb-6 text-gray-700">Subscribe to our newsletter for the latest articles, quotes, and creative tips.</p>
-                <form class="flex flex-col md:flex-row justify-center gap-4">
-                    <input type="email" placeholder="Your email address" class="px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white text-gray-900" required>
-                    <button type="submit" class="px-8 py-3 font-bold rounded-lg shadow transition-colors duration-300 border border-black bg-white text-black hover:bg-gray-100">Subscribe</button>
-                </form>
+                <div class="ts-newsletter-form">
+                    <?php if (shortcode_exists('sibwp_form')) : ?>
+                        <?php echo do_shortcode('[sibwp_form id=2]'); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Trusted Brevo plugin shortcode output. ?>
+                    <?php else : ?>
+                        <form class="ts-newsletter-preview" aria-label="<?php esc_attr_e('Newsletter signup preview', 'thrivingstudio'); ?>">
+                            <label class="screen-reader-text" for="ts-newsletter-preview-email"><?php esc_html_e('Email address', 'thrivingstudio'); ?></label>
+                            <input id="ts-newsletter-preview-email" type="email" placeholder="<?php esc_attr_e('Your email address', 'thrivingstudio'); ?>" disabled>
+                            <button type="submit" disabled><?php esc_html_e('Subscribe', 'thrivingstudio'); ?></button>
+                        </form>
+                        <p class="ts-newsletter-form-notice"><?php esc_html_e('Preview only — newsletter signup is enabled on the live site.', 'thrivingstudio'); ?></p>
+                    <?php endif; ?>
+                </div>
             </div>
         </section>
     </div>

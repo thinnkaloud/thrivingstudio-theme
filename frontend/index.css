@@ -380,6 +380,82 @@ html {
     border: 1px solid #000;
 }
 
+.ts-newsletter-form {
+    max-width: 44rem;
+    margin: 0 auto;
+}
+
+.ts-newsletter-form form,
+.ts-newsletter-form .sib_signup_form {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.ts-newsletter-form p {
+    margin: 0;
+}
+
+.ts-newsletter-form input[type="email"] {
+    width: min(100%, 28rem);
+    min-height: 3rem;
+    padding: .75rem 1rem;
+    color: #111827;
+    background: #fff;
+    border: 1px solid #d1d5db;
+    border-radius: .5rem;
+}
+
+.ts-newsletter-form input[type="email"]:focus {
+    outline: 2px solid #818cf8;
+    outline-offset: 2px;
+}
+
+.ts-newsletter-form input[type="submit"],
+.ts-newsletter-form button[type="submit"] {
+    min-height: 3rem;
+    padding: .75rem 2rem;
+    color: #000;
+    font-weight: 700;
+    background: #fff;
+    border: 1px solid #000;
+    border-radius: .5rem;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 8%);
+    cursor: pointer;
+}
+
+.ts-newsletter-form input[type="submit"]:hover,
+.ts-newsletter-form button[type="submit"]:hover {
+    background: #f3f4f6;
+}
+
+.ts-newsletter-form input:disabled,
+.ts-newsletter-form button:disabled {
+    color: #6b7280;
+    background: #f3f4f6;
+    border-color: #d1d5db;
+    cursor: not-allowed;
+    opacity: .8;
+}
+
+.ts-newsletter-form-notice {
+    width: 100%;
+    margin-top: .75rem !important;
+    color: #6b7280;
+    font-size: .875rem;
+}
+
+@media (max-width: 767px) {
+    .ts-newsletter-form form,
+    .ts-newsletter-form .sib_signup_form,
+    .ts-newsletter-form input[type="email"],
+    .ts-newsletter-form input[type="submit"],
+    .ts-newsletter-form button[type="submit"] {
+        width: 100%;
+    }
+}
+
 .ts-front-page-content {
     padding-bottom: 0 !important;
 }
