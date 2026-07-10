@@ -117,11 +117,15 @@
 
                             $heading->setAttribute('id', $id);
                             $used_ids[] = $id;
-                            $toc_items[] = [
-                                'id' => $id,
-                                'text' => $text,
-                                'level' => strtolower($heading->nodeName),
-                            ];
+
+                            $heading_level = strtolower($heading->nodeName);
+                            if ($heading_level === 'h2') {
+                                $toc_items[] = [
+                                    'id' => $id,
+                                    'text' => $text,
+                                    'level' => $heading_level,
+                                ];
+                            }
                         }
                     }
 
