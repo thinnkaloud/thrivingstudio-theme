@@ -171,6 +171,8 @@ function tsSetupSingleTocActiveState() {
     if (targets.length === 0) return;
 
     toc._tsActiveStateBound = true;
+    let requestedTarget = null;
+    let requestedAt = 0;
 
     const setActiveLink = function(activeLink) {
         links.forEach((link) => {
@@ -186,8 +188,35 @@ function tsSetupSingleTocActiveState() {
         });
     };
 
+    links.forEach((link) => {
+        link.addEventListener('click', function() {
+            // Anchor scrolling happens after the click event. Update the outline
+            // immediately so the link that was previously active cannot linger.
+            requestedTarget = targets.find((item) => item.link === link) || null;
+            requestedAt = Date.now();
+            setActiveLink(link);
+        });
+    });
+
     const update = function() {
-        const offset = Math.max(96, Math.round(window.innerHeight * 0.18));
+        // Native anchor navigation can leave the heading slightly below its
+        // scroll-margin position. Keep the activation line far enough down the
+        // viewport for the clicked heading to become the current section.
+        const offset = Math.max(112, Math.round(window.innerHeight * 0.25));
+
+        if (requestedTarget) {
+            const requestedTop = requestedTarget.target.getBoundingClientRect().top;
+            const anchorIsSettling = Date.now() - requestedAt < 1200;
+            const requestedSectionIsVisible = requestedTop >= 0 && requestedTop <= window.innerHeight * 0.75;
+
+            if (anchorIsSettling || requestedSectionIsVisible) {
+                setActiveLink(requestedTarget.link);
+                return;
+            }
+
+            requestedTarget = null;
+        }
+
         let active = targets[0];
 
         targets.forEach((item) => {
