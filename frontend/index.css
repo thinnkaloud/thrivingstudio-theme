@@ -688,7 +688,7 @@ html {
 
 @media (min-width: 768px) {
     .ts-quote-slide {
-        flex-basis: calc((100% - (var(--ts-quote-gap) * 2)) / 3);
+        flex-basis: calc((100% - (var(--ts-quote-gap) * 3)) / 4);
     }
 
     .ts-quote-dots {
@@ -2409,7 +2409,7 @@ body.single-post #site-wrapper {
 
 .ts-related-posts-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 0.9rem;
 }
 
@@ -4353,6 +4353,10 @@ body.ts-profile-route #site-wrapper {
 
     .ts-related-posts {
         margin-top: 2.2rem;
+    }
+
+    .ts-related-posts-grid {
+        grid-template-columns: 1fr;
     }
 
     .single-post .comments-area {

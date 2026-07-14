@@ -193,7 +193,6 @@ function thrivingstudio_render_faq_block($attributes) {
     }
 
     $output .= '<div class="ts-faq-list">';
-    $schema_entities = [];
 
     foreach ($items as $index => $item) {
         $answer_html = thrivingstudio_format_faq_answer($item['answer']);
@@ -209,30 +208,9 @@ function thrivingstudio_render_faq_block($attributes) {
         $output .= '</summary>';
         $output .= '<div class="ts-faq-answer">' . $answer_html . '</div>';
         $output .= '</details>';
-
-        $schema_entities[] = [
-            '@type'          => 'Question',
-            'name'           => $item['question'],
-            'acceptedAnswer' => [
-                '@type' => 'Answer',
-                'text'  => trim(wp_strip_all_tags($item['answer'])),
-            ],
-        ];
     }
 
     $output .= '</div>';
-
-    if (!empty($schema_entities)) {
-        $schema = [
-            '@context'   => 'https://schema.org',
-            '@type'      => 'FAQPage',
-            'mainEntity' => $schema_entities,
-        ];
-
-        $output .= '<script type="application/ld+json" class="ts-faq-schema">';
-        $output .= wp_json_encode($schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
-        $output .= '</script>';
-    }
 
     $output .= '</section>';
 

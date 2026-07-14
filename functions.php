@@ -13,9 +13,7 @@ define('THRIVINGSTUDIO_URI', get_template_directory_uri());
 $modules = [
     // 'performance-simple', // Disabled - causing blank editor issues
     // 'performance-dashboard', // Disabled - causing blank editor issues
-    'security',
-    'seo',
-    'seo-settings'
+    'security'
     // 'ads' - Removed: Use Google Site Kit for AdSense management
 ];
 
