@@ -47,6 +47,8 @@ Set `STAGING_PATH` and `LIVE_PATH` to each environment's theme path, for example
 - `.github/workflows/ci.yml`
 - `.github/workflows/deploy-staging.yml`
 - `.github/workflows/deploy-live.yml`
+- `.github/workflows/wp-tasks.yml`
+- `scripts/wp-task.sh`
 - `scripts/deploy-check.sh`
 - `.deployignore`
 
@@ -84,6 +86,19 @@ Example:
 - `ref=a92ed36`
 
 Rolling back to a commit older than `a92ed36` (the 1.3.0 cleanup) puts deleted backup files back on the server, because rsync mirrors whatever that commit contains.
+
+## WordPress tasks
+
+**Actions -> WordPress Tasks -> Run workflow** runs one WP-CLI task on staging or live over SSH, with the same secrets as the deploys. The server needs WP-CLI (`wp`) installed. GitHub only offers this workflow once it is on `main`.
+
+| Task | What it does |
+|---|---|
+| `info` | Read-only. Lists categories, published posts and their categories, pages, and Customizer settings. |
+| `create-pillar-categories` | Creates the `inner-strength`, `discipline`, and `curious-world` categories if they are missing. Existing ones are left alone. |
+| `clear-hero-text` | Prints the saved Homepage Hero values to the log, then removes them so the theme defaults show. |
+| `purge-cache` | Purges LiteSpeed Cache (falls back to flushing the object cache). |
+
+Live runs must start from `main`, and any task other than `info` needs `confirm=RUN`. Every run is logged under Actions. The tasks live in `scripts/wp-task.sh`; adding a task means adding it there and to the workflow's task list.
 
 ## GitHub settings
 

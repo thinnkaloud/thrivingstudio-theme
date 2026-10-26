@@ -1,0 +1,99 @@
+name: WordPress Tasks
+run-name: "WordPress task: ${{ inputs.task }} on ${{ inputs.target }} by @${{ github.actor }}"
+
+# Runs one fixed WP-CLI task from scripts/wp-task.sh on staging or live,
+# using the same SSH secrets as the deploy workflows.
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Site to run the task on.
+        required: true
+        default: staging
+        type: choice
+        options:
+          - staging
+          - live
+      task:
+        description: "info is read-only. The others change the site."
+        required: true
+        default: info
+        type: choice
+        options:
+          - info
+          - create-pillar-categories
+          - clear-hero-text
+          - purge-cache
+      confirm:
+        description: Type RUN to allow a change on live. Not needed for info or staging.
+        required: false
+        default: ''
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wp-tasks-${{ inputs.target }}
+  cancel-in-progress: false
+
+jobs:
+  run:
+    name: Run task
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.target }}
+
+    steps:
+      - name: Validate inputs
+        env:
+          TARGET: ${{ inputs.target }}
+          TASK: ${{ inputs.task }}
+          CONFIRM_INPUT: ${{ inputs.confirm }}
+        run: |
+          case "$TASK" in
+            info|create-pillar-categories|clear-hero-text|purge-cache) ;;
+            *) echo "Unknown task: $TASK" >&2; exit 1 ;;
+          esac
+          if [ "$TARGET" = "live" ]; then
+            if [ "${GITHUB_REF_NAME}" != "main" ]; then
+              echo "Live tasks must run from main. Current branch: ${GITHUB_REF_NAME}" >&2
+              exit 1
+            fi
+            if [ "$TASK" != "info" ] && [ "$CONFIRM_INPUT" != "RUN" ]; then
+              echo "Refusing to change live: set confirm to RUN." >&2
+              exit 1
+            fi
+          elif [ "$TARGET" != "staging" ]; then
+            echo "Unknown target: $TARGET" >&2
+            exit 1
+          fi
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure SSH key
+        env:
+          SSH_KEY: ${{ inputs.target == 'live' && secrets.LIVE_SSH_KEY || secrets.STAGING_SSH_KEY }}
+          SSH_HOST: ${{ inputs.target == 'live' && secrets.LIVE_HOST || secrets.STAGING_HOST }}
+          SSH_PORT: ${{ inputs.target == 'live' && secrets.LIVE_PORT || secrets.STAGING_PORT }}
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -p "$SSH_PORT" "$SSH_HOST" >> ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Run task over SSH
+        env:
+          TASK: ${{ inputs.task }}
+          SSH_HOST: ${{ inputs.target == 'live' && secrets.LIVE_HOST || secrets.STAGING_HOST }}
+          SSH_PORT: ${{ inputs.target == 'live' && secrets.LIVE_PORT || secrets.STAGING_PORT }}
+          SSH_USER: ${{ inputs.target == 'live' && secrets.LIVE_USER || secrets.STAGING_USER }}
+          THEME_PATH: ${{ inputs.target == 'live' && secrets.LIVE_PATH || secrets.STAGING_PATH }}
+        run: |
+          ssh -i ~/.ssh/id_ed25519 -p "$SSH_PORT" -o StrictHostKeyChecking=yes \
+            "${SSH_USER}@${SSH_HOST}" \
+            "bash -s -- $(printf '%q' "$TASK") $(printf '%q' "${THEME_PATH%/}")" \
+            < scripts/wp-task.sh
