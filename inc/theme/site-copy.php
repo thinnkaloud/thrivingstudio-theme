@@ -59,6 +59,16 @@ function thrivingstudio_get_pillars() {
     return $pillars;
 }
 
+/**
+ * The journal (posts page) URL. get_permalink(0) returns the current post's
+ * link, so the posts-page setting must be checked before resolving it.
+ */
+function thrivingstudio_get_journal_url() {
+    $posts_page_id = (int) get_option('page_for_posts');
+
+    return $posts_page_id ? get_permalink($posts_page_id) : home_url('/blog/');
+}
+
 function thrivingstudio_site_copy_fields() {
     return [
         'home_eyebrow' => [

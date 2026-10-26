@@ -20,7 +20,7 @@
         <nav class="ts-category-browse mb-8" aria-label="Browse articles by category">
             <span class="ts-category-browse-label">Browse by topic</span>
             <div class="ts-category-browse-links">
-                <a href="<?php echo esc_url(get_permalink(get_option('page_for_posts')) ?: home_url('/blog/')); ?>" aria-current="page">All articles</a>
+                <a href="<?php echo esc_url(thrivingstudio_get_journal_url()); ?>" aria-current="page">All articles</a>
                 <?php foreach (get_categories(['hide_empty' => true, 'orderby' => 'count', 'order' => 'DESC']) as $category) : ?>
                     <a href="<?php echo esc_url(get_category_link($category->term_id)); ?>"><?php echo esc_html($category->name); ?></a>
                 <?php endforeach; ?>
@@ -46,7 +46,7 @@
             <section class="ts-empty-state" aria-label="No articles found">
                 <h2 class="ts-empty-state-title"><?php esc_html_e('No articles found', 'thrivingstudio'); ?></h2>
                 <p class="ts-empty-state-text"><?php esc_html_e('Try another category or return to the full blog feed.', 'thrivingstudio'); ?></p>
-                <a href="<?php echo esc_url(get_permalink(get_option('page_for_posts')) ?: home_url('/blog')); ?>" class="ts-empty-state-link">
+                <a href="<?php echo esc_url(thrivingstudio_get_journal_url()); ?>" class="ts-empty-state-link">
                     <?php esc_html_e('Go to Blog Home', 'thrivingstudio'); ?>
                 </a>
             </section>

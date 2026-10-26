@@ -49,7 +49,7 @@
             <section class="ts-empty-state" aria-label="No posts in this archive">
                 <h2 class="ts-empty-state-title"><?php esc_html_e('No posts in this section yet', 'thrivingstudio'); ?></h2>
                 <p class="ts-empty-state-text"><?php esc_html_e('Browse other categories or return to the full blog listing.', 'thrivingstudio'); ?></p>
-                <a href="<?php echo esc_url(get_permalink(get_option('page_for_posts')) ?: home_url('/blog')); ?>" class="ts-empty-state-link">
+                <a href="<?php echo esc_url(thrivingstudio_get_journal_url()); ?>" class="ts-empty-state-link">
                     <?php esc_html_e('Go to Blog Home', 'thrivingstudio'); ?>
                 </a>
             </section>

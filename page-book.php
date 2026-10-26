@@ -21,7 +21,7 @@ get_header(); ?>
                     <?php echo esc_html(thrivingstudio_copy('book_text')); ?>
                 </p>
                 <a class="inline-block px-6 py-3 rounded-lg bg-black text-white font-semibold" href="<?php echo esc_url(home_url('/#subscribe')); ?>"><?php echo esc_html(thrivingstudio_copy('home_hero_secondary_label')); ?></a>
-                <p class="mt-6 text-gray-600"><a class="underline" href="<?php echo esc_url(get_permalink(get_option('page_for_posts')) ?: home_url('/blog/')); ?>"><?php esc_html_e('Read the journal in the meantime', 'thrivingstudio'); ?></a></p>
+                <p class="mt-6 text-gray-600"><a class="underline" href="<?php echo esc_url(thrivingstudio_get_journal_url()); ?>"><?php esc_html_e('Read the journal in the meantime', 'thrivingstudio'); ?></a></p>
             </div>
         </section>
     </div>
