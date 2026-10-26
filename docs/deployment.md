@@ -44,6 +44,7 @@ Set `STAGING_PATH` and `LIVE_PATH` to each environment's theme path, for example
 ## Workflow files
 
 - `.github/workflows/test.yml`
+- `.github/workflows/ci.yml`
 - `.github/workflows/deploy-staging.yml`
 - `.github/workflows/deploy-live.yml`
 - `scripts/deploy-check.sh`
@@ -51,7 +52,7 @@ Set `STAGING_PATH` and `LIVE_PATH` to each environment's theme path, for example
 
 ## Automatic checks
 
-`.github/workflows/test.yml` runs `npm run test:ci` on every pull request, and before every staging and live deploy. A deploy only starts if the checks pass. They are:
+`.github/workflows/test.yml` runs `npm run test:ci` on every pull request (through `ci.yml`), and before every staging and live deploy. It always reports as "test / Theme checks", the name the `Protect main` ruleset requires. A deploy only starts if the checks pass. They are:
 
 - `check:hygiene`: no debug or backup files (`.backup`, `.broken`, and similar).
 - `check:php`: PHP syntax check on every tracked PHP file.
@@ -90,13 +91,14 @@ In place now:
 
 - Environment `live` requires a reviewer to approve each deployment.
 - Staging and live secrets are configured.
+- Ruleset `Protect main`: nobody can push to `main` directly, delete it, or force-push it. Changes reach `main` only through a pull request from `develop`. No approvals are required, so you can merge your own pull requests.
 
-Recommended, not yet turned on (direct pushes to `main` and `develop` currently succeed):
+Merging `develop` into `main` now means: Pull requests -> New pull request -> base `main`, compare `develop` -> wait for "Theme checks" to pass -> Merge pull request.
 
-1. Branch protection on `main`: require a pull request before merging, and restrict who can push.
-2. Branch protection on `develop`: optionally require a pull request.
-3. Required status checks: once branch protection is on, require "Theme checks" to pass before merging.
-4. Environment `live`: optional wait timer before deployment.
+Optional:
+
+1. Ruleset `Protect main` already requires "test / Theme checks". Keep that exact name if you edit the ruleset.
+2. Environment `live`: a wait timer before deployment.
 
 ## Validation commands
 

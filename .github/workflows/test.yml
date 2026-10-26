@@ -1,7 +1,9 @@
 name: Test Theme
 
+# Called by ci.yml (pull requests) and the deploy workflows, always from a job
+# named `test`, so the check is reported as "test / Theme checks" everywhere.
+# The Protect main ruleset requires that exact name.
 on:
-  pull_request:
   workflow_call:
     inputs:
       ref:
