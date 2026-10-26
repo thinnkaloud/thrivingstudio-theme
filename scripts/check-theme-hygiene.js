@@ -15,7 +15,26 @@ const forbiddenFiles = [
   'test-working.php',
 ];
 
-const found = forbiddenFiles.filter((file) => fs.existsSync(path.join(root, file)));
+// Backup copies like foo.php.backup are served as plain text and leak source.
+const backupPattern = /\.(backup|broken|disabled|bak|orig)$/;
+const skipDirs = new Set(['.git', 'node_modules']);
+
+function findBackups(dir) {
+  return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    if (skipDirs.has(entry.name)) {
+      return [];
+    }
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      return findBackups(full);
+    }
+    return backupPattern.test(entry.name) ? [path.relative(root, full)] : [];
+  });
+}
+
+const found = forbiddenFiles
+  .filter((file) => fs.existsSync(path.join(root, file)))
+  .concat(findBackups(root));
 
 if (found.length > 0) {
   console.error('Forbidden debug/repair files are present:');
