@@ -2,6 +2,24 @@
 
 All notable changes to the Thriving Studio theme will be documented in this file.
 
+## [Unreleased]
+
+### Added
+- **Search**: Search results page, search form, a search icon in the desktop header, and search in the mobile menu and on the 404 page.
+
+### Changed
+- **Article cards**: One shared card (`template-parts/post-card.php`) now renders every post listing. Card images use responsive `srcset` instead of a fixed small size, homepage card titles are `h3` under their section heading, and cards without an image show a plain block instead of "No image available".
+- **"Useful" button**: Each visitor (by account, or by IP when signed out) adds at most one vote per article and can only remove their own. Signed-out votes no longer need a nonce, so the button keeps working on cached pages.
+- **Contact page**: Excluded from page caching so its form nonce never expires in a cached copy.
+- **Service Worker cleanup**: Only runs for visitors who still have an old worker installed, instead of clearing browser caches on every page load.
+- **Accessibility**: Added the `.screen-reader-text` style, so hidden form labels are no longer visible.
+
+### Removed
+- `inc/theme/media.php`. Its WebP filter served full-size images in place of thumbnails, dropped `srcset` and classes, and accepted any upload with ".webp" in its name. WordPress handles WebP natively.
+- Empty `page-blog.php`, the unreachable blog branch and filter script in `page.php`, unused `assets/js/home-filters.js` and `frontend/build-full.css`.
+- CSS rules in `style.css`, which WordPress never loaded.
+- Duplicate quote archive styles and mobile menu script in the header (both already handled elsewhere).
+
 ## [1.3.0] - 2026-10-26
 
 Covers all work since the `v1.2-structural-cleanup` tag (Feb 2026). Versions 1.1 and 1.2 were tracked as git tags only.

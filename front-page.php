@@ -149,41 +149,7 @@
                 ]);
                 if ($latest_query->have_posts()) :
                     while ($latest_query->have_posts()) : $latest_query->the_post(); ?>
-                        <article <?php post_class('blog-card ts-blog-card bg-white rounded-lg shadow-md overflow-hidden transform hover:-translate-y-1 transition-transform duration-300'); ?>>
-                            <?php if (has_post_thumbnail()) : ?>
-                                <a href="<?php the_permalink(); ?>" class="ts-blog-card-image-link">
-                                    <?php the_post_thumbnail('medium_large', ['class' => 'blog-card-image ts-blog-card-image w-full', 'loading' => 'lazy']); ?>
-                                </a>
-                            <?php else : ?>
-                                <div class="ts-blog-card-image-placeholder w-full h-48 bg-gray-100 flex items-center justify-center">
-                                    <span class="text-gray-400 text-sm">No image available</span>
-                                </div>
-                            <?php endif; ?>
-                            
-                            <!-- Category Name -->
-                            <div class="px-4 pt-4 ts-blog-card-meta">
-                                <?php 
-                                $categories = get_the_category();
-                                if (!empty($categories)) {
-                                    $primary_category = $categories[0]; // Get the first category
-                                    echo '<span class="text-gray-600 text-xs font-medium ts-blog-card-category">' . esc_html($primary_category->name) . '</span>';
-                                }
-                                ?>
-                            </div>
-                            
-                            <div class="px-4 pt-2 pb-4 ts-blog-card-body">
-                                <h2 class="text-2xl font-bold mb-2 ts-blog-card-title">
-                                    <a href="<?php the_permalink(); ?>" class="ts-blog-card-title-link hover:text-indigo-600"><?php the_title(); ?></a>
-                                </h2>
-                                <?php $manual_excerpt = thrivingstudio_get_manual_excerpt(); ?>
-                                <?php if ($manual_excerpt !== '') : ?>
-                                    <div class="text-gray-600 mb-4 ts-blog-card-excerpt">
-                                        <p><?php echo esc_html($manual_excerpt); ?></p>
-                                    </div>
-                                <?php endif; ?>
-                                <a href="<?php the_permalink(); ?>" class="text-indigo-600 hover:text-indigo-800 font-semibold ts-blog-card-link"><?php esc_html_e('Read More', 'thrivingstudio'); ?> &rarr;</a>
-                            </div>
-                        </article>
+                        <?php get_template_part('template-parts/post-card', null, ['heading_level' => 'h3']); ?>
                     <?php endwhile;
                     wp_reset_postdata();
                 else : ?>

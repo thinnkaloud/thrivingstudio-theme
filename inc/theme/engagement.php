@@ -31,8 +31,32 @@ function thrivingstudio_enqueue_post_engagement_data() {
 }
 add_action('wp_enqueue_scripts', 'thrivingstudio_enqueue_post_engagement_data', 20);
 
+/**
+ * Who is voting: the account for signed-in readers, otherwise the IP address.
+ * Hosts that sit behind a proxy without restoring REMOTE_ADDR can supply the
+ * real client IP through the `thrivingstudio_useful_visitor_ip` filter.
+ */
+function thrivingstudio_get_useful_vote_key($post_id) {
+    $user_id = get_current_user_id();
+
+    if ($user_id) {
+        $visitor = 'user:' . $user_id;
+    } else {
+        $ip = isset($_SERVER['REMOTE_ADDR']) ? (string) $_SERVER['REMOTE_ADDR'] : '';
+        $ip = (string) apply_filters('thrivingstudio_useful_visitor_ip', $ip);
+        $visitor = 'ip:' . $ip;
+    }
+
+    return 'ts_useful_' . md5(wp_salt('nonce') . '|' . (int) $post_id . '|' . $visitor);
+}
+
 function thrivingstudio_ajax_toggle_post_useful() {
-    check_ajax_referer('thrivingstudio_post_engagement', 'nonce');
+    // Anonymous visitors read cached pages, where a nonce goes stale within a
+    // day, and a logged-out nonce gives no CSRF protection anyway. The
+    // per-visitor vote record below is what stops repeat or forged votes.
+    if (is_user_logged_in()) {
+        check_ajax_referer('thrivingstudio_post_engagement', 'nonce');
+    }
 
     $post_id = isset($_POST['post_id']) ? absint($_POST['post_id']) : 0;
     $selected_value = isset($_POST['selected']) ? sanitize_text_field((string) wp_unslash($_POST['selected'])) : '';
@@ -42,10 +66,20 @@ function thrivingstudio_ajax_toggle_post_useful() {
         wp_send_json_error(['message' => __('Invalid post.', 'thrivingstudio')], 400);
     }
 
+    $vote_key = thrivingstudio_get_useful_vote_key($post_id);
+    $has_voted = (bool) get_transient($vote_key);
     $count = thrivingstudio_get_post_useful_count($post_id);
-    $count = $selected ? $count + 1 : max(0, $count - 1);
 
-    update_post_meta($post_id, '_thrivingstudio_useful_count', $count);
+    // Each visitor can add one vote per post and can only take back their own.
+    if ($selected && !$has_voted) {
+        $count++;
+        update_post_meta($post_id, '_thrivingstudio_useful_count', $count);
+        set_transient($vote_key, 1, 90 * DAY_IN_SECONDS);
+    } elseif (!$selected && $has_voted) {
+        $count = max(0, $count - 1);
+        update_post_meta($post_id, '_thrivingstudio_useful_count', $count);
+        delete_transient($vote_key);
+    }
 
     wp_send_json_success([
         'count'    => $count,

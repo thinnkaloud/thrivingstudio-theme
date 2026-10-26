@@ -1,16 +1,17 @@
 // A script to handle the dark mode toggle functionality.
 
-// Disable and unregister any existing Service Worker to prevent stale caches
+// Remove a Service Worker left over from an old theme version, and its caches.
+// Visitors without one (almost everyone now) skip the cleanup entirely.
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', async () => {
         try {
-            // Unregister all existing registrations
             const registrations = await navigator.serviceWorker.getRegistrations();
+            if (!registrations.length) return;
+
             for (const reg of registrations) {
                 try { await reg.unregister(); } catch (e) {}
             }
 
-            // Clear all Cache Storage entries
             if (window.caches && caches.keys) {
                 try {
                     const keys = await caches.keys();

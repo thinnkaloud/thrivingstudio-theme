@@ -29,60 +29,8 @@
 
         <?php if ( have_posts() ) : ?>
             <div id="blog-post-grid" class="blog-grid ts-blog-grid grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                <?php while ( have_posts() ) : the_post(); 
-                    $post_categories = get_the_category();
-                    $category_slugs = array();
-                    foreach ($post_categories as $cat) {
-                        $category_slugs[] = $cat->slug;
-                    }
-                    $category_data = implode(' ', $category_slugs);
-                ?>
-                    <article id="post-<?php the_ID(); ?>" <?php post_class('blog-card ts-blog-card bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden transform hover:-translate-y-1 transition-transform duration-300'); ?> data-categories="<?php echo esc_attr($category_data); ?>">
-                        <?php if ( has_post_thumbnail() ) : ?>
-                            <a href="<?php the_permalink(); ?>" class="ts-blog-card-image-link">
-                                <?php 
-                                $thumbnail_id = get_post_thumbnail_id();
-                                $image_url = wp_get_attachment_image_url($thumbnail_id, 'medium');
-                                if ($image_url) {
-                                    echo '<img src="' . esc_url($image_url) . '" alt="' . esc_attr(get_the_title()) . '" class="blog-card-image ts-blog-card-image w-full" loading="lazy" decoding="async">';
-                                } else {
-                                    echo '<div class="ts-blog-card-image-placeholder w-full h-48 bg-gray-100 flex items-center justify-center"><span class="text-gray-400 text-sm">Image not found</span></div>';
-                                }
-                                ?>
-                            </a>
-                        <?php else : ?>
-                            <!-- Fallback for posts without featured images -->
-                            <div class="ts-blog-card-image-placeholder w-full h-48 bg-gray-100 flex items-center justify-center">
-                                <span class="text-gray-400 text-sm">No image available</span>
-                            </div>
-                        <?php endif; ?>
-                        
-                        <!-- Category Name -->
-                        <div class="px-4 pt-4 ts-blog-card-meta">
-                            <?php 
-                            $categories = get_the_category();
-                            if (!empty($categories)) {
-                                $primary_category = $categories[0]; // Get the first category
-                                echo '<span class="text-gray-600 text-xs font-medium ts-blog-card-category">' . esc_html($primary_category->name) . '</span>';
-                            }
-                            ?>
-                        </div>
-                        
-                        <div class="px-4 pt-2 pb-4 ts-blog-card-body">
-                            <h2 class="text-2xl font-bold mb-2 ts-blog-card-title">
-                                <a href="<?php the_permalink(); ?>" class="ts-blog-card-title-link hover:text-indigo-600 dark:text-white dark:hover:text-indigo-400"><?php the_title(); ?></a>
-                            </h2>
-                            <?php $manual_excerpt = thrivingstudio_get_manual_excerpt(); ?>
-                            <?php if ($manual_excerpt !== '') : ?>
-                                <div class="text-gray-600 dark:text-gray-300 mb-4 ts-blog-card-excerpt">
-                                    <p><?php echo esc_html($manual_excerpt); ?></p>
-                                </div>
-                            <?php endif; ?>
-                            <a href="<?php the_permalink(); ?>" class="text-indigo-600 hover:text-indigo-800 dark:hover:text-indigo-400 font-semibold ts-blog-card-link">
-                                Read More &rarr;
-                            </a>
-                        </div>
-                    </article>
+                <?php while ( have_posts() ) : the_post(); ?>
+                    <?php get_template_part('template-parts/post-card'); ?>
                 <?php endwhile; ?>
             </div>
             <nav class="ts-pagination-wrap" aria-label="Blog pagination">

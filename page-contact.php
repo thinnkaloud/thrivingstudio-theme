@@ -2,6 +2,9 @@
 /*
 Template Name: Contact Page
 */
+// The form carries a nonce that expires, so this page must never be served from a page cache.
+do_action('litespeed_control_set_nocache', 'contact form nonce');
+nocache_headers();
 get_header(); ?>
 
 <main class="flex-1 bg-gradient-to-br from-slate-50 to-white">
