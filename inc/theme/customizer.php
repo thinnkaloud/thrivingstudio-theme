@@ -242,7 +242,7 @@ function thrivingstudio_customize_register($wp_customize) {
         'type'     => 'text',
     ]);
     $wp_customize->add_setting('thrivingstudio_home_hero_button_text', [
-        'default'           => __('Learn More', 'thrivingstudio'),
+        'default'           => __('Explore articles', 'thrivingstudio'),
         'sanitize_callback' => 'sanitize_text_field',
     ]);
     $wp_customize->add_control('thrivingstudio_home_hero_button_text', [
@@ -251,7 +251,7 @@ function thrivingstudio_customize_register($wp_customize) {
         'type'     => 'text',
     ]);
     $wp_customize->add_setting('thrivingstudio_home_hero_button_link', [
-        'default'           => '#',
+        'default'           => home_url('/#latest-articles'),
         'sanitize_callback' => 'esc_url_raw',
     ]);
     $wp_customize->add_control('thrivingstudio_home_hero_button_link', [

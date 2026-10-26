@@ -4537,3 +4537,59 @@ body.ts-profile-route #site-wrapper {
         gap: 0.55rem;
     }
 }
+
+/* Keep navigation readable on the white header, including system dark mode. */
+#mobile-menu a:not(.ts-header-cta),
+#mobile-menu .primary-menu a {
+    color: #374151 !important;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+}
+#mobile-menu a:not(.ts-header-cta):hover {
+    color: #111827 !important;
+    background: #f3f4f6 !important;
+}
+#mobile-menu a:focus-visible,
+#mobile-menu-button:focus-visible {
+    outline: 2px solid #4338ca !important;
+    outline-offset: 3px;
+}
+@media (max-width: 767px) {
+    #mobile-menu {
+        max-height: calc(100dvh - 64px);
+        overflow-y: auto;
+        overscroll-behavior: contain;
+    }
+    body.admin-bar #mobile-menu { max-height: calc(100dvh - 110px); }
+}
+.ts-foundations-grid {
+    display: grid;
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+@media (min-width: 768px) {
+    .ts-foundations-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+.ts-foundation-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 1rem;
+    padding: 1.5rem;
+}
+.ts-foundation-card a { text-decoration: underline; text-underline-offset: 4px; }
+
+/* Let readers reach articles sooner and browse every post in a topic. */
+.ts-blog-hero { padding: 1.75rem 0; margin-bottom: 1.5rem; }
+.ts-blog-hero h1 { font-size: clamp(1.75rem, 4vw, 2.5rem); }
+.ts-blog-hero p { font-size: 1.125rem; }
+.ts-category-browse-label { display: block; font-weight: 600; margin-bottom: .75rem; }
+.ts-category-browse-links { display: flex; flex-wrap: wrap; gap: .5rem; }
+.ts-category-browse-links a {
+    display: inline-flex; align-items: center; min-height: 44px;
+    border: 1px solid #d1d5db; border-radius: 999px; padding: .5rem 1rem;
+    color: #374151; background: #fff; font-size: .875rem;
+}
+.ts-category-browse-links a:hover { background: #f3f4f6; }
+.ts-category-browse-links a[aria-current] { color: #fff; background: #111827; border-color: #111827; }
+.ts-password-toggle { color: #374151; text-decoration: underline; min-height: 44px; justify-self: start; }
+.ts-category-browse-links a:focus-visible, .ts-password-toggle:focus-visible { outline: 2px solid #4338ca; outline-offset: 3px; }

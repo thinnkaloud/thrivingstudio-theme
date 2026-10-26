@@ -14,6 +14,7 @@ if (has_nav_menu('primary')) {
 
     wp_nav_menu([
         'theme_location' => 'primary',
+        'is_mobile'     => $is_mobile,
         'container'      => '',
         'menu_class'     => $menu_class,
         'items_wrap'     => '<ul id="%1$s" class="%2$s">%3$s</ul>',

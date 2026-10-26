@@ -4,41 +4,29 @@
 // https://developer.wordpress.org/themes/basics/template-hierarchy/
 ?>
 <?php get_header(); ?>
-<?php
-$home_filter_categories = get_categories([
-    'hide_empty' => true,
-    'orderby' => 'count',
-    'order' => 'DESC',
-]);
-$home_filter_categories_data = [];
-foreach ($home_filter_categories as $category) {
-    $home_filter_categories_data[] = [
-        'slug' => $category->slug,
-        'name' => $category->name,
-    ];
-}
-?>
 
 <main class="flex-1">
     <div class="site-content container mx-auto px-4 sm:px-6 lg:px-8 pt-0 flex-1 relative">
         <!-- Blog Hero Section -->
         <section class="ts-blog-hero mb-12 rounded-xl overflow-hidden">
             <div class="text-center px-4 sm:px-8">
-                <h1 class="text-5xl font-extrabold mb-4 text-black drop-shadow">Welcome to the Blog</h1>
+                <h1 class="text-5xl font-extrabold mb-4 text-black drop-shadow">Explore the journal</h1>
                 <p class="text-xl text-black mb-2 max-w-2xl mx-auto">
-                    Explore deep insights, creative ideas, and timeless stories curated for your growth and inspiration.
+                    Practical ideas on emotional strength, creative growth, and a more intentional life.
                 </p>
             </div>
         </section>
         
-        <!-- Category Filter Buttons -->
-        <div class="mb-12">
-            <div id="category-container" data-categories="<?php echo esc_attr(wp_json_encode($home_filter_categories_data)); ?>">
-                <div id="category-row-1" class="ts-category-row flex justify-start gap-3 px-4 sm:px-0 overflow-x-auto pb-1"></div>
+        <nav class="ts-category-browse mb-8" aria-label="Browse articles by category">
+            <span class="ts-category-browse-label">Browse by topic</span>
+            <div class="ts-category-browse-links">
+                <a href="<?php echo esc_url(get_permalink(get_option('page_for_posts')) ?: home_url('/blog/')); ?>" aria-current="page">All articles</a>
+                <?php foreach (get_categories(['hide_empty' => true, 'orderby' => 'count', 'order' => 'DESC']) as $category) : ?>
+                    <a href="<?php echo esc_url(get_category_link($category->term_id)); ?>"><?php echo esc_html($category->name); ?></a>
+                <?php endforeach; ?>
             </div>
-            <p id="filter-results-status" class="ts-filter-status px-4 sm:px-0 text-sm text-gray-600" aria-live="polite"></p>
-        </div>
-        
+        </nav>
+
         <?php if ( have_posts() ) : ?>
             <div id="blog-post-grid" class="blog-grid ts-blog-grid grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 <?php while ( have_posts() ) : the_post(); 

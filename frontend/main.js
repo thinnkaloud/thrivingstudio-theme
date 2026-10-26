@@ -101,8 +101,15 @@ function tsSetupMobileMenu() {
         }
         const isExpanded = mobileMenuButton.getAttribute('aria-expanded') === 'true';
         mobileMenuButton.setAttribute('aria-expanded', String(!isExpanded));
+        mobileMenuButton.setAttribute('aria-label', isExpanded ? 'Open navigation' : 'Close navigation');
     };
 
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && mobileMenuButton.getAttribute('aria-expanded') === 'true') {
+            onClick(e);
+            mobileMenuButton.focus();
+        }
+    });
     mobileMenuButton.addEventListener('click', onClick);
     mobileMenuButton.addEventListener('touchstart', function() {}, { passive: true });
 }
@@ -846,3 +853,17 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Cleanup: removed temporary debug marker
+
+// Reveal only the password fields in the button's own form.
+tsRunWhenReady(function() {
+    document.querySelectorAll('.ts-password-toggle').forEach(function(button) {
+        const fields = button.closest('form')?.querySelectorAll('input[autocomplete="current-password"], input[autocomplete="new-password"]');
+        if (!fields?.length) return;
+        button.addEventListener('click', function() {
+            const reveal = button.getAttribute('aria-pressed') !== 'true';
+            fields.forEach(function(field) { field.type = reveal ? 'text' : 'password'; });
+            button.setAttribute('aria-pressed', String(reveal));
+            button.textContent = (reveal ? 'Hide password' : 'Show password') + (fields.length > 1 ? 's' : '');
+        });
+    });
+});

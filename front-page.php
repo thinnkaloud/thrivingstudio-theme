@@ -17,8 +17,13 @@
                 <p class="text-lg sm:text-xl md:text-2xl text-black mb-8">
                     <?php echo esc_html(get_theme_mod('thrivingstudio_home_hero_subtitle', 'Deep insights, visual storytelling, and timeless ideas for a thriving creative life.')); ?>
                 </p>
-                <?php $btn_text = get_theme_mod('thrivingstudio_home_hero_button_text', 'Learn More');
+                <?php $btn_text = get_theme_mod('thrivingstudio_home_hero_button_text', 'Explore articles');
                 $btn_link = get_theme_mod('thrivingstudio_home_hero_button_link', '#');
+                // Upgrade the original placeholder CTA while preserving custom destinations.
+                if ($btn_link === '#' || $btn_link === '') {
+                    $btn_text = 'Explore articles';
+                    $btn_link = '#latest-articles';
+                }
                 if ($btn_text) : ?>
                     <a href="<?php echo esc_url($btn_link); ?>" class="inline-block px-8 py-3 font-bold rounded-lg shadow transition-colors duration-300 border border-black bg-white text-black hover:bg-gray-100">
                         <?php echo esc_html($btn_text); ?>
@@ -96,6 +101,9 @@
                     $cat_id = get_theme_mod("thrivingstudio_featured_category_{$i}");
                     $desc = get_theme_mod("thrivingstudio_featured_category_{$i}_desc");
                     $cat = ($cat_id && $cat_id != 0) ? get_category($cat_id) : false;
+                    if ($cat && !is_wp_error($cat) && $cat->slug === 'artificial-intelligence-and-tools') {
+                        $desc = 'Explore stories about artificial intelligence, emerging technology, and their impact on everyday life.';
+                    }
                     $gradient = 'from-blue-500/60 via-purple-500/60 to-pink-500/60'; // More vibrant gradient
                 ?>
                 <div class="h-full">
@@ -130,7 +138,7 @@
 
         <!-- Latest Articles (Dynamic) -->
         <section class="mb-16">
-            <h2 class="text-2xl font-bold mb-6 text-center text-gray-900">Latest Articles</h2>
+            <h2 id="latest-articles" class="text-2xl font-bold mb-6 text-center text-gray-900">Latest Articles</h2>
             <p class="text-center text-gray-600 max-w-2xl mx-auto mb-6">Fresh posts on psychology, discipline, creativity, and practical systems for better work.</p>
             <div class="blog-grid ts-blog-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <?php
@@ -286,7 +294,7 @@
         <section id="subscribe" class="ts-home-subscribe">
             <div class="subscribe-section ts-subscribe-panel bg-[#f8fafc] rounded-xl p-10 text-center border border-gray-200 shadow-sm">
                 <h2 class="text-2xl font-bold mb-4 text-gray-900">Stay Inspired!</h2>
-                <p class="mb-6 text-gray-700">Subscribe to our newsletter for the latest articles, quotes, and creative tips.</p>
+                <p class="mb-6 text-gray-700">Get new articles, thoughtful quotes, and practical ideas for creative growth.</p>
                 <div class="ts-newsletter-form">
                     <?php if (shortcode_exists('sibwp_form')) : ?>
                         <?php
@@ -317,6 +325,7 @@
                         <p class="ts-newsletter-form-notice"><?php esc_html_e('Preview only — newsletter signup is enabled on the live site.', 'thrivingstudio'); ?></p>
                     <?php endif; ?>
                 </div>
+                <p class="mt-4 text-sm text-gray-600">Unsubscribe using the link in any newsletter. <a class="underline" href="<?php echo esc_url(get_privacy_policy_url() ?: home_url('/privacy-policy/')); ?>">Read our privacy policy</a>.</p>
             </div>
         </section>
     </div>

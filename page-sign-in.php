@@ -30,7 +30,7 @@ get_header();
                 <p class="ts-auth-kicker"><?php esc_html_e('Account', 'thrivingstudio'); ?></p>
                 <h1 id="ts-auth-title" class="ts-auth-title"><?php esc_html_e('Sign in or create your profile', 'thrivingstudio'); ?></h1>
                 <p class="ts-auth-intro">
-                    <?php esc_html_e('Choose how you want to join Thriving Studio. Google is fastest, and email works for readers who prefer a direct account.', 'thrivingstudio'); ?>
+                    <?php esc_html_e('Create a reader profile to join article discussions and keep your name and replies connected. Choose Google or email to continue.', 'thrivingstudio'); ?>
                 </p>
             </div>
 
@@ -87,8 +87,9 @@ get_header();
                                 <input class="ts-auth-input" type="password" name="ts_auth_password" autocomplete="current-password" required>
                             </label>
 
+                            <button class="ts-password-toggle" type="button" aria-pressed="false">Show password</button>
                             <label class="ts-auth-checkbox">
-                                <input type="checkbox" name="ts_auth_remember" value="1" checked>
+                                <input type="checkbox" name="ts_auth_remember" value="1">
                                 <span><?php esc_html_e('Keep me signed in', 'thrivingstudio'); ?></span>
                             </label>
 
@@ -132,6 +133,7 @@ get_header();
                                     <input class="ts-auth-input" type="password" name="ts_auth_password_confirm" autocomplete="new-password" minlength="8" required>
                                 </label>
 
+                                <button class="ts-password-toggle" type="button" aria-pressed="false">Show passwords</button>
                                 <label class="ts-auth-honeypot" aria-hidden="true">
                                     <span><?php esc_html_e('Company', 'thrivingstudio'); ?></span>
                                     <input type="text" name="ts_auth_company" tabindex="-1" autocomplete="off">
