@@ -2,6 +2,34 @@
 
 All notable changes to the Thriving Studio theme will be documented in this file.
 
+## [1.3.0] - 2026-10-26
+
+Covers all work since the `v1.2-structural-cleanup` tag (Feb 2026). Versions 1.1 and 1.2 were tracked as git tags only.
+
+### Added
+- **Accounts**: Google sign-in, sign-in page, and account profile page.
+- **Engagement**: "Useful" button on articles.
+- **Quote cards**: Verification workflow, with an optional OpenAI helper configured through `wp-config.php` constants.
+- **Newsletter**: Homepage signup connected to Brevo, using one shared form across environments.
+- **SEO**: Article subtitle controls and simplified theme SEO descriptions.
+- **Editor**: FAQ block styling and citation formatting.
+- **Foundations page** and improved archive discovery.
+
+### Changed
+- **Single articles**: Reworked reading layout, title wrapping, sticky side rail, and outline navigation.
+- **Reader navigation**: Clearer header, nav, and archive links.
+- **Contact form**: Mail routed to the public inbox, with a hardened mail flow.
+- **Admin**: Better posts table layout and editor typography.
+- **Ads**: Lazier ad loading on single articles.
+
+### Removed
+- Unused modules: `inc/ads.php`, `inc/adsense-*.php`, `inc/image-optimizer*.php`, `inc/performance*.php`, and `inc/performance/core.php`. None of these were loaded.
+- Backup copies (`inc/performance.php.backup`, `.broken`, `.disabled`). They were deployed and readable as plain text.
+- One-off image scripts in the theme root, the `sharp` dependency they needed, `sftp-test.txt`, the empty `Thriving` file, `screenshot-backup.png`, and the theme-folder `robots.txt`, which had no effect.
+
+### Technical
+- `npm run check:hygiene` now fails on `.backup`, `.broken`, `.disabled`, `.bak`, and `.orig` files.
+
 ## [1.0.3] - 2024-07-19
 
 ### Removed

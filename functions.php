@@ -4,17 +4,14 @@
  */
 
 // Define theme constants
-define('THRIVINGSTUDIO_VERSION', '1.0.0');
+define('THRIVINGSTUDIO_VERSION', '1.3.0');
 define('THRIVINGSTUDIO_NAME', 'Thriving Studio');
 define('THRIVINGSTUDIO_DIR', get_template_directory());
 define('THRIVINGSTUDIO_URI', get_template_directory_uri());
 
 // Autoload theme modules
 $modules = [
-    // 'performance-simple', // Disabled - causing blank editor issues
-    // 'performance-dashboard', // Disabled - causing blank editor issues
-    'security'
-    // 'ads' - Removed: Use Google Site Kit for AdSense management
+    'security',
 ];
 
 // Include orphaned media cleanup only in admin
