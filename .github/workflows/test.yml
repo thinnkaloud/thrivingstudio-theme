@@ -1,0 +1,40 @@
+name: Test Theme
+
+on:
+  pull_request:
+  workflow_call:
+    inputs:
+      ref:
+        description: Branch, tag, or commit SHA to test. Defaults to the triggering commit.
+        required: false
+        default: ''
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Theme checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Hygiene check, PHP syntax check, and a rebuild that must match the
+      # committed frontend/build.css and frontend/main.min.js.
+      # --if-present lets rollback deploys of commits older than this check through.
+      - name: Run checks
+        run: npm run test:ci --if-present

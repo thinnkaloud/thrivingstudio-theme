@@ -28,7 +28,8 @@ Never commit or push straight to `main`. Changes that skip `develop` reach live 
   - `git commit -m "your clear message"`
 - Push to develop:
   - `git push origin develop`
-- Wait for GitHub Actions "Deploy Theme To Staging" to finish with a green check. It takes about 10 seconds.
+- Wait for GitHub Actions "Deploy Theme To Staging" to finish with a green check. It runs the theme checks first and only deploys if they pass, which takes about a minute.
+- If it fails at "Theme checks", open the run to see why. The usual cause is forgetting `npm run build` after editing CSS or JS. Fix it, commit, and push again.
 
 ## 3) Staging QA (Visual Check)
 - Open staging site and hard refresh.
@@ -52,6 +53,7 @@ Never commit or push straight to `main`. Changes that skip `develop` reach live 
 - Approve the deployment:
   - Open the run and click "Review deployments" in the yellow banner.
   - Tick `live`, then click "Approve and deploy". Ticking the box alone does nothing.
+- The theme checks run before the approval banner appears. If they fail, nothing is deployed.
 - Wait for the green check. It takes about a minute after approval.
 
 ## 5) Live QA (Final)

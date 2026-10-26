@@ -43,10 +43,23 @@ Set `STAGING_PATH` and `LIVE_PATH` to each environment's theme path, for example
 
 ## Workflow files
 
+- `.github/workflows/test.yml`
 - `.github/workflows/deploy-staging.yml`
 - `.github/workflows/deploy-live.yml`
 - `scripts/deploy-check.sh`
 - `.deployignore`
+
+## Automatic checks
+
+`.github/workflows/test.yml` runs `npm run test:ci` on every pull request, and before every staging and live deploy. A deploy only starts if the checks pass. They are:
+
+- `check:hygiene`: no debug or backup files (`.backup`, `.broken`, and similar).
+- `check:php`: PHP syntax check on every tracked PHP file.
+- `check:build`: rebuilds `frontend/build.css` and `frontend/main.min.js` and fails if they differ from the committed files, meaning someone edited the source without rebuilding.
+
+Live deploys test the `ref` being deployed. Rollbacks to commits from before these checks existed skip them, so an emergency rollback is never blocked.
+
+Locally, `npm test` runs the same hygiene and PHP checks, plus a quicker timestamp-based CSS check.
 
 ## Live deploy gate
 
@@ -82,7 +95,7 @@ Recommended, not yet turned on (direct pushes to `main` and `develop` currently 
 
 1. Branch protection on `main`: require a pull request before merging, and restrict who can push.
 2. Branch protection on `develop`: optionally require a pull request.
-3. Required status checks, once a workflow runs `npm test` on pull requests.
+3. Required status checks: once branch protection is on, require "Theme checks" to pass before merging.
 4. Environment `live`: optional wait timer before deployment.
 
 ## Validation commands

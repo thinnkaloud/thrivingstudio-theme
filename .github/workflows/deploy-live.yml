@@ -22,8 +22,14 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  test:
+    uses: ./.github/workflows/test.yml
+    with:
+      ref: ${{ inputs.ref }}
+
   deploy:
     name: Deploy to Live
+    needs: test
     runs-on: ubuntu-latest
     environment: live
 
