@@ -1,70 +1,49 @@
 # Thriving Studio WordPress Theme
 
-A modern, responsive WordPress theme designed for creative professionals, bloggers, and businesses. Built with performance, SEO, and user experience in mind.
+The custom WordPress theme for [thrivingstudio.xyz](https://thrivingstudio.xyz). It is built with Tailwind CSS and deployed from this repository through GitHub Actions.
+
+## Documentation
+
+| Doc | Use it for |
+|---|---|
+| [docs/release-checklist-noncoder.md](docs/release-checklist-noncoder.md) | Every release: push, staging check, live deploy, rollback |
+| [docs/deployment.md](docs/deployment.md) | How the deploy pipeline is set up: branches, secrets, GitHub settings |
+| [docs/seo.md](docs/seo.md) | Where SEO is handled and the routine SEO checks |
+| [CHANGELOG.md](CHANGELOG.md) | What changed in each version |
+| [our-commitment.md](our-commitment.md) | The editorial commitment published on the site |
+| [docs/archive/](docs/archive/) | Old audits and refinement plans, kept for history only |
 
 ## Features
 
-### 🎨 Design & Layout
-- **Modern, Clean Design**: Professional appearance with consistent styling
-- **Fully Responsive**: Mobile-first approach, works perfectly on all devices
-- **Custom Hero Sections**: Beautiful hero sections with consistent outlining boxes
-- **Typography**: Optimized typography with proper hierarchy
-- **Color Schemes**: Light and dark mode support
+- Homepage with hero, social stats, quote carousel, latest articles, and a Brevo newsletter form.
+- Blog, category archives, and a reading layout for single articles with an outline, a sticky side rail, related posts, and a closing call to action.
+- Page templates: Blog, Book, Contact, Foundations, Profile, and Sign-in.
+- Quote cards as a custom post type, with a verification workflow and an optional OpenAI helper.
+- Google sign-in, account profiles, and a "useful" button on articles.
+- FAQ and citation blocks for the editor.
+- Security headers (including a Content Security Policy) and XML-RPC turned off.
 
-### 🚀 Performance
-- **Optimized CSS**: Minified and purged Tailwind CSS
-- **Fast Loading**: Optimized assets and efficient code structure
-- **SEO Optimized**: Proper meta tags, structured data, and semantic HTML
-- **Caching Ready**: Compatible with popular caching plugins
+## Requirements
 
-### 📱 Navigation
-- **Custom Navigation Menus**: Primary and footer menu support
-- **Category Menu**: Dedicated category navigation with consistent styling
-- **Mobile Menu**: Responsive hamburger menu for mobile devices
-- **Active State Styling**: Clear visual indicators for current pages
+- WordPress 5.0 or higher
+- PHP 7.4 or higher
+- Node.js, only for building CSS and JS locally
 
-### 🎯 Customization
-- **WordPress Customizer**: Easy theme customization
-- **Social Media Integration**: Built-in social media profiles and counters
-- **Newsletter Signup**: Integrated newsletter subscription form
-- **Custom Post Types**: Quote cards and other custom content types
+## Plugins The Theme Expects
 
-### 📄 Page Templates
-- **Homepage**: Custom front page with hero section and featured content
-- **Blog Page**: Optimized blog listing with category navigation
-- **Category Pages**: Custom archive pages with hero sections
-- **Contact Page**: Professional contact page with form integration
-- **Book Page**: Dedicated page for book promotions
+The theme leaves these jobs to plugins:
 
-## Installation
+- **Brevo** for the homepage newsletter form. The form uses the `[sibwp_form id=2]` shortcode. Without the plugin (for example on a local copy), the section shows a disabled preview form.
+- **An SEO plugin** for meta descriptions, Open Graph, schema, and sitemaps. See [docs/seo.md](docs/seo.md).
+- **Google Site Kit** for Analytics and AdSense.
+- **LiteSpeed Cache** for page caching. `.litespeed-cache-exclude.txt` lists what it must not minify.
 
-1. **Upload the theme** to your WordPress themes directory (`/wp-content/themes/`)
-2. **Activate the theme** through the WordPress admin panel
-3. **Configure settings** in Appearance > Customize
-4. **Set up menus** in Appearance > Menus
-5. **Configure social media** in the Customizer
+## Configuration
 
-## Build Workflow (Canonical)
-
-Use the root theme directory scripts as the single source of truth:
-
-```bash
-cd /path/to/wp-content/themes/thrivingstudio
-npm run build:css     # Build frontend/build.css from frontend/index.css
-npm run build:js      # Build frontend/main.min.js
-npm run build         # Build CSS + JS together
-npm run watch:css     # Watch CSS during local refinement
-```
-
-Notes:
-- `frontend/package.json` is retained for compatibility, but delegates to root scripts.
-- Deployments use the generated `frontend/build.css` and `frontend/main.min.js`.
-
-## Mail Delivery
-
-The contact form uses WordPress mail. For production delivery, configure SMTP in `wp-config.php` or environment variables. The theme reads these constants and falls back to default WordPress mail when `THRIVINGSTUDIO_SMTP_HOST` is not set.
+Settings that hold secrets live in `wp-config.php` (or as server environment variables), never in git.
 
 ```php
+// Contact form mail. Without SMTP_HOST, WordPress uses its default mailer.
 define('THRIVINGSTUDIO_SMTP_HOST', 'smtp.example.com');
 define('THRIVINGSTUDIO_SMTP_PORT', 587);
 define('THRIVINGSTUDIO_SMTP_SECURE', 'tls'); // tls or ssl
@@ -73,78 +52,48 @@ define('THRIVINGSTUDIO_SMTP_PASSWORD', 'smtp-password');
 define('THRIVINGSTUDIO_MAIL_FROM', 'hello@thrivingstudio.xyz');
 define('THRIVINGSTUDIO_MAIL_FROM_NAME', 'Thriving Studio');
 define('THRIVINGSTUDIO_CONTACT_RECIPIENT', 'hello@thrivingstudio.xyz');
+
+// Google sign-in.
+define('THRIVINGSTUDIO_GOOGLE_CLIENT_ID', 'your-client-id.apps.googleusercontent.com');
+define('THRIVINGSTUDIO_GOOGLE_CLIENT_SECRET', 'your-client-secret');
+define('THRIVINGSTUDIO_GOOGLE_PRIVILEGED_EMAILS', 'you@example.com,editor@example.com');
+
+// Quote card helper (optional). OPENAI_API_KEY and OPENAI_MODEL also work.
+define('THRIVINGSTUDIO_OPENAI_API_KEY', 'sk-...');
+define('THRIVINGSTUDIO_OPENAI_MODEL', 'model-name');
 ```
 
-Keep SMTP credentials out of git. After setting them on production, send a test message from the contact page and confirm it arrives.
+After changing mail settings, send a test message from the contact page and confirm it arrives.
 
-## Customization
+Everything else, including the hero text, social profiles, header button, top bar, and the single article layout options, is under **Appearance > Customize**. Menus are under **Appearance > Menus**.
 
-### Theme Customizer Options
-- **Hero Section**: Customize homepage hero title, subtitle, and button
-- **Social Media**: Add social media profiles and follower counts
-- **Featured Categories**: Select and customize featured category cards
-- **Newsletter**: Configure newsletter signup form
-- **Contact Information**: Set up contact details and social links
+## Development
 
-### Menu Setup
-1. **Primary Menu**: Main navigation (Home, Blog, Book, About Us)
-2. **Category Menu**: Category navigation for blog posts
-3. **Footer Menu**: Footer links and legal pages
+All build commands run from the theme folder. The root `package.json` is the only one that matters. `frontend/package.json` just forwards to it.
 
-### Custom Post Types
-- **Quote Cards**: Create inspirational quote cards with images
-- **Custom Fields**: Support for hero subtitles on category pages
+```bash
+npm install          # first time only
+npm run watch        # rebuild CSS automatically while you edit
+npm run build        # build CSS and JS once
+npm test             # hygiene check, CSS build check, PHP syntax check
+```
 
-## Browser Support
+### Editing CSS
 
-- Chrome (latest)
-- Firefox (latest)
-- Safari (latest)
-- Edge (latest)
-- Mobile browsers (iOS Safari, Chrome Mobile)
+- Edit `frontend/index.css`. Never edit `frontend/build.css`, because it is generated and gets overwritten.
+- Rebuild with `npm run watch` (keep it running) or `npm run build:css`, then hard refresh the browser.
+- Commit `frontend/build.css` together with your source changes. The server does not build anything; it uses the committed file.
+- `npm run check:css` tells you if the build is out of date. A logged-in admin also sees a notice in WordPress when it is.
+- If styles still look old after a rebuild, purge LiteSpeed Cache. The theme busts browser caches by file modification time.
 
-## Requirements
+### Editing JavaScript
 
-- **WordPress**: 5.0 or higher
-- **PHP**: 7.4 or higher
-- **MySQL**: 5.6 or higher
+- Edit `frontend/main.js`, then run `npm run build:js` to regenerate `frontend/main.min.js`. Commit both.
 
-## Performance Features
+### Before every commit
 
-- **Optimized Images**: WebP support and lazy loading
-- **Minified Assets**: Compressed CSS and JavaScript
-- **Efficient Code**: Clean, semantic HTML and optimized PHP
-- **Caching Compatible**: Works with popular caching plugins
-
-## SEO Features
-
-- **Structured Data**: JSON-LD markup for better search results
-- **Meta Tags**: Optimized meta descriptions and Open Graph tags
-- **Semantic HTML**: Proper heading hierarchy and semantic markup
-- **Fast Loading**: Optimized for Core Web Vitals
-
-## Support
-
-For support and documentation, visit [Thriving Studio](https://thrivingstudio.xyz)
-
-## Changelog
-
-### Version 1.0.0
-- Initial release
-- Modern responsive design
-- Custom post types and templates
-- Social media integration
-- Newsletter signup functionality
-- Performance optimizations
-- SEO enhancements
+Run `npm test`. It fails on leftover debug files and on backup copies like `something.php.backup`. Those get deployed and can expose source code, so delete them instead of committing them.
 
 ## License
 
-This theme is licensed under the GPL v2 or later.
-
-## Credits
-
-- Built with WordPress
-- Styled with Tailwind CSS
-- Icons from Heroicons
-- Performance optimized for modern web standards
+GPL v2 or later.
