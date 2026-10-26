@@ -10,136 +10,62 @@
         <!-- Hero Section (Aligned with header) -->
         <section class="hero-section ts-surface-card ts-section-spacing overflow-hidden mb-16 bg-white">
             <div class="text-center px-4 sm:px-8">
-                <p class="text-sm sm:text-base font-semibold tracking-wide uppercase text-gray-600 mb-4">Creative Growth Journal</p>
+                <p class="text-sm sm:text-base font-semibold tracking-wide uppercase text-gray-600 mb-4"><?php echo esc_html(thrivingstudio_copy('home_eyebrow')); ?></p>
                 <h1 class="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-6 text-black drop-shadow">
-                    <?php echo wp_kses_post(get_theme_mod('thrivingstudio_home_hero_title', 'Welcome to <span class="text-black">Thriving Studio</span>')); ?>
+                    <?php echo wp_kses_post(get_theme_mod('thrivingstudio_home_hero_title', __('Thriving Studio', 'thrivingstudio'))); ?>
                 </h1>
-                <p class="text-lg sm:text-xl md:text-2xl text-black mb-8">
-                    <?php echo esc_html(get_theme_mod('thrivingstudio_home_hero_subtitle', 'Deep insights, visual storytelling, and timeless ideas for a thriving creative life.')); ?>
+                <p class="text-lg sm:text-xl md:text-2xl text-black mb-8 max-w-3xl mx-auto">
+                    <?php echo esc_html(get_theme_mod('thrivingstudio_home_hero_subtitle', __('Practical writing on a steadier mind, a disciplined life, and a world worth being curious about.', 'thrivingstudio'))); ?>
                 </p>
-                <?php $btn_text = get_theme_mod('thrivingstudio_home_hero_button_text', 'Explore articles');
+                <?php
+                $btn_text = get_theme_mod('thrivingstudio_home_hero_button_text', __('Start here', 'thrivingstudio'));
                 $btn_link = get_theme_mod('thrivingstudio_home_hero_button_link', '#');
-                // Upgrade the original placeholder CTA while preserving custom destinations.
-                if ($btn_link === '#' || $btn_link === '') {
-                    $btn_text = 'Explore articles';
-                    $btn_link = '#latest-articles';
+                // Without a custom destination, send new readers to the Foundations page when it exists.
+                if ($btn_link === '#' || $btn_link === '' || $btn_link === home_url('/#latest-articles')) {
+                    $foundations_page = get_page_by_path('foundations');
+                    $btn_link = $foundations_page ? get_permalink($foundations_page) : '#latest-articles';
                 }
-                if ($btn_text) : ?>
-                    <a href="<?php echo esc_url($btn_link); ?>" class="inline-block px-8 py-3 font-bold rounded-lg shadow transition-colors duration-300 border border-black bg-white text-black hover:bg-gray-100">
-                        <?php echo esc_html($btn_text); ?>
-                    </a>
-                <?php endif; ?>
-            </div>
-        </section>
-
-
-
-        <!-- Social Media Presence with Follower Counts -->
-        <h2 class="text-2xl font-bold mb-6 text-center text-gray-900">
-            <?php echo esc_html(get_theme_mod('thrivingstudio_home_social_stats_title', __('Our Social Circle', 'thrivingstudio'))); ?>
-        </h2>
-        <p class="text-center text-gray-600 max-w-2xl mx-auto mb-6">Follow the platforms where we share practical ideas, writing, and visual storytelling.</p>
-        <section class="social-section ts-surface-card ts-social-section mb-16 bg-white">
-            <div class="ts-social-grid flex flex-col md:flex-row justify-center items-center gap-8 rounded-xl p-6 bg-white">
-                <?php
-                // Get follower counts from theme customizer
-                $facebook_followers = trim((string) get_theme_mod('thrivingstudio_home_social_facebook_count', '1.2M+'));
-                $instagram_followers = trim((string) get_theme_mod('thrivingstudio_home_social_instagram_count', '1.2K+'));
-                $pinterest_followers = trim((string) get_theme_mod('thrivingstudio_home_social_pinterest_count', '150+'));
-                $youtube_followers = trim((string) get_theme_mod('thrivingstudio_home_social_youtube_count', '99K+'));
-
-                if ($facebook_followers === '') {
-                    $facebook_followers = '1.2M+';
-                }
-                if ($instagram_followers === '') {
-                    $instagram_followers = '1.2K+';
-                }
-                if ($pinterest_followers === '') {
-                    $pinterest_followers = '150+';
-                }
-                if ($youtube_followers === '') {
-                    $youtube_followers = '99K+';
-                }
+                $secondary_text = thrivingstudio_copy('home_hero_secondary_label');
                 ?>
-                
-                <div class="flex flex-col items-center">
-                    <span class="text-3xl font-bold ts-social-count ts-social-count-facebook">
-                        <?php echo esc_html($facebook_followers); ?>
-                    </span>
-                    <span class="text-gray-700">Facebook Followers</span>
-                </div>
-                
-                <div class="flex flex-col items-center">
-                    <span class="text-3xl font-bold ts-social-count ts-social-count-instagram">
-                        <?php echo esc_html($instagram_followers); ?>
-                    </span>
-                    <span class="text-gray-700">Instagram Followers</span>
-                </div>
-                
-                <div class="flex flex-col items-center">
-                    <span class="text-3xl font-bold ts-social-count ts-social-count-pinterest">
-                        <?php echo esc_html($pinterest_followers); ?>
-                    </span>
-                    <span class="text-gray-700">Pinterest Followers</span>
-                </div>
-                
-                <div class="flex flex-col items-center">
-                    <span class="text-3xl font-bold ts-social-count ts-social-count-youtube">
-                        <?php echo esc_html($youtube_followers); ?>
-                    </span>
-                    <span class="text-gray-700">YouTube Followers</span>
-                </div>
-            </div>
-        </section>
-
-        <!-- Featured Categories (Dynamic) -->
-        <section class="mb-16">
-            <h2 class="text-2xl font-bold mb-6 text-center text-gray-900">Featured Categories</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-none mx-auto items-stretch">
-                <?php
-                for ($i = 1; $i <= 4; $i++) {
-                    $cat_id = get_theme_mod("thrivingstudio_featured_category_{$i}");
-                    $desc = get_theme_mod("thrivingstudio_featured_category_{$i}_desc");
-                    $cat = ($cat_id && $cat_id != 0) ? get_category($cat_id) : false;
-                    if ($cat && !is_wp_error($cat) && $cat->slug === 'artificial-intelligence-and-tools') {
-                        $desc = 'Explore stories about artificial intelligence, emerging technology, and their impact on everyday life.';
-                    }
-                    $gradient = 'from-blue-500/60 via-purple-500/60 to-pink-500/60'; // More vibrant gradient
-                ?>
-                <div class="h-full">
-                    <?php if ($cat && !is_wp_error($cat)): ?>
-                        <a href="<?php echo esc_url(get_category_link($cat->term_id)); ?>"
-                           class="category-card ts-surface-card block h-full overflow-hidden p-1 bg-white">
-                            <div class="ts-card-inner p-6 h-full flex flex-col items-start justify-start bg-white">
-                                <h3 class="text-xl font-bold mb-2 text-black truncate mt-0"><?php echo esc_html($cat->name); ?></h3>
-                                <?php if (trim($desc)): ?>
-                                    <p class="text-black text-base overflow-hidden text-ellipsis ts-line-clamp-4">
-                                        <?php echo esc_html($desc); ?>
-                                    </p>
-                                <?php elseif ($cat->description): ?>
-                                    <p class="text-black text-base overflow-hidden text-ellipsis ts-line-clamp-4">
-                                        <?php echo esc_html($cat->description); ?>
-                                    </p>
-                                <?php endif; ?>
-                            </div>
+                <div class="ts-hero-actions">
+                    <?php if ($btn_text) : ?>
+                        <a href="<?php echo esc_url($btn_link); ?>" class="inline-block px-8 py-3 font-bold rounded-lg shadow transition-colors duration-300 border border-black bg-black text-white hover:bg-gray-800">
+                            <?php echo esc_html($btn_text); ?>
                         </a>
-                    <?php else: ?>
-                        <div class="category-card ts-surface-card block h-full overflow-hidden p-1 bg-white">
-                            <div class="ts-card-inner p-6 h-full flex flex-col items-start justify-start bg-white">
-                                <h3 class="text-xl font-bold mb-2 text-black truncate mt-0">No Category Selected</h3>
-                                <p class="text-black text-base opacity-80">Please select a category in the Customizer.</p>
-                            </div>
-                        </div>
+                    <?php endif; ?>
+                    <?php if ($secondary_text) : ?>
+                        <a href="#subscribe" class="inline-block px-8 py-3 font-bold rounded-lg transition-colors duration-300 border border-black bg-white text-black hover:bg-gray-100">
+                            <?php echo esc_html($secondary_text); ?>
+                        </a>
                     <?php endif; ?>
                 </div>
-                <?php } ?>
             </div>
         </section>
+
+        <!-- Content Pillars -->
+        <?php $pillars = thrivingstudio_get_pillars(); ?>
+        <?php if (!empty($pillars)) : ?>
+            <section class="mb-16" aria-labelledby="pillars-title">
+                <h2 id="pillars-title" class="text-2xl font-bold mb-6 text-center text-gray-900"><?php echo esc_html(thrivingstudio_copy('home_pillars_title')); ?></h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-none mx-auto items-stretch">
+                    <?php foreach ($pillars as $pillar) : ?>
+                        <a href="<?php echo esc_url($pillar['url']); ?>" class="category-card ts-surface-card block h-full overflow-hidden p-1 bg-white">
+                            <div class="ts-card-inner p-6 h-full flex flex-col items-start justify-start bg-white">
+                                <h3 class="text-xl font-bold mb-2 text-black mt-0"><?php echo esc_html($pillar['name']); ?></h3>
+                                <p class="text-black text-base ts-line-clamp-4"><?php echo esc_html($pillar['description']); ?></p>
+                            </div>
+                        </a>
+                    <?php endforeach; ?>
+                </div>
+            </section>
+        <?php elseif (current_user_can('edit_theme_options')) : ?>
+            <p class="ts-empty-state mb-16"><?php esc_html_e('Only you can see this: create the categories inner-strength, discipline and curious-world (by slug) to show the three pillars here.', 'thrivingstudio'); ?></p>
+        <?php endif; ?>
 
         <!-- Latest Articles (Dynamic) -->
         <section class="mb-16">
-            <h2 id="latest-articles" class="text-2xl font-bold mb-6 text-center text-gray-900">Latest Articles</h2>
-            <p class="text-center text-gray-600 max-w-2xl mx-auto mb-6">Fresh posts on psychology, discipline, creativity, and practical systems for better work.</p>
+            <h2 id="latest-articles" class="text-2xl font-bold mb-6 text-center text-gray-900"><?php echo esc_html(thrivingstudio_copy('home_latest_title')); ?></h2>
+            <p class="text-center text-gray-600 max-w-2xl mx-auto mb-6"><?php echo esc_html(thrivingstudio_copy('home_latest_intro')); ?></p>
             <div class="blog-grid ts-blog-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <?php
                 $latest_query = new WP_Query([
@@ -256,11 +182,47 @@
             <?php endif; ?>
         </section>
 
+        <!-- Social profiles: only counts the owner has entered are shown. -->
+        <?php
+        $social_stats = [
+            'facebook' => __('Facebook followers', 'thrivingstudio'),
+            'instagram' => __('Instagram followers', 'thrivingstudio'),
+            'pinterest' => __('Pinterest followers', 'thrivingstudio'),
+            'youtube' => __('YouTube subscribers', 'thrivingstudio'),
+        ];
+        foreach ($social_stats as $network => $label) {
+            $count = trim((string) get_theme_mod("thrivingstudio_home_social_{$network}_count", ''));
+            if ($count === '') {
+                unset($social_stats[$network]);
+            } else {
+                $social_stats[$network] = ['count' => $count, 'label' => $label];
+            }
+        }
+        ?>
+        <?php if (!empty($social_stats)) : ?>
+            <section class="mb-16" aria-labelledby="social-stats-title">
+                <h2 id="social-stats-title" class="text-2xl font-bold mb-6 text-center text-gray-900">
+                    <?php echo esc_html(get_theme_mod('thrivingstudio_home_social_stats_title', __('Follow along', 'thrivingstudio'))); ?>
+                </h2>
+                <p class="text-center text-gray-600 max-w-2xl mx-auto mb-6"><?php echo esc_html(thrivingstudio_copy('home_social_intro')); ?></p>
+                <div class="social-section ts-surface-card ts-social-section bg-white">
+                    <div class="ts-social-grid flex flex-col md:flex-row justify-center items-center gap-8 rounded-xl p-6 bg-white">
+                        <?php foreach ($social_stats as $network => $stat) : ?>
+                            <div class="flex flex-col items-center">
+                                <span class="text-3xl font-bold ts-social-count ts-social-count-<?php echo esc_attr($network); ?>"><?php echo esc_html($stat['count']); ?></span>
+                                <span class="text-gray-700"><?php echo esc_html($stat['label']); ?></span>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            </section>
+        <?php endif; ?>
+
         <!-- Subscribe Section -->
         <section id="subscribe" class="ts-home-subscribe">
             <div class="subscribe-section ts-subscribe-panel bg-[#f8fafc] rounded-xl p-10 text-center border border-gray-200 shadow-sm">
-                <h2 class="text-2xl font-bold mb-4 text-gray-900">Stay Inspired!</h2>
-                <p class="mb-6 text-gray-700">Get new articles, thoughtful quotes, and practical ideas for creative growth.</p>
+                <h2 class="text-2xl font-bold mb-4 text-gray-900"><?php echo esc_html(thrivingstudio_copy('newsletter_title')); ?></h2>
+                <p class="mb-6 text-gray-700 max-w-2xl mx-auto"><?php echo esc_html(thrivingstudio_copy('newsletter_text')); ?></p>
                 <div class="ts-newsletter-form">
                     <?php if (shortcode_exists('sibwp_form')) : ?>
                         <?php

@@ -12,16 +12,16 @@ get_header(); ?>
         <section class="mb-12 rounded-xl overflow-hidden" style="background:#fff; color:#000; border: 1px solid #bbb; border-color: #bbb; box-shadow: 0 4px 24px 0 rgba(0,0,0,0.04); padding: 3.5rem 0; border-radius: 1rem;">
             <div class="text-center px-4 sm:px-8">
                 <div class="modern-coming-soon bg-black text-white" style="margin-top:0; margin-bottom:1.5rem; box-shadow:none; animation:none;">
-                    The Thriving Studio book
+                    <?php echo esc_html(thrivingstudio_copy('book_eyebrow')); ?>
                 </div>
                 <h1 class="font-bold text-gray-900 mb-4" style="font-size:clamp(1.75rem, 5vw, 2.75rem); line-height:1.2; overflow-wrap:break-word;">
-                    Ideas for a more intentional life
+                    <?php echo esc_html(thrivingstudio_copy('book_title')); ?>
                 </h1>
                 <p class="text-xl text-gray-600 mb-6">
-                    Our book is still taking shape. In the meantime, explore practical ideas on emotional strength, clarity, and creative growth in the journal.
+                    <?php echo esc_html(thrivingstudio_copy('book_text')); ?>
                 </p>
-                <a class="inline-block px-6 py-3 rounded-lg bg-black text-white font-semibold" href="<?php echo esc_url(home_url('/blog/')); ?>">Explore the journal</a>
-                <p class="mt-6 text-gray-600"><a class="underline" href="<?php echo esc_url(home_url('/#subscribe')); ?>">Subscribe for future updates</a></p>
+                <a class="inline-block px-6 py-3 rounded-lg bg-black text-white font-semibold" href="<?php echo esc_url(home_url('/#subscribe')); ?>"><?php echo esc_html(thrivingstudio_copy('home_hero_secondary_label')); ?></a>
+                <p class="mt-6 text-gray-600"><a class="underline" href="<?php echo esc_url(get_permalink(get_option('page_for_posts')) ?: home_url('/blog/')); ?>"><?php esc_html_e('Read the journal in the meantime', 'thrivingstudio'); ?></a></p>
             </div>
         </section>
     </div>

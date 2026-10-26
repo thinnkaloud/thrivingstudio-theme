@@ -8,7 +8,7 @@
         <div class="flex flex-col md:flex-row items-center justify-between py-6">
             <!-- Left Side: Copyright -->
             <div class="text-sm text-gray-500 mb-4 md:mb-0">
-                <?php echo wp_kses_post(get_theme_mod('thrivingstudio_footer_text', '© ' . date('Y') . ' Thriving Studio. All Rights Reserved.')); ?>
+                <?php echo wp_kses_post(get_theme_mod('thrivingstudio_footer_text', '© ' . date('Y') . ' Thriving Studio. Clarity Over Noise.')); ?>
             </div>
 
             <!-- Right Side: Menu and Socials -->

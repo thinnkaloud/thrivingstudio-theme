@@ -4060,6 +4060,13 @@ body.ts-profile-route #site-wrapper {
     background: #f9fafb;
 }
 
+.ts-hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+}
+
 /* Hidden visually, still read by screen readers (WordPress expects themes to define this). */
 .screen-reader-text {
     position: absolute !important;
