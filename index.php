@@ -6,8 +6,8 @@
     
 
     <section class="mb-12 text-center py-12 shadow-lg bg-white border border-gray-200 rounded-xl" style="background: var(--tw-bg-opacity, 1) rgb(255 255 255); color: var(--tw-text-opacity, 1) rgb(17 24 39);">
-        <h1 class="text-5xl font-extrabold mb-4 text-gray-900 drop-shadow"><?php echo sprintf( esc_html__('Welcome to %s', 'thrivingstudio'), '<span class="text-gray-900">Thriving Studio</span>' ); ?></h1>
-        <p class="text-xl text-gray-600 mb-6"><?php esc_html_e('Deep insights, visual storytelling, and timeless ideas for a thriving creative life.', 'thrivingstudio'); ?></p>
+        <h1 class="text-5xl font-extrabold mb-4 text-gray-900 drop-shadow"><?php esc_html_e('Thriving Studio', 'thrivingstudio'); ?></h1>
+        <p class="text-xl text-gray-600 mb-6"><?php echo esc_html(thrivingstudio_copy('blog_intro')); ?></p>
     </section>
     <div class="mt-20">
     <?php if ( have_posts() ) : ?>

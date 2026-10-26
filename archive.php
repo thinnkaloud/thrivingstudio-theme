@@ -6,9 +6,15 @@
         <?php
         $is_category = is_category();
         $term = $is_category ? get_queried_object() : null;
-        $hero_subtitle = $term ? get_term_meta($term->term_id, 'hero_subtitle', true) : '';
-        if ($term && $term->slug === 'artificial-intelligence-and-tools') {
-            $hero_subtitle = 'Stories about artificial intelligence and emerging technology, and how they shape everyday life.';
+        $hero_subtitle = $term ? trim((string) get_term_meta($term->term_id, 'hero_subtitle', true)) : '';
+        if ($term && $hero_subtitle === '') {
+            $hero_subtitle = trim(wp_strip_all_tags(term_description($term->term_id)));
+        }
+        if ($term && $hero_subtitle === '') {
+            $pillar_definitions = thrivingstudio_pillar_definitions();
+            if (isset($pillar_definitions[$term->slug])) {
+                $hero_subtitle = $pillar_definitions[$term->slug]['description'];
+            }
         }
         ?>
         <section class="mb-12 rounded-xl overflow-hidden" style="background:#fff; color:#000; border: 1px solid #bbb; border-color: #bbb; box-shadow: 0 4px 24px 0 rgba(0,0,0,0.04); padding: 3.5rem 0; border-radius: 1rem;">

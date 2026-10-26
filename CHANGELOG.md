@@ -5,6 +5,24 @@ All notable changes to the Thriving Studio theme will be documented in this file
 ## [Unreleased]
 
 ### Added
+- **Content pillars**: Inner Strength, Discipline, and Curious World, matched to categories by slug (`inner-strength`, `discipline`, `curious-world`). The homepage, Foundations page, and pillar category pages use them.
+- **WordPress Tasks workflow** (`.github/workflows/wp-tasks.yml`, `scripts/wp-task.sh`): runs a fixed set of WP-CLI tasks on staging or live over SSH: site info, creating the pillar categories, clearing saved hero text, and purging the cache.
+- **Site Copy panel** in the Customizer (`inc/theme/site-copy.php`). Homepage, blog, newsletter, and Book page wording now lives there instead of in templates.
+
+### Changed
+- **Positioning**: Copy across the site now follows "Thriving Studio — Clarity Over Noise". New homepage hero with "Start here" (Foundations page) and "Get the weekly letter" buttons; the newsletter is now "The Weekly Letter".
+- **Homepage order**: hero, pillars, latest articles, quote cards, social profiles, newsletter.
+- **Social stats** only show counts that are filled in, with no built-in numbers, and YouTube is labelled "subscribers".
+- **Category pages** fall back to the category description when no hero subtitle is set.
+- **Foundations page** introduces the three pillars and links to good first reads.
+
+### Removed
+- The four-slot "Homepage Featured Categories" Customizer section, replaced by the pillars.
+- Hardcoded description overrides for the `artificial-intelligence-and-tools` category.
+
+## Cleanup pass (deployed 2026-10-26, not yet versioned)
+
+### Added
 - **Search**: Search results page, search form, a search icon in the desktop header, and search in the mobile menu and on the 404 page.
 
 ### Changed

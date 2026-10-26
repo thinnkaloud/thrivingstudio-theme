@@ -47,8 +47,8 @@
             $show_updated_date = (bool) get_theme_mod('thrivingstudio_single_show_updated_date', true);
             $show_featured_image = $has_featured_image && $featured_image_position !== 'hidden';
             $show_post_cta = (bool) get_theme_mod('thrivingstudio_single_show_cta', true);
-            $post_cta_title = trim((string) get_theme_mod('thrivingstudio_single_cta_title', __('Want More Practical Insights?', 'thrivingstudio')));
-            $post_cta_text = trim((string) get_theme_mod('thrivingstudio_single_cta_text', __('Get focused ideas on psychology, discipline, and creative growth delivered to your inbox.', 'thrivingstudio')));
+            $post_cta_title = trim((string) get_theme_mod('thrivingstudio_single_cta_title', __('Get the Weekly Letter', 'thrivingstudio')));
+            $post_cta_text = trim((string) get_theme_mod('thrivingstudio_single_cta_text', __('One clear idea each week on inner strength, discipline, and the world worth being curious about. Free, and no noise.', 'thrivingstudio')));
             $post_cta_primary_label = trim((string) get_theme_mod('thrivingstudio_single_cta_primary_label', __('Subscribe', 'thrivingstudio')));
             $post_cta_primary_link = trim((string) get_theme_mod('thrivingstudio_single_cta_primary_link', home_url('/#subscribe')));
             $post_cta_secondary_label = trim((string) get_theme_mod('thrivingstudio_single_cta_secondary_label', __('Get in touch', 'thrivingstudio')));
