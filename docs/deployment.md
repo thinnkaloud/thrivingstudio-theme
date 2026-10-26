@@ -44,6 +44,7 @@ Set `STAGING_PATH` and `LIVE_PATH` to each environment's theme path, for example
 ## Workflow files
 
 - `.github/workflows/test.yml`
+- `.github/workflows/ci.yml`
 - `.github/workflows/deploy-staging.yml`
 - `.github/workflows/deploy-live.yml`
 - `scripts/deploy-check.sh`
@@ -51,7 +52,7 @@ Set `STAGING_PATH` and `LIVE_PATH` to each environment's theme path, for example
 
 ## Automatic checks
 
-`.github/workflows/test.yml` runs `npm run test:ci` on every pull request, and before every staging and live deploy. A deploy only starts if the checks pass. They are:
+`.github/workflows/test.yml` runs `npm run test:ci` on every pull request (through `ci.yml`), and before every staging and live deploy. It always reports as "test / Theme checks", the name the `Protect main` ruleset requires. A deploy only starts if the checks pass. They are:
 
 - `check:hygiene`: no debug or backup files (`.backup`, `.broken`, and similar).
 - `check:php`: PHP syntax check on every tracked PHP file.
@@ -96,7 +97,7 @@ Merging `develop` into `main` now means: Pull requests -> New pull request -> ba
 
 Optional:
 
-1. Ruleset `Protect main`: add "Theme checks" under required status checks, if it was not available when the ruleset was created. It shows up after the first pull request runs it.
+1. Ruleset `Protect main` already requires "test / Theme checks". Keep that exact name if you edit the ruleset.
 2. Environment `live`: a wait timer before deployment.
 
 ## Validation commands

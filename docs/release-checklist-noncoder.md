@@ -6,7 +6,7 @@ The repo has two branches:
 - `develop` is for work in progress. Every push to it deploys to staging automatically.
 - `main` is what is live. It only changes by merging `develop` into it.
 
-Never commit or push straight to `main`. Changes that skip `develop` reach live without ever being checked on staging.
+Never commit or push straight to `main`; GitHub blocks it anyway. Changes that skip `develop` reach live without ever being checked on staging.
 
 ## 1) Before You Push
 - Confirm you are in the theme folder:
@@ -44,7 +44,10 @@ Never commit or push straight to `main`. Changes that skip `develop` reach live 
 - Confirm no broken layout, missing images, or broken links.
 
 ## 4) Promote To Live
-- Merge `develop` into `main` (GitHub merge/PR flow).
+- Merge `develop` into `main` with a pull request. Direct pushes to `main` are blocked.
+  - GitHub -> Pull requests -> New pull request.
+  - Set base to `main` and compare to `develop`, then click Create pull request.
+  - Wait for the green "test / Theme checks" tick, then click Merge pull request.
 - Open GitHub Actions -> "Deploy Theme To Live" -> `Run workflow`.
 - Leave "Use workflow from" set to `main`. The workflow refuses to run from any other branch.
 - Enter:
