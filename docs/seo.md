@@ -27,7 +27,31 @@ The theme used to handle these itself, so confirm Rank Math covers them:
 
 1. **Sitemap.** Rank Math → Sitemap Settings is turned on, and Google Search Console has `https://thrivingstudio.xyz/sitemap_index.xml` submitted. It should not point to the old `/sitemap.xml`.
 2. **FAQ schema.** The theme's FAQ block shows questions and answers but adds no schema. For FAQ rich results, use Rank Math's FAQ block in the post, or add FAQ schema through Rank Math's Schema tab.
-3. **Older posts.** Posts written before July 2026 stored their SEO fields in theme-specific meta keys that Rank Math does not read: `_thrivingstudio_meta_description`, `_thrivingstudio_seo_title`, `_thrivingstudio_social_title`, `_thrivingstudio_social_description`, `_thrivingstudio_social_image`, `_thrivingstudio_canonical_url`, `_thrivingstudio_robots_meta`, and `_thrivingstudio_focus_keyword`. Those posts only have a meta description if one was also entered in Rank Math. Use Rank Math's SEO Analyzer, or open a few older posts, to find the ones that need a description written.
+3. **Older posts.** Posts written before July 2026 stored their SEO fields in theme-specific meta keys that Rank Math does not read: `_thrivingstudio_meta_description`, `_thrivingstudio_seo_title`, `_thrivingstudio_social_title`, `_thrivingstudio_social_description`, `_thrivingstudio_social_image`, `_thrivingstudio_canonical_url`, `_thrivingstudio_robots_meta`, and `_thrivingstudio_focus_keyword`. Those posts only have a meta description if one was also entered in Rank Math. `scripts/migrate-seo-to-rank-math.php` copies the old values into Rank Math. See "Migrating Old SEO Fields" below.
+
+## Migrating Old SEO Fields
+
+`scripts/migrate-seo-to-rank-math.php` is a one-time WP-CLI script. It is deployed with the theme but refuses to run from a browser. Run it over SSH from the WordPress root folder:
+
+```bash
+# 1. Dry run: lists every post and the fields it would copy. Writes nothing.
+wp eval-file wp-content/themes/thrivingstudio/scripts/migrate-seo-to-rank-math.php
+
+# 2. Apply: writes the changes.
+wp eval-file wp-content/themes/thrivingstudio/scripts/migrate-seo-to-rank-math.php apply
+
+# If needed: removes only what step 2 wrote, unless it was edited since.
+wp eval-file wp-content/themes/thrivingstudio/scripts/migrate-seo-to-rank-math.php undo
+```
+
+How it behaves:
+- It covers posts, pages, and quote cards in any status except trash.
+- It only fills Rank Math fields that are empty. Anything already set in Rank Math is kept.
+- It never changes or deletes the old theme fields.
+- Robots settings are converted to Rank Math's format. `max-snippet` and similar tokens are listed in the output instead of copied, so set those in Rank Math by hand if you still want them.
+- Running it twice is safe. The second run finds nothing left to copy.
+
+After applying, open one migrated post in the editor and check the Rank Math box shows the title, description, and social image.
 
 ## Post Subtitles
 
