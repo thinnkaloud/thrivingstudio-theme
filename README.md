@@ -34,7 +34,7 @@ The custom WordPress theme for [thrivingstudio.xyz](https://thrivingstudio.xyz).
 The theme leaves these jobs to plugins:
 
 - **Brevo** for the homepage newsletter form. The form uses the `[sibwp_form id=2]` shortcode. Without the plugin (for example on a local copy), the section shows a disabled preview form.
-- **An SEO plugin** for meta descriptions, Open Graph, schema, and sitemaps. See [docs/seo.md](docs/seo.md).
+- **Rank Math** for meta descriptions, Open Graph, schema, and the sitemap. See [docs/seo.md](docs/seo.md).
 - **Google Site Kit** for Analytics and AdSense.
 - **LiteSpeed Cache** for page caching. `.litespeed-cache-exclude.txt` lists what it must not minify.
 
