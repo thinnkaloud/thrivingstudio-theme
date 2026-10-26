@@ -87,7 +87,7 @@ function thrivingstudio_customize_register($wp_customize) {
     ]);
 
     $wp_customize->add_setting('thrivingstudio_footer_text', [
-        'default' => '© ' . date('Y') . ' Thriving Studio. All rights reserved.',
+        'default' => '© ' . date('Y') . ' Thriving Studio. Clarity Over Noise.',
         'sanitize_callback' => 'sanitize_textarea_field',
     ]);
 
@@ -97,52 +97,6 @@ function thrivingstudio_customize_register($wp_customize) {
         'type' => 'textarea',
     ]);
 
-    // Homepage Featured Categories Section
-    $wp_customize->add_section('thrivingstudio_featured_categories_section', [
-        'title' => __('Homepage Featured Categories', 'thrivingstudio'),
-        'priority' => 35,
-    ]);
-
-    if (class_exists('WP_Customize_Control')) {
-        class ThrivingStudio_Featured_Category_Dropdown_Control extends WP_Customize_Control {
-            public $type = 'featured_category_dropdown';
-
-            public function render_content() {
-                $categories = get_categories(['hide_empty' => false]);
-                ?>
-                <label><span class="customize-control-title"><?php echo esc_html($this->label); ?></span></label>
-                <select <?php $this->link(); ?> style="width:100%;max-width:300px;">
-                    <option value="0">— None —</option>
-                    <?php foreach ($categories as $cat): ?>
-                        <option value="<?php echo esc_attr($cat->term_id); ?>" <?php selected($this->value(), $cat->term_id); ?>><?php echo esc_html($cat->name); ?></option>
-                    <?php endforeach; ?>
-                </select>
-                <?php
-            }
-        }
-        for ($i = 1; $i <= 4; $i++) {
-            $wp_customize->add_setting("thrivingstudio_featured_category_$i", [
-                'default' => '',
-                'sanitize_callback' => 'absint',
-            ]);
-            $wp_customize->add_control(new ThrivingStudio_Featured_Category_Dropdown_Control($wp_customize, "thrivingstudio_featured_category_$i", [
-                'label' => sprintf(__('Featured Category #%d', 'thrivingstudio'), $i),
-                'section' => 'thrivingstudio_featured_categories_section',
-                'settings' => "thrivingstudio_featured_category_$i",
-            ]));
-            // Add description field
-            $wp_customize->add_setting("thrivingstudio_featured_category_{$i}_desc", [
-                'default' => '',
-                'sanitize_callback' => 'sanitize_text_field',
-            ]);
-            $wp_customize->add_control("thrivingstudio_featured_category_{$i}_desc", [
-                'label' => sprintf(__('Featured Category #%d Description', 'thrivingstudio'), $i),
-                'section' => 'thrivingstudio_featured_categories_section',
-                'type' => 'text',
-            ]);
-        }
-    }
-
     // Homepage Social Stats Section (separate from social profiles)
     $wp_customize->add_section('thrivingstudio_homepage_social_stats_section', [
         'title' => __('Homepage Social Stats', 'thrivingstudio'),
@@ -151,7 +105,7 @@ function thrivingstudio_customize_register($wp_customize) {
 
     // Social Stats Section Title
     $wp_customize->add_setting('thrivingstudio_home_social_stats_title', [
-        'default'           => __('Our Social Circle', 'thrivingstudio'),
+        'default'           => __('Follow along', 'thrivingstudio'),
         'sanitize_callback' => 'sanitize_text_field',
     ]);
     $wp_customize->add_control('thrivingstudio_home_social_stats_title', [
@@ -173,7 +127,8 @@ function thrivingstudio_customize_register($wp_customize) {
             'sanitize_callback' => 'sanitize_text_field',
         ]);
         $wp_customize->add_control("thrivingstudio_home_social_{$key}_count", [
-            'label' => sprintf(__('%s Followers', 'thrivingstudio'), $label),
+            'label' => sprintf($key === 'youtube' ? __('%s Subscribers', 'thrivingstudio') : __('%s Followers', 'thrivingstudio'), $label),
+            'description' => __('Leave empty to hide this network on the homepage.', 'thrivingstudio'),
             'section' => 'thrivingstudio_homepage_social_stats_section',
             'type' => 'text',
         ]);
@@ -224,7 +179,7 @@ function thrivingstudio_customize_register($wp_customize) {
         'priority' => 30,
     ]);
     $wp_customize->add_setting('thrivingstudio_home_hero_title', [
-        'default'           => __('Welcome to <span class="text-black">Thriving Studio</span>', 'thrivingstudio'),
+        'default'           => __('Thriving Studio', 'thrivingstudio'),
         'sanitize_callback' => 'wp_kses_post',
     ]);
     $wp_customize->add_control('thrivingstudio_home_hero_title', [
@@ -233,7 +188,7 @@ function thrivingstudio_customize_register($wp_customize) {
         'type'     => 'text',
     ]);
     $wp_customize->add_setting('thrivingstudio_home_hero_subtitle', [
-        'default'           => __('Deep insights, visual storytelling, and timeless ideas for a thriving creative life.', 'thrivingstudio'),
+        'default'           => __('Practical writing on a steadier mind, a disciplined life, and a world worth being curious about.', 'thrivingstudio'),
         'sanitize_callback' => 'sanitize_text_field',
     ]);
     $wp_customize->add_control('thrivingstudio_home_hero_subtitle', [
@@ -242,7 +197,7 @@ function thrivingstudio_customize_register($wp_customize) {
         'type'     => 'text',
     ]);
     $wp_customize->add_setting('thrivingstudio_home_hero_button_text', [
-        'default'           => __('Explore articles', 'thrivingstudio'),
+        'default'           => __('Start here', 'thrivingstudio'),
         'sanitize_callback' => 'sanitize_text_field',
     ]);
     $wp_customize->add_control('thrivingstudio_home_hero_button_text', [
@@ -251,11 +206,12 @@ function thrivingstudio_customize_register($wp_customize) {
         'type'     => 'text',
     ]);
     $wp_customize->add_setting('thrivingstudio_home_hero_button_link', [
-        'default'           => home_url('/#latest-articles'),
+        'default'           => '',
         'sanitize_callback' => 'esc_url_raw',
     ]);
     $wp_customize->add_control('thrivingstudio_home_hero_button_link', [
         'label'    => __('Hero Button Link', 'thrivingstudio'),
+        'description' => __('Leave empty to link to the Foundations page.', 'thrivingstudio'),
         'section'  => 'thrivingstudio_homepage_hero_section',
         'type'     => 'url',
     ]);
@@ -554,7 +510,7 @@ function thrivingstudio_customize_register($wp_customize) {
     ]);
 
     $wp_customize->add_setting('thrivingstudio_single_cta_title', [
-        'default' => __('Want More Practical Insights?', 'thrivingstudio'),
+        'default' => __('Get the Weekly Letter', 'thrivingstudio'),
         'sanitize_callback' => 'sanitize_text_field',
     ]);
     $wp_customize->add_control('thrivingstudio_single_cta_title', [
@@ -564,7 +520,7 @@ function thrivingstudio_customize_register($wp_customize) {
     ]);
 
     $wp_customize->add_setting('thrivingstudio_single_cta_text', [
-        'default' => __('Get focused ideas on psychology, discipline, and creative growth delivered to your inbox.', 'thrivingstudio'),
+        'default' => __('One clear idea each week on inner strength, discipline, and the world worth being curious about. Free, and no noise.', 'thrivingstudio'),
         'sanitize_callback' => 'sanitize_textarea_field',
     ]);
     $wp_customize->add_control('thrivingstudio_single_cta_text', [

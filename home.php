@@ -10,9 +10,9 @@
         <!-- Blog Hero Section -->
         <section class="ts-blog-hero mb-12 rounded-xl overflow-hidden">
             <div class="text-center px-4 sm:px-8">
-                <h1 class="text-5xl font-extrabold mb-4 text-black drop-shadow">Explore the journal</h1>
+                <h1 class="text-5xl font-extrabold mb-4 text-black drop-shadow"><?php echo esc_html(thrivingstudio_copy('blog_title')); ?></h1>
                 <p class="text-xl text-black mb-2 max-w-2xl mx-auto">
-                    Practical ideas on emotional strength, creative growth, and a more intentional life.
+                    <?php echo esc_html(thrivingstudio_copy('blog_intro')); ?>
                 </p>
             </div>
         </section>
