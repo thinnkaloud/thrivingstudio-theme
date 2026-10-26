@@ -90,13 +90,14 @@ In place now:
 
 - Environment `live` requires a reviewer to approve each deployment.
 - Staging and live secrets are configured.
+- Ruleset `Protect main`: nobody can push to `main` directly, delete it, or force-push it. Changes reach `main` only through a pull request from `develop`. No approvals are required, so you can merge your own pull requests.
 
-Recommended, not yet turned on (direct pushes to `main` and `develop` currently succeed):
+Merging `develop` into `main` now means: Pull requests -> New pull request -> base `main`, compare `develop` -> wait for "Theme checks" to pass -> Merge pull request.
 
-1. Branch protection on `main`: require a pull request before merging, and restrict who can push.
-2. Branch protection on `develop`: optionally require a pull request.
-3. Required status checks: once branch protection is on, require "Theme checks" to pass before merging.
-4. Environment `live`: optional wait timer before deployment.
+Optional:
+
+1. Ruleset `Protect main`: add "Theme checks" under required status checks, if it was not available when the ruleset was created. It shows up after the first pull request runs it.
+2. Environment `live`: a wait timer before deployment.
 
 ## Validation commands
 
