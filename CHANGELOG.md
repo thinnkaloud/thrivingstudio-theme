@@ -9,7 +9,7 @@ All notable changes to the Thriving Studio theme will be documented in this file
 
 ### Changed
 - **Article cards**: One shared card (`template-parts/post-card.php`) now renders every post listing. Card images use responsive `srcset` instead of a fixed small size, homepage card titles are `h3` under their section heading, and cards without an image show a plain block instead of "No image available".
-- **"Useful" button**: Each visitor (by account, or by IP when signed out) adds at most one vote per article and can only remove their own. Signed-out votes no longer need a nonce, so the button keeps working on cached pages.
+- **"Useful" button**: Each visitor (by account, or by IP when signed out) adds at most one vote per article and can only remove their own. Signed-out votes are checked by request origin instead of a nonce, so the button keeps working on cached pages and other sites cannot cast votes through a visitor's browser.
 - **Contact page**: Excluded from page caching so its form nonce never expires in a cached copy.
 - **Service Worker cleanup**: Only runs for visitors who still have an old worker installed, instead of clearing browser caches on every page load.
 - **Accessibility**: Added the `.screen-reader-text` style, so hidden form labels are no longer visible.

@@ -50,12 +50,32 @@ function thrivingstudio_get_useful_vote_key($post_id) {
     return 'ts_useful_' . md5(wp_salt('nonce') . '|' . (int) $post_id . '|' . $visitor);
 }
 
+/**
+ * True when the browser says the request came from this site. Browsers set
+ * Origin on POST requests and pages cannot forge it, so this blocks other
+ * websites from casting votes through a visitor's browser.
+ */
+function thrivingstudio_useful_request_is_same_origin() {
+    if (isset($_SERVER['HTTP_ORIGIN'])) {
+        $source = (string) $_SERVER['HTTP_ORIGIN'];
+    } else {
+        $source = isset($_SERVER['HTTP_REFERER']) ? (string) $_SERVER['HTTP_REFERER'] : '';
+    }
+
+    $source_host = wp_parse_url($source, PHP_URL_HOST);
+    $site_host = wp_parse_url(home_url(), PHP_URL_HOST);
+
+    return $source_host && $site_host && strtolower($source_host) === strtolower($site_host);
+}
+
 function thrivingstudio_ajax_toggle_post_useful() {
     // Anonymous visitors read cached pages, where a nonce goes stale within a
-    // day, and a logged-out nonce gives no CSRF protection anyway. The
-    // per-visitor vote record below is what stops repeat or forged votes.
+    // day. They are checked by origin instead, and the per-visitor vote
+    // record below stops repeat votes.
     if (is_user_logged_in()) {
         check_ajax_referer('thrivingstudio_post_engagement', 'nonce');
+    } elseif (!thrivingstudio_useful_request_is_same_origin()) {
+        wp_send_json_error(['message' => __('Invalid request.', 'thrivingstudio')], 403);
     }
 
     $post_id = isset($_POST['post_id']) ? absint($_POST['post_id']) : 0;
