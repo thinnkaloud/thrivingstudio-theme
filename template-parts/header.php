@@ -161,6 +161,11 @@ body.admin-bar #masthead {
                 <div class="flex items-center md:justify-end w-auto md:min-w-[160px]">
                     <!-- Desktop CTA -->
                     <div class="ts-header-actions hidden md:flex items-center">
+                        <a href="<?php echo esc_url(home_url('/?s=')); ?>" class="ts-header-search" aria-label="<?php esc_attr_e('Search', 'thrivingstudio'); ?>">
+                            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 100-15 7.5 7.5 0 000 15z" />
+                            </svg>
+                        </a>
                         <a href="<?php echo esc_url(get_theme_mod('thrivingstudio_header_cta_link', '#')); ?>" class="ts-header-cta inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-center">
                             <?php echo esc_html(get_theme_mod('thrivingstudio_header_cta_text', __('Get In Touch', 'thrivingstudio'))); ?>
                         </a>
@@ -187,6 +192,9 @@ body.admin-bar #masthead {
 
         <!-- Mobile menu, show/hide based on menu state. -->
         <div class="md:hidden hidden bg-white border-t border-gray-200" id="mobile-menu">
+            <div class="px-5 pt-4">
+                <?php get_search_form(); ?>
+            </div>
             <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
                 <?php 
                 // We pass a custom argument 'is_mobile' to our nav menu
@@ -219,26 +227,6 @@ body.admin-bar #masthead {
         </div>
     </header>
 
-    <?php if (is_post_type_archive('quote_card')) : ?>
-    <style>
-    /* Force minimal spacing for quote card archive */
-    main.flex-1 {
-        margin-top: 0 !important;
-        padding-top: 0 !important;
-    }
-    main.flex-1 .container {
-        padding-top: 0 !important;
-        margin-top: 0 !important;
-    }
-    main.flex-1 .mb-4 {
-        margin-bottom: 0 !important;
-    }
-    main.flex-1 h1 {
-        margin-top: 0 !important;
-        padding-top: 0 !important;
-    }
-    </style>
-    <?php endif; ?>
 
 <!-- Desktop Category Menu (hidden on mobile) -->
 <div class="hidden md:block">
@@ -247,31 +235,3 @@ body.admin-bar #masthead {
 
 <div id="site-wrapper">
     <div id="site-content" class="flex-1">
-        <script>
-        (function() {
-            function onReady(fn) {
-                if (document.readyState === 'loading') {
-                    document.addEventListener('DOMContentLoaded', fn, { once: true });
-                } else { fn(); }
-            }
-            onReady(function() {
-                var btn = document.getElementById('mobile-menu-button');
-                var menu = document.getElementById('mobile-menu');
-                if (!btn || !menu || btn._tsMenuBound) return;
-                btn._tsMenuBound = true;
-                btn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    menu.classList.toggle('hidden');
-                    var openIcon = document.querySelector('.js-mobile-menu-open-icon');
-                    var closeIcon = document.querySelector('.js-mobile-menu-close-icon');
-                    if (openIcon && closeIcon) {
-                        openIcon.classList.toggle('hidden');
-                        closeIcon.classList.toggle('hidden');
-                    }
-                    var isExpanded = btn.getAttribute('aria-expanded') === 'true';
-                    btn.setAttribute('aria-expanded', String(!isExpanded));
-                }, { passive: false });
-            });
-        })();
-        </script>
