@@ -95,7 +95,8 @@ Rolling back to a commit older than `a92ed36` (the 1.3.0 cleanup) puts deleted b
 |---|---|
 | `info` | Read-only. Lists categories, published posts and their categories, pages, and Customizer settings. |
 | `create-pillar-categories` | Creates the `inner-strength`, `discipline`, and `curious-world` categories if they are missing. Existing ones are left alone. |
-| `map-pillars` | Nests the existing categories listed in `PILLAR_MAP` (`scripts/wp-task.sh`) under their pillar, so pillar pages list their posts while category and post URLs stay the same. A category already nested under another category of the same pillar stays put. Each moved category's original parent is saved in the `_thrivingstudio_original_parent` term meta. Also moves the two Uncategorized posts listed in `UNCATEGORIZED_MOVES` into Curious World. Safe to run again. |
+| `map-pillars` | Moves the two Uncategorized posts listed in `UNCATEGORIZED_MOVES` into Curious World. Categories are not moved: each pillar page also lists posts from the categories in its `categories` list in `thrivingstudio_pillar_definitions()` (`inc/theme/site-copy.php`), so every category and post URL stays the same. Safe to run again. |
+| `restore-category-parents` | Puts back any category an earlier version of `map-pillars` nested under a pillar, using the parent saved in the `_thrivingstudio_original_parent` term meta, then removes that meta. Safe to run again. |
 | `clear-hero-text` | Prints the saved Homepage Hero values to the log, then removes them so the theme defaults show. |
 | `purge-cache` | Purges LiteSpeed Cache (falls back to flushing the object cache). |
 | `security-scan` | Read-only. Shows who created the spam post, searches all posts for spam terms, lists user accounts, checks core and plugin files against wordpress.org, and lists PHP files in `uploads` or changed in the last 90 days. |
