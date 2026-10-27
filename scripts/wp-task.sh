@@ -205,8 +205,10 @@ case "$TASK" in
       term_id="$(wpc term get category "$slug" --by=slug --field=term_id 2>/dev/null || true)"
       if [ -z "$term_id" ]; then
         echo "Not present: $slug"
-      elif [ "$(wpc term get category "$term_id" --field=count)" != "0" ]; then
-        echo "Kept, still has posts: $slug"
+      # The term's count field only includes published posts, so count posts
+      # in every status (drafts, scheduled, private, trash) directly.
+      elif [ "$(wpc post list --post_type=any --post_status=publish,future,draft,pending,private,trash --cat="$term_id" --format=count)" != "0" ]; then
+        echo "Kept, still has posts (any status): $slug"
       else
         wpc term delete category "$term_id" >/dev/null
         echo "Deleted: $slug"
