@@ -6,6 +6,8 @@ All notable changes to the Thriving Studio theme will be documented in this file
 
 ### Added
 - **Content pillars**: Inner Strength, Discipline, and Curious World, matched to categories by slug (`inner-strength`, `discipline`, `curious-world`). The homepage, Foundations page, and pillar category pages use them.
+- **`remove-tfm-integrations` task**: removes leftovers from the paused TFM publishing app (application passwords, empty categories) and deactivates the article import plugin.
+- **Security tasks** in the WordPress Tasks workflow: `security-scan` (read-only checks for signs of a compromise) and `trash-spam-post` (trashes the `kms-activator-office-2016` spam post).
 - **WordPress Tasks workflow** (`.github/workflows/wp-tasks.yml`, `scripts/wp-task.sh`): runs a fixed set of WP-CLI tasks on staging or live over SSH: site info, creating the pillar categories, clearing saved hero text, and purging the cache.
 - **Site Copy panel** in the Customizer (`inc/theme/site-copy.php`). Homepage, blog, newsletter, and Book page wording now lives there instead of in templates.
 

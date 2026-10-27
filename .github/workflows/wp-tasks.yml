@@ -16,7 +16,7 @@ on:
           - staging
           - live
       task:
-        description: "info is read-only. The others change the site."
+        description: "info and security-scan are read-only. The others change the site."
         required: true
         default: info
         type: choice
@@ -25,8 +25,11 @@ on:
           - create-pillar-categories
           - clear-hero-text
           - purge-cache
+          - security-scan
+          - trash-spam-post
+          - remove-tfm-integrations
       confirm:
-        description: Type RUN to allow a change on live. Not needed for info or staging.
+        description: Type RUN to allow a change on live. Not needed for info, security-scan, or staging.
         required: false
         default: ''
         type: string
@@ -52,7 +55,7 @@ jobs:
           CONFIRM_INPUT: ${{ inputs.confirm }}
         run: |
           case "$TASK" in
-            info|create-pillar-categories|clear-hero-text|purge-cache) ;;
+            info|create-pillar-categories|clear-hero-text|purge-cache|security-scan|trash-spam-post|remove-tfm-integrations) ;;
             *) echo "Unknown task: $TASK" >&2; exit 1 ;;
           esac
           if [ "$TARGET" = "live" ]; then
@@ -60,7 +63,7 @@ jobs:
               echo "Live tasks must run from main. Current branch: ${GITHUB_REF_NAME}" >&2
               exit 1
             fi
-            if [ "$TASK" != "info" ] && [ "$CONFIRM_INPUT" != "RUN" ]; then
+            if [ "$TASK" != "info" ] && [ "$TASK" != "security-scan" ] && [ "$CONFIRM_INPUT" != "RUN" ]; then
               echo "Refusing to change live: set confirm to RUN." >&2
               exit 1
             fi
