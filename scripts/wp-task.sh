@@ -20,6 +20,13 @@ if ! command -v wp >/dev/null 2>&1; then
   exit 1
 fi
 
+# Print the first N lines of stdin, then drain the rest so the writer never
+# gets SIGPIPE (which pipefail would turn into a failed run).
+first_lines() {
+  head -n "$1"
+  cat >/dev/null
+}
+
 wpc() {
   wp --path="$WP_ROOT" --skip-themes --skip-plugins "$@"
 }
@@ -30,6 +37,13 @@ PILLARS=(
   "discipline|Discipline|Habits, focus, fitness, and practical tools for growing steadily in life."
   "curious-world|Curious World|Science and technology explained simply, and good news from around the world."
 )
+
+# The spam post found on staging and live on 2026-10-27.
+SPAM_POST_SLUG="kms-activator-office-2016"
+
+# Leftovers from the paused TFM publishing app (removed 2026-10-27).
+TFM_CATEGORY_SLUGS=(api-posts bridge-tests ops-hub)
+TFM_PLUGIN="thriving-studio-article-import"
 
 HERO_MODS=(
   thrivingstudio_home_hero_title
@@ -90,6 +104,125 @@ case "$TASK" in
     else
       wp --path="$WP_ROOT" cache flush
       echo "LiteSpeed CLI not available; flushed the WordPress object cache instead."
+    fi
+    ;;
+
+  security-scan)
+    # Read-only. Changes nothing on the site.
+    echo "== Spam post"
+    wpc post list --post_type=any --post_status=any --name="$SPAM_POST_SLUG" \
+      --fields=ID,post_status,post_author,post_date,post_modified,post_title --format=table
+    for author_id in $(wpc post list --post_type=any --post_status=any --name="$SPAM_POST_SLUG" --field=post_author); do
+      printf 'Author %s: %s\n' "$author_id" "$(wpc user get "$author_id" --field=user_login 2>/dev/null || echo 'user no longer exists')"
+    done
+    echo
+    echo "== Other posts matching spam terms (any status)"
+    for term in activator keygen crack casino betting viagra "<script" "<iframe"; do
+      matches="$(wpc post list --post_type=any --post_status=any --s="$term" --fields=ID,post_type,post_status,post_title --format=csv | tail -n +2)"
+      if [ -n "$matches" ]; then
+        printf -- '-- %s\n%s\n' "$term" "$matches"
+      fi
+    done
+    echo
+    echo "== User accounts"
+    wpc user list --fields=ID,user_login,roles,user_registered --orderby=registered --order=DESC --format=table
+    echo
+    echo "== Application passwords (tools that can post as a user)"
+    for user_id in $(wpc user list --role=administrator --field=ID) $(wpc user list --role=editor --field=ID) $(wpc user list --role=author --field=ID); do
+      printf -- '-- user %s (%s)\n' "$user_id" "$(wpc user get "$user_id" --field=user_login)"
+      wpc user application-password list "$user_id" --fields=name,created,last_used,last_ip --format=table 2>/dev/null || echo "(none)"
+    done
+    echo
+    echo "== WordPress core files (compared with wordpress.org)"
+    wpc core verify-checksums || true
+    echo
+    echo "== Plugin files (compared with wordpress.org; non-wordpress.org plugins are skipped)"
+    wpc plugin verify-checksums --all || true
+    echo
+    echo "== Plugins"
+    wpc plugin list --fields=name,status,version,update --format=table
+    echo
+    echo "== Must-use plugins folder"
+    ls -la "$WP_ROOT/wp-content/mu-plugins" 2>/dev/null || echo "(none)"
+    echo
+    echo "== PHP files inside uploads (there should be none)"
+    find "$WP_ROOT/wp-content/uploads" -type f -name '*.php' 2>/dev/null | first_lines 50
+    echo
+    # Core files and wordpress.org plugins are already compared file by file
+    # above (including files that should not exist), so leave them out here.
+    echo "== PHP files changed in the last 90 days that the checksum checks do not cover"
+    # In find -path, * also matches /, so root files are listed separately.
+    find "$WP_ROOT" -maxdepth 1 -type f -name '*.php' -mtime -90 2>/dev/null
+    find "$WP_ROOT/wp-content" -type f -name '*.php' -mtime -90 \
+      -not -path '*/wp-content/plugins/*' \
+      -not -path '*/wp-content/languages/*' \
+      -not -path '*/wp-content/wflogs/*' \
+      -not -path '*/wp-content/themes/thrivingstudio/*' \
+      -not -path '*/wp-content/cache/*' \
+      -not -path '*/wp-content/litespeed/*' 2>/dev/null | first_lines 100
+    echo
+    echo "== PHP files in plugins that are not on wordpress.org (not checksum-verified)"
+    for plugin_dir in "$WP_ROOT"/wp-content/plugins/*/; do
+      plugin="$(basename "$plugin_dir")"
+      # WP-CLI exits 0 and prints "skipping" for plugins it cannot look up.
+      if ! check_output="$(wpc plugin verify-checksums "$plugin" 2>&1)" || printf '%s' "$check_output" | grep -q 'skipping'; then
+        echo "-- $plugin"
+        find "$plugin_dir" -type f -name '*.php' -mtime -90 2>/dev/null | first_lines 30
+      fi
+    done
+    echo
+    echo "Scan complete."
+    ;;
+
+  trash-spam-post)
+    ids="$(wpc post list --post_type=any --post_status=any --name="$SPAM_POST_SLUG" --field=ID)"
+    if [ -z "$ids" ]; then
+      echo "No post with slug $SPAM_POST_SLUG. Nothing to do."
+    else
+      for post_id in $ids; do
+        echo "Moving to trash (restorable under Posts > Trash): $post_id $(wpc post get "$post_id" --field=post_title)"
+        wpc post delete "$post_id"
+      done
+    fi
+    ;;
+
+  remove-tfm-integrations)
+    echo "== Application passwords named TFM (revoked)"
+    for user_id in $(wpc user list --field=ID); do
+      wpc user application-password list "$user_id" --fields=uuid,name --format=csv 2>/dev/null | tail -n +2 |
+        while IFS=, read -r uuid name; do
+          case "$(printf '%s' "$name" | tr '[:upper:]' '[:lower:]')" in
+            *tfm*)
+              wpc user application-password delete "$user_id" "$uuid" >/dev/null
+              printf 'Revoked for user %s: %s\n' "$user_id" "$name"
+              ;;
+          esac
+        done
+    done
+    echo
+    echo "== TFM categories (deleted only when empty)"
+    for slug in "${TFM_CATEGORY_SLUGS[@]}"; do
+      term_id="$(wpc term get category "$slug" --by=slug --field=term_id 2>/dev/null || true)"
+      if [ -z "$term_id" ]; then
+        echo "Not present: $slug"
+      # The term's count field only includes published posts, so count posts
+      # in every status (drafts, scheduled, private, trash) directly.
+      elif [ "$(wpc post list --post_type=any --post_status=publish,future,draft,pending,private,trash --cat="$term_id" --format=count)" != "0" ]; then
+        echo "Kept, still has posts (any status): $slug"
+      else
+        wpc term delete category "$term_id" >/dev/null
+        echo "Deleted: $slug"
+      fi
+    done
+    echo
+    echo "== $TFM_PLUGIN plugin (deactivated, files kept)"
+    if ! wpc plugin is-installed "$TFM_PLUGIN"; then
+      echo "Not installed."
+    elif wpc plugin is-active "$TFM_PLUGIN"; then
+      # Load plugins here so the plugin's own deactivation hook runs.
+      wp --path="$WP_ROOT" plugin deactivate "$TFM_PLUGIN"
+    else
+      echo "Already inactive."
     fi
     ;;
 

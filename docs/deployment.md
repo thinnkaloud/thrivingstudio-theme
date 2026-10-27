@@ -97,8 +97,11 @@ Rolling back to a commit older than `a92ed36` (the 1.3.0 cleanup) puts deleted b
 | `create-pillar-categories` | Creates the `inner-strength`, `discipline`, and `curious-world` categories if they are missing. Existing ones are left alone. |
 | `clear-hero-text` | Prints the saved Homepage Hero values to the log, then removes them so the theme defaults show. |
 | `purge-cache` | Purges LiteSpeed Cache (falls back to flushing the object cache). |
+| `security-scan` | Read-only. Shows who created the spam post, searches all posts for spam terms, lists user accounts, checks core and plugin files against wordpress.org, and lists PHP files in `uploads` or changed in the last 90 days. |
+| `trash-spam-post` | Moves the post with slug `kms-activator-office-2016` to the trash, where it can be restored. |
+| `remove-tfm-integrations` | Revokes application passwords whose name contains "TFM", deletes the `api-posts`, `bridge-tests`, and `ops-hub` categories when empty, and deactivates (does not delete) the `thriving-studio-article-import` plugin. |
 
-Live runs must start from `main`, and any task other than `info` needs `confirm=RUN`. Every run is logged under Actions. The tasks live in `scripts/wp-task.sh`; adding a task means adding it there and to the workflow's task list.
+Live runs must start from `main`, and any task other than `info` or `security-scan` needs `confirm=RUN`. Every run is logged under Actions. The tasks live in `scripts/wp-task.sh`; adding a task means adding it there and to the workflow's task list.
 
 ## GitHub settings
 

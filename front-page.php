@@ -23,7 +23,7 @@
                 // Without a custom destination, send new readers to the Foundations page when it exists.
                 if ($btn_link === '#' || $btn_link === '' || $btn_link === home_url('/#latest-articles')) {
                     $foundations_page = get_page_by_path('foundations');
-                    $btn_link = $foundations_page ? get_permalink($foundations_page) : '#latest-articles';
+                    $btn_link = ($foundations_page && $foundations_page->post_status === 'publish') ? get_permalink($foundations_page) : '#latest-articles';
                 }
                 $secondary_text = thrivingstudio_copy('home_hero_secondary_label');
                 ?>

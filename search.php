@@ -35,7 +35,7 @@
             <section class="ts-empty-state" aria-label="<?php esc_attr_e('No results', 'thrivingstudio'); ?>">
                 <h2 class="ts-empty-state-title"><?php esc_html_e('Nothing matched that search', 'thrivingstudio'); ?></h2>
                 <p class="ts-empty-state-text"><?php esc_html_e('Try a shorter phrase, or browse every article in the journal.', 'thrivingstudio'); ?></p>
-                <a href="<?php echo esc_url(get_permalink(get_option('page_for_posts')) ?: home_url('/blog/')); ?>" class="ts-empty-state-link">
+                <a href="<?php echo esc_url(thrivingstudio_get_journal_url()); ?>" class="ts-empty-state-link">
                     <?php esc_html_e('Go to Blog Home', 'thrivingstudio'); ?>
                 </a>
             </section>
