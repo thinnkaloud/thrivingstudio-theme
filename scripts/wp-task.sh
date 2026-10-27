@@ -38,6 +38,40 @@ PILLARS=(
   "curious-world|Curious World|Science and technology explained simply, and good news from around the world."
 )
 
+# Existing categories nested under each pillar ("category-slug|pillar-slug").
+# A category already nested under another category of the same pillar stays
+# where it is; everything else moves directly under its pillar.
+PILLAR_MAP=(
+  "psychology|inner-strength"
+  "mental-health|inner-strength"
+  "consciousness|inner-strength"
+  "personal-growth-mindset|inner-strength"
+  "yoga-spirituality|inner-strength"
+  "discipline-and-design|discipline"
+  "health-and-fitness|discipline"
+  "nutrition|discipline"
+  "nutrition-health-and-fitness|discipline"
+  "wellness|discipline"
+  "physical-health|discipline"
+  "signals-of-progress|curious-world"
+  "innovation|curious-world"
+  "artificial-intelligence-and-tools|curious-world"
+  "research-brief|curious-world"
+  "human-biology|curious-world"
+  "brain-biology|curious-world"
+  "inspiring|curious-world"
+  "the-good-thread|curious-world"
+  "true-hero-files|curious-world"
+  "wildlife|curious-world"
+  "art-creativity|curious-world"
+)
+
+# Uncategorized posts that belong in a pillar ("post-slug|pillar-slug").
+UNCATEGORIZED_MOVES=(
+  "is-the-internet-dead-the-truth-behind-the-dead-internet-theory|curious-world"
+  "why-google-bard-is-named-bard|curious-world"
+)
+
 # The spam post found on staging and live on 2026-10-27.
 SPAM_POST_SLUG="kms-activator-office-2016"
 
@@ -166,6 +200,66 @@ case "$TASK" in
         wpc term create category "$name" --slug="$slug" --description="$description" --porcelain >/dev/null
         echo "Created: $slug ($name)"
       fi
+    done
+    ;;
+
+  map-pillars)
+    # Pillar slug a category maps to, or empty.
+    pillar_for() {
+      local entry
+      for entry in "${PILLAR_MAP[@]}"; do
+        if [ "${entry%%|*}" = "$1" ]; then
+          printf '%s' "${entry#*|}"
+          return
+        fi
+      done
+    }
+
+    echo "== Categories nested under pillars"
+    for entry in "${PILLAR_MAP[@]}"; do
+      slug="${entry%%|*}"
+      pillar="${entry#*|}"
+      term_id="$(wpc term get category "$slug" --by=slug --field=term_id 2>/dev/null || true)"
+      pillar_id="$(wpc term get category "$pillar" --by=slug --field=term_id 2>/dev/null || true)"
+      if [ -z "$pillar_id" ]; then
+        echo "Pillar missing, run create-pillar-categories first: $pillar" >&2
+        exit 1
+      fi
+      if [ -z "$term_id" ]; then
+        echo "Not present: $slug"
+        continue
+      fi
+      parent_id="$(wpc term get category "$term_id" --field=parent)"
+      parent_slug=""
+      if [ "$parent_id" != "0" ]; then
+        parent_slug="$(wpc term get category "$parent_id" --field=slug)"
+      fi
+      if [ "$parent_id" = "$pillar_id" ]; then
+        echo "Already under $pillar: $slug"
+      elif [ -n "$parent_slug" ] && [ "$(pillar_for "$parent_slug")" = "$pillar" ]; then
+        echo "Kept under $parent_slug (also in $pillar): $slug"
+      else
+        # Remember the original parent once, so the move can be reversed.
+        if [ -z "$(wpc term meta get "$term_id" _thrivingstudio_original_parent 2>/dev/null || true)" ]; then
+          wpc term meta update "$term_id" _thrivingstudio_original_parent "$parent_id" >/dev/null
+        fi
+        wpc term update category "$term_id" --parent="$pillar_id" >/dev/null
+        echo "Moved under $pillar: $slug (was under ${parent_slug:-top level})"
+      fi
+    done
+    echo
+    echo "== Uncategorized posts moved into a pillar"
+    for entry in "${UNCATEGORIZED_MOVES[@]}"; do
+      post_slug="${entry%%|*}"
+      pillar="${entry#*|}"
+      post_id="$(wpc post list --post_type=post --post_status=any --name="$post_slug" --field=ID)"
+      if [ -z "$post_id" ]; then
+        echo "Not present: $post_slug"
+        continue
+      fi
+      wpc post term add "$post_id" category "$pillar" >/dev/null
+      wpc post term remove "$post_id" category uncategorized >/dev/null 2>&1 || true
+      echo "Moved to $pillar: $post_id $post_slug"
     done
     ;;
 

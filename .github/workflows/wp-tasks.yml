@@ -23,6 +23,7 @@ on:
         options:
           - info
           - create-pillar-categories
+          - map-pillars
           - clear-hero-text
           - purge-cache
           - security-scan
@@ -59,7 +60,7 @@ jobs:
           CONFIRM_INPUT: ${{ inputs.confirm }}
         run: |
           case "$TASK" in
-            info|create-pillar-categories|clear-hero-text|purge-cache|security-scan|trash-spam-post|remove-tfm-integrations|remove-old-accounts|cleanup|inspect-files|quarantine-files) ;;
+            info|create-pillar-categories|map-pillars|clear-hero-text|purge-cache|security-scan|trash-spam-post|remove-tfm-integrations|remove-old-accounts|cleanup|inspect-files|quarantine-files) ;;
             *) echo "Unknown task: $TASK" >&2; exit 1 ;;
           esac
           if [ "$TARGET" = "live" ]; then

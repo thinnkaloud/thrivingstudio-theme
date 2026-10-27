@@ -6,6 +6,7 @@ All notable changes to the Thriving Studio theme will be documented in this file
 
 ### Added
 - **Content pillars**: Inner Strength, Discipline, and Curious World, matched to categories by slug (`inner-strength`, `discipline`, `curious-world`). The homepage, Foundations page, and pillar category pages use them.
+- **`map-pillars` task**: nests the existing categories under Inner Strength, Discipline, and Curious World (original parents are saved, URLs unchanged) and moves two Uncategorized posts into Curious World.
 - **Live cleanup tasks**: `inspect-files` (read-only look at the unknown `testo.php` and `amp.php` in the site root), `quarantine-files` (moves them out of the web root), `remove-old-accounts` (deletes `VivekSharma` and `thriving_chatgpt`, reassigning their posts), and `cleanup` (spam post, TFM, and accounts in one approval). `remove-tfm-integrations` now also deactivates `tfm-connector`.
 - **`remove-tfm-integrations` task**: removes leftovers from the paused TFM publishing app (application passwords, empty categories) and deactivates the article import plugin.
 - **Security tasks** in the WordPress Tasks workflow: `security-scan` (read-only checks for signs of a compromise) and `trash-spam-post` (trashes the `kms-activator-office-2016` spam post).
