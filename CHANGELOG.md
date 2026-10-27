@@ -16,6 +16,10 @@ All notable changes to the Thriving Studio theme will be documented in this file
 - **Category pages** fall back to the category description when no hero subtitle is set.
 - **Foundations page** introduces the three pillars and links to good first reads.
 
+### Fixed
+- The homepage "Start here" button only links to the Foundations page when it is published, so drafts no longer send visitors to a page they cannot open.
+- Links to the journal no longer point back at the current page when no posts page is set under Settings > Reading (`thrivingstudio_get_journal_url()`).
+
 ### Removed
 - The four-slot "Homepage Featured Categories" Customizer section, replaced by the pillars.
 - Hardcoded description overrides for the `artificial-intelligence-and-tools` category.
