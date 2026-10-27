@@ -123,6 +123,12 @@ case "$TASK" in
     echo "== User accounts"
     wpc user list --fields=ID,user_login,roles,user_registered --orderby=registered --order=DESC --format=table
     echo
+    echo "== Application passwords (tools that can post as a user)"
+    for user_id in $(wpc user list --role=administrator --field=ID) $(wpc user list --role=editor --field=ID) $(wpc user list --role=author --field=ID); do
+      printf -- '-- user %s (%s)\n' "$user_id" "$(wpc user get "$user_id" --field=user_login)"
+      wpc user application-password list "$user_id" --fields=name,created,last_used,last_ip --format=table 2>/dev/null || echo "(none)"
+    done
+    echo
     echo "== WordPress core files (compared with wordpress.org)"
     wpc core verify-checksums || true
     echo
