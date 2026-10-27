@@ -41,6 +41,10 @@ PILLARS=(
 # The spam post found on staging and live on 2026-10-27.
 SPAM_POST_SLUG="kms-activator-office-2016"
 
+# Leftovers from the paused TFM publishing app (removed 2026-10-27).
+TFM_CATEGORY_SLUGS=(api-posts bridge-tests ops-hub)
+TFM_PLUGIN="thriving-studio-article-import"
+
 HERO_MODS=(
   thrivingstudio_home_hero_title
   thrivingstudio_home_hero_subtitle
@@ -179,6 +183,44 @@ case "$TASK" in
         echo "Moving to trash (restorable under Posts > Trash): $post_id $(wpc post get "$post_id" --field=post_title)"
         wpc post delete "$post_id"
       done
+    fi
+    ;;
+
+  remove-tfm-integrations)
+    echo "== Application passwords named TFM (revoked)"
+    for user_id in $(wpc user list --field=ID); do
+      wpc user application-password list "$user_id" --fields=uuid,name --format=csv 2>/dev/null | tail -n +2 |
+        while IFS=, read -r uuid name; do
+          case "$(printf '%s' "$name" | tr '[:upper:]' '[:lower:]')" in
+            *tfm*)
+              wpc user application-password delete "$user_id" "$uuid" >/dev/null
+              printf 'Revoked for user %s: %s\n' "$user_id" "$name"
+              ;;
+          esac
+        done
+    done
+    echo
+    echo "== TFM categories (deleted only when empty)"
+    for slug in "${TFM_CATEGORY_SLUGS[@]}"; do
+      term_id="$(wpc term get category "$slug" --by=slug --field=term_id 2>/dev/null || true)"
+      if [ -z "$term_id" ]; then
+        echo "Not present: $slug"
+      elif [ "$(wpc term get category "$term_id" --field=count)" != "0" ]; then
+        echo "Kept, still has posts: $slug"
+      else
+        wpc term delete category "$term_id" >/dev/null
+        echo "Deleted: $slug"
+      fi
+    done
+    echo
+    echo "== $TFM_PLUGIN plugin (deactivated, files kept)"
+    if ! wpc plugin is-installed "$TFM_PLUGIN"; then
+      echo "Not installed."
+    elif wpc plugin is-active "$TFM_PLUGIN"; then
+      # Load plugins here so the plugin's own deactivation hook runs.
+      wp --path="$WP_ROOT" plugin deactivate "$TFM_PLUGIN"
+    else
+      echo "Already inactive."
     fi
     ;;
 
