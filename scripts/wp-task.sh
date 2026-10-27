@@ -31,6 +31,9 @@ PILLARS=(
   "curious-world|Curious World|Science and technology explained simply, and good news from around the world."
 )
 
+# The spam post found on staging and live on 2026-10-27.
+SPAM_POST_SLUG="kms-activator-office-2016"
+
 HERO_MODS=(
   thrivingstudio_home_hero_title
   thrivingstudio_home_hero_subtitle
@@ -90,6 +93,60 @@ case "$TASK" in
     else
       wp --path="$WP_ROOT" cache flush
       echo "LiteSpeed CLI not available; flushed the WordPress object cache instead."
+    fi
+    ;;
+
+  security-scan)
+    # Read-only. Changes nothing on the site.
+    echo "== Spam post"
+    wpc post list --post_type=any --post_status=any --name="$SPAM_POST_SLUG" \
+      --fields=ID,post_status,post_author,post_date,post_modified,post_title --format=table
+    for author_id in $(wpc post list --post_type=any --post_status=any --name="$SPAM_POST_SLUG" --field=post_author); do
+      printf 'Author %s: %s\n' "$author_id" "$(wpc user get "$author_id" --field=user_login 2>/dev/null || echo 'user no longer exists')"
+    done
+    echo
+    echo "== Other posts matching spam terms (any status)"
+    for term in activator keygen crack casino betting viagra "<script" "<iframe"; do
+      matches="$(wpc post list --post_type=any --post_status=any --s="$term" --fields=ID,post_type,post_status,post_title --format=csv | tail -n +2)"
+      if [ -n "$matches" ]; then
+        printf -- '-- %s\n%s\n' "$term" "$matches"
+      fi
+    done
+    echo
+    echo "== User accounts"
+    wpc user list --fields=ID,user_login,roles,user_registered --orderby=registered --order=DESC --format=table
+    echo
+    echo "== WordPress core files (compared with wordpress.org)"
+    wpc core verify-checksums || true
+    echo
+    echo "== Plugin files (compared with wordpress.org; non-wordpress.org plugins are skipped)"
+    wpc plugin verify-checksums --all || true
+    echo
+    echo "== Plugins"
+    wpc plugin list --fields=name,status,version,update --format=table
+    echo
+    echo "== Must-use plugins folder"
+    ls -la "$WP_ROOT/wp-content/mu-plugins" 2>/dev/null || echo "(none)"
+    echo
+    echo "== PHP files inside uploads (there should be none)"
+    find "$WP_ROOT/wp-content/uploads" -type f -name '*.php' 2>/dev/null | head -50
+    echo
+    echo "== PHP files changed in the last 90 days outside the theme and caches"
+    find "$WP_ROOT" -type f -name '*.php' -mtime -90 \
+      -not -path '*/wp-content/themes/thrivingstudio/*' \
+      -not -path '*/wp-content/cache/*' \
+      -not -path '*/wp-content/litespeed/*' 2>/dev/null | head -100
+    ;;
+
+  trash-spam-post)
+    ids="$(wpc post list --post_type=any --post_status=any --name="$SPAM_POST_SLUG" --field=ID)"
+    if [ -z "$ids" ]; then
+      echo "No post with slug $SPAM_POST_SLUG. Nothing to do."
+    else
+      for post_id in $ids; do
+        echo "Moving to trash (restorable under Posts > Trash): $post_id $(wpc post get "$post_id" --field=post_title)"
+        wpc post delete "$post_id"
+      done
     fi
     ;;
 
