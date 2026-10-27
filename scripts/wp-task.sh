@@ -43,7 +43,15 @@ SPAM_POST_SLUG="kms-activator-office-2016"
 
 # Leftovers from the paused TFM publishing app (removed 2026-10-27).
 TFM_CATEGORY_SLUGS=(api-posts bridge-tests ops-hub)
-TFM_PLUGIN="thriving-studio-article-import"
+TFM_PLUGINS=(thriving-studio-article-import tfm-connector)
+
+# Unknown PHP files found in the site root on live on 2026-10-27.
+SUSPICIOUS_FILES=(testo.php amp.php)
+
+# Accounts no longer needed (the site is run solo now). Their posts are
+# reassigned to REASSIGN_TO, never deleted.
+OLD_ACCOUNTS=(VivekSharma thriving_chatgpt)
+REASSIGN_TO="Nareshk304"
 
 HERO_MODS=(
   thrivingstudio_home_hero_title
@@ -51,6 +59,79 @@ HERO_MODS=(
   thrivingstudio_home_hero_button_text
   thrivingstudio_home_hero_button_link
 )
+
+trash_spam_post() {
+  ids="$(wpc post list --post_type=any --post_status=any --name="$SPAM_POST_SLUG" --field=ID)"
+  if [ -z "$ids" ]; then
+    echo "No post with slug $SPAM_POST_SLUG. Nothing to do."
+  else
+    for post_id in $ids; do
+      echo "Moving to trash (restorable under Posts > Trash): $post_id $(wpc post get "$post_id" --field=post_title)"
+      wpc post delete "$post_id"
+    done
+  fi
+}
+
+remove_tfm_integrations() {
+  echo "== Application passwords named TFM (revoked)"
+  for user_id in $(wpc user list --field=ID); do
+    wpc user application-password list "$user_id" --fields=uuid,name --format=csv 2>/dev/null | tail -n +2 |
+      while IFS=, read -r uuid name; do
+        case "$(printf '%s' "$name" | tr '[:upper:]' '[:lower:]')" in
+          *tfm*)
+            wpc user application-password delete "$user_id" "$uuid" >/dev/null
+            printf 'Revoked for user %s: %s\n' "$user_id" "$name"
+            ;;
+        esac
+      done
+  done
+  echo
+  echo "== TFM categories (deleted only when empty)"
+  for slug in "${TFM_CATEGORY_SLUGS[@]}"; do
+    term_id="$(wpc term get category "$slug" --by=slug --field=term_id 2>/dev/null || true)"
+    if [ -z "$term_id" ]; then
+      echo "Not present: $slug"
+    # The term's count field only includes published posts, so count posts
+    # in every status (drafts, scheduled, private, trash) directly.
+    elif [ "$(wpc post list --post_type=any --post_status=publish,future,draft,pending,private,trash --cat="$term_id" --format=count)" != "0" ]; then
+      echo "Kept, still has posts (any status): $slug"
+    else
+      wpc term delete category "$term_id" >/dev/null
+      echo "Deleted: $slug"
+    fi
+  done
+  echo
+  echo "== TFM plugins (deactivated, files kept)"
+  for plugin in "${TFM_PLUGINS[@]}"; do
+    if ! wpc plugin is-installed "$plugin"; then
+      echo "Not installed: $plugin"
+    elif wpc plugin is-active "$plugin"; then
+      # Load plugins here so the plugin's own deactivation hook runs.
+      wp --path="$WP_ROOT" plugin deactivate "$plugin"
+    else
+      echo "Already inactive: $plugin"
+    fi
+  done
+}
+
+remove_old_accounts() {
+  echo "== Old accounts (deleted, posts reassigned to $REASSIGN_TO)"
+  local reassign_id user_id posts
+  reassign_id="$(wpc user get "$REASSIGN_TO" --field=ID)"
+  for login in "${OLD_ACCOUNTS[@]}"; do
+    user_id="$(wpc user get "$login" --field=ID 2>/dev/null || true)"
+    if [ -z "$user_id" ]; then
+      echo "Not present: $login"
+    elif [ "$user_id" = "$reassign_id" ]; then
+      echo "Refusing to delete the account posts are reassigned to: $login" >&2
+      exit 1
+    else
+      posts="$(wpc post list --post_type=any --post_status=any --author="$user_id" --format=count)"
+      wpc user delete "$user_id" --reassign="$reassign_id" --yes >/dev/null
+      echo "Deleted: $login ($posts posts reassigned to $REASSIGN_TO)"
+    fi
+  done
+}
 
 case "$TASK" in
   info)
@@ -175,55 +256,66 @@ case "$TASK" in
     ;;
 
   trash-spam-post)
-    ids="$(wpc post list --post_type=any --post_status=any --name="$SPAM_POST_SLUG" --field=ID)"
-    if [ -z "$ids" ]; then
-      echo "No post with slug $SPAM_POST_SLUG. Nothing to do."
-    else
-      for post_id in $ids; do
-        echo "Moving to trash (restorable under Posts > Trash): $post_id $(wpc post get "$post_id" --field=post_title)"
-        wpc post delete "$post_id"
-      done
-    fi
+    trash_spam_post
     ;;
 
   remove-tfm-integrations)
-    echo "== Application passwords named TFM (revoked)"
-    for user_id in $(wpc user list --field=ID); do
-      wpc user application-password list "$user_id" --fields=uuid,name --format=csv 2>/dev/null | tail -n +2 |
-        while IFS=, read -r uuid name; do
-          case "$(printf '%s' "$name" | tr '[:upper:]' '[:lower:]')" in
-            *tfm*)
-              wpc user application-password delete "$user_id" "$uuid" >/dev/null
-              printf 'Revoked for user %s: %s\n' "$user_id" "$name"
-              ;;
-          esac
-        done
-    done
+    remove_tfm_integrations
+    ;;
+
+  remove-old-accounts)
+    remove_old_accounts
+    ;;
+
+  cleanup)
+    trash_spam_post
     echo
-    echo "== TFM categories (deleted only when empty)"
-    for slug in "${TFM_CATEGORY_SLUGS[@]}"; do
-      term_id="$(wpc term get category "$slug" --by=slug --field=term_id 2>/dev/null || true)"
-      if [ -z "$term_id" ]; then
-        echo "Not present: $slug"
-      # The term's count field only includes published posts, so count posts
-      # in every status (drafts, scheduled, private, trash) directly.
-      elif [ "$(wpc post list --post_type=any --post_status=publish,future,draft,pending,private,trash --cat="$term_id" --format=count)" != "0" ]; then
-        echo "Kept, still has posts (any status): $slug"
+    remove_tfm_integrations
+    echo
+    remove_old_accounts
+    ;;
+
+  inspect-files)
+    # Read-only. Never executes the files; prints metadata and a cut-down,
+    # escaped preview so obfuscated code cannot flood or garble the log.
+    for name in "${SUSPICIOUS_FILES[@]}"; do
+      file="$WP_ROOT/$name"
+      echo "== $name"
+      if [ ! -f "$file" ]; then
+        echo "Not present."
+        echo
+        continue
+      fi
+      ls -la "$file"
+      stat -c 'Changed: %z | Modified: %y | Size: %s bytes | Owner: %U' "$file"
+      sha256sum "$file" | cut -d' ' -f1
+      echo "Lines: $(wc -l < "$file")  Longest line: $(awk '{ if (length > max) max = length } END { print max + 0 }' "$file") chars"
+      echo "-- Patterns common in backdoors (matching lines):"
+      for pattern in 'eval *\(' 'base64_decode' 'gzinflate|gzuncompress|str_rot13' 'assert *\(' 'system *\(|shell_exec|passthru|exec *\(|popen|proc_open' '\$_(POST|GET|REQUEST|COOKIE|SERVER)' 'file_put_contents|fwrite|move_uploaded_file' 'create_function'; do
+        printf '   %-60s %s\n' "$pattern" "$(grep -cE "$pattern" "$file" || true)"
+      done
+      echo "-- First 40 lines (cut to 200 characters, control characters shown):"
+      head -n 40 "$file" | cut -c1-200 | cat -v
+      echo
+    done
+    ;;
+
+  quarantine-files)
+    # Move the files out of the public web folder so they cannot be requested,
+    # but keep them as evidence. Undo by moving them back.
+    quarantine_dir="$(dirname "$WP_ROOT")/quarantine-$(date -u +%Y%m%d-%H%M%S)"
+    mkdir -p "$quarantine_dir"
+    chmod 700 "$quarantine_dir"
+    for name in "${SUSPICIOUS_FILES[@]}"; do
+      file="$WP_ROOT/$name"
+      if [ -f "$file" ]; then
+        mv "$file" "$quarantine_dir/$name.quarantined"
+        chmod 600 "$quarantine_dir/$name.quarantined"
+        echo "Quarantined: $name -> $quarantine_dir/$name.quarantined"
       else
-        wpc term delete category "$term_id" >/dev/null
-        echo "Deleted: $slug"
+        echo "Not present: $name"
       fi
     done
-    echo
-    echo "== $TFM_PLUGIN plugin (deactivated, files kept)"
-    if ! wpc plugin is-installed "$TFM_PLUGIN"; then
-      echo "Not installed."
-    elif wpc plugin is-active "$TFM_PLUGIN"; then
-      # Load plugins here so the plugin's own deactivation hook runs.
-      wp --path="$WP_ROOT" plugin deactivate "$TFM_PLUGIN"
-    else
-      echo "Already inactive."
-    fi
     ;;
 
   *)
