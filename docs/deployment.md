@@ -99,9 +99,13 @@ Rolling back to a commit older than `a92ed36` (the 1.3.0 cleanup) puts deleted b
 | `purge-cache` | Purges LiteSpeed Cache (falls back to flushing the object cache). |
 | `security-scan` | Read-only. Shows who created the spam post, searches all posts for spam terms, lists user accounts, checks core and plugin files against wordpress.org, and lists PHP files in `uploads` or changed in the last 90 days. |
 | `trash-spam-post` | Moves the post with slug `kms-activator-office-2016` to the trash, where it can be restored. |
-| `remove-tfm-integrations` | Revokes application passwords whose name contains "TFM", deletes the `api-posts`, `bridge-tests`, and `ops-hub` categories when empty, and deactivates (does not delete) the `thriving-studio-article-import` plugin. |
+| `remove-tfm-integrations` | Revokes application passwords whose name contains "TFM", deletes the `api-posts`, `bridge-tests`, and `ops-hub` categories when they hold no posts in any status, and deactivates (does not delete) the `thriving-studio-article-import` and `tfm-connector` plugins. |
+| `remove-old-accounts` | Deletes the `VivekSharma` and `thriving_chatgpt` accounts. Their posts are reassigned to `Nareshk304`, never deleted. Deleting an account also removes its application passwords. |
+| `cleanup` | Runs `trash-spam-post`, `remove-tfm-integrations`, and `remove-old-accounts` in one go, so live needs one approval. |
+| `inspect-files` | Read-only. For `testo.php` and `amp.php` in the site root: metadata, SHA-256, counts of common backdoor patterns, and the first 40 lines cut to 200 characters with control characters escaped. Never executes them. |
+| `quarantine-files` | Moves `testo.php` and `amp.php` out of the web root into a private `quarantine-<timestamp>` folder next to it. Undo by moving them back. |
 
-Live runs must start from `main`, and any task other than `info` or `security-scan` needs `confirm=RUN`. Every run is logged under Actions. The tasks live in `scripts/wp-task.sh`; adding a task means adding it there and to the workflow's task list.
+Live runs must start from `main`, and any task other than `info`, `security-scan`, or `inspect-files` needs `confirm=RUN`. Every run is logged under Actions. The tasks live in `scripts/wp-task.sh`; adding a task means adding it there and to the workflow's task list.
 
 ## GitHub settings
 
