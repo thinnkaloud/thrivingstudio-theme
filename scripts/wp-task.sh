@@ -154,7 +154,8 @@ case "$TASK" in
     echo "== PHP files in plugins that are not on wordpress.org (not checksum-verified)"
     for plugin_dir in "$WP_ROOT"/wp-content/plugins/*/; do
       plugin="$(basename "$plugin_dir")"
-      if ! wpc plugin verify-checksums "$plugin" >/dev/null 2>&1; then
+      # WP-CLI exits 0 and prints "skipping" for plugins it cannot look up.
+      if ! check_output="$(wpc plugin verify-checksums "$plugin" 2>&1)" || printf '%s' "$check_output" | grep -q 'skipping'; then
         echo "-- $plugin"
         find "$plugin_dir" -type f -name '*.php' -mtime -90 2>/dev/null | first_lines 30
       fi
