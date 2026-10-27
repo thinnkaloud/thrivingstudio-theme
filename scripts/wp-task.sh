@@ -20,6 +20,13 @@ if ! command -v wp >/dev/null 2>&1; then
   exit 1
 fi
 
+# Print the first N lines of stdin, then drain the rest so the writer never
+# gets SIGPIPE (which pipefail would turn into a failed run).
+first_lines() {
+  head -n "$1"
+  cat >/dev/null
+}
+
 wpc() {
   wp --path="$WP_ROOT" --skip-themes --skip-plugins "$@"
 }
@@ -129,13 +136,31 @@ case "$TASK" in
     ls -la "$WP_ROOT/wp-content/mu-plugins" 2>/dev/null || echo "(none)"
     echo
     echo "== PHP files inside uploads (there should be none)"
-    find "$WP_ROOT/wp-content/uploads" -type f -name '*.php' 2>/dev/null | head -50
+    find "$WP_ROOT/wp-content/uploads" -type f -name '*.php' 2>/dev/null | first_lines 50
     echo
-    echo "== PHP files changed in the last 90 days outside the theme and caches"
-    find "$WP_ROOT" -type f -name '*.php' -mtime -90 \
+    # Core files and wordpress.org plugins are already compared file by file
+    # above (including files that should not exist), so leave them out here.
+    echo "== PHP files changed in the last 90 days that the checksum checks do not cover"
+    # In find -path, * also matches /, so root files are listed separately.
+    find "$WP_ROOT" -maxdepth 1 -type f -name '*.php' -mtime -90 2>/dev/null
+    find "$WP_ROOT/wp-content" -type f -name '*.php' -mtime -90 \
+      -not -path '*/wp-content/plugins/*' \
+      -not -path '*/wp-content/languages/*' \
+      -not -path '*/wp-content/wflogs/*' \
       -not -path '*/wp-content/themes/thrivingstudio/*' \
       -not -path '*/wp-content/cache/*' \
-      -not -path '*/wp-content/litespeed/*' 2>/dev/null | head -100
+      -not -path '*/wp-content/litespeed/*' 2>/dev/null | first_lines 100
+    echo
+    echo "== PHP files in plugins that are not on wordpress.org (not checksum-verified)"
+    for plugin_dir in "$WP_ROOT"/wp-content/plugins/*/; do
+      plugin="$(basename "$plugin_dir")"
+      if ! wpc plugin verify-checksums "$plugin" >/dev/null 2>&1; then
+        echo "-- $plugin"
+        find "$plugin_dir" -type f -name '*.php' -mtime -90 2>/dev/null | first_lines 30
+      fi
+    done
+    echo
+    echo "Scan complete."
     ;;
 
   trash-spam-post)
