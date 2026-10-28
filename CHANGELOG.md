@@ -5,6 +5,7 @@ All notable changes to the Thriving Studio theme will be documented in this file
 ## [Unreleased]
 
 ### Added
+- **`content-audit` task** (read-only): published posts grouped by pillar, categories, menus, pages, and reading settings. **`draft-off-brand-posts`** switches four posts that don't fit the pillars to draft.
 - **Content pillars**: Inner Strength, Discipline, and Curious World, matched to categories by slug (`inner-strength`, `discipline`, `curious-world`). The homepage, Foundations page, and pillar category pages use them.
 - **Pillar pages list their related categories**: each pillar's category page also shows posts from the existing categories mapped to it in `thrivingstudio_pillar_definitions()`. Categories stay where they are, so no URLs change.
 - **`map-pillars` task**: moves two Uncategorized posts into Curious World. **`restore-category-parents`** undoes the category nesting from an earlier version of `map-pillars` (used on staging only).
