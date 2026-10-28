@@ -378,6 +378,7 @@ $groups = [];
 foreach (get_posts(['post_type' => 'post', 'post_status' => 'publish', 'numberposts' => -1, 'orderby' => 'date', 'order' => 'DESC']) as $post) {
     $categories = get_the_category($post->ID);
     $pillars = array_unique(array_filter(array_map($category_pillar, $categories)));
+    sort($pillars);
     $line = sprintf('  %d  %s  %s  [%s]', $post->ID, substr($post->post_date, 0, 10), $post->post_title, implode(', ', wp_list_pluck($categories, 'slug')));
     $groups[$pillars ? implode(' + ', $pillars) : 'no pillar'][] = $line;
 }
