@@ -7,24 +7,73 @@
  */
 
 /**
- * The three pillars, in display order. Each maps to a category by slug.
+ * The three pillars, in display order. Each maps to a category by slug, and
+ * its archive also lists posts from the existing categories in 'categories'.
+ * Those categories are not reparented, so their URLs never change.
  */
 function thrivingstudio_pillar_definitions() {
     return [
         'inner-strength' => [
             'name' => __('Inner Strength', 'thrivingstudio'),
             'description' => __('Emotional strength, awareness, and how the mind and human behaviour really work.', 'thrivingstudio'),
+            'categories' => ['psychology', 'mental-health', 'consciousness', 'personal-growth-mindset', 'yoga-spirituality'],
         ],
         'discipline' => [
             'name' => __('Discipline', 'thrivingstudio'),
             'description' => __('Habits, focus, fitness, and practical tools for growing steadily in life.', 'thrivingstudio'),
+            'categories' => ['discipline-and-design', 'health-and-fitness', 'nutrition', 'nutrition-health-and-fitness', 'wellness', 'physical-health'],
         ],
         'curious-world' => [
             'name' => __('Curious World', 'thrivingstudio'),
             'description' => __('Science and technology explained simply, and good news from around the world.', 'thrivingstudio'),
+            'categories' => ['signals-of-progress', 'innovation', 'artificial-intelligence-and-tools', 'research-brief', 'human-biology', 'brain-biology', 'inspiring', 'the-good-thread', 'true-hero-files', 'wildlife', 'art-creativity'],
         ],
     ];
 }
+
+/**
+ * On a pillar's category archive, also list posts from its mapped categories
+ * (and their children). Runs after WordPress builds the tax query, so the
+ * queried object stays the pillar and pagination works as normal.
+ */
+function thrivingstudio_pillar_archive_tax_query($query) {
+    if (is_admin() || !$query->is_main_query() || !$query->is_category() || empty($query->tax_query)) {
+        return;
+    }
+
+    $definitions = thrivingstudio_pillar_definitions();
+
+    foreach ($query->tax_query->queries as $index => $clause) {
+        // Only widen inclusion clauses; excluding a pillar (cat=-123) stays as is.
+        if (!is_array($clause) || ($clause['taxonomy'] ?? '') !== 'category' || strtoupper($clause['operator'] ?? 'IN') !== 'IN') {
+            continue;
+        }
+
+        $terms = (array) ($clause['terms'] ?? []);
+        if (count($terms) !== 1) {
+            continue;
+        }
+
+        // Plain permalinks (?cat=123) address the category by ID.
+        $field = $clause['field'] ?? 'term_id';
+        $slug = $terms[0];
+        if ($field === 'term_id') {
+            $category = get_term((int) $slug, 'category');
+            $slug = ($category && !is_wp_error($category)) ? $category->slug : '';
+        } elseif ($field !== 'slug') {
+            continue;
+        }
+
+        if (!isset($definitions[$slug]['categories'])) {
+            continue;
+        }
+
+        $query->tax_query->queries[$index]['terms'] = array_merge([$slug], $definitions[$slug]['categories']);
+        $query->tax_query->queries[$index]['field'] = 'slug';
+        $query->tax_query->queries[$index]['include_children'] = true;
+    }
+}
+add_action('parse_tax_query', 'thrivingstudio_pillar_archive_tax_query');
 
 /**
  * Pillars that exist as categories, with their link and description.

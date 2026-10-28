@@ -38,6 +38,12 @@ PILLARS=(
   "curious-world|Curious World|Science and technology explained simply, and good news from around the world."
 )
 
+# Uncategorized posts that belong in a pillar ("post-slug|pillar-slug").
+UNCATEGORIZED_MOVES=(
+  "is-the-internet-dead-the-truth-behind-the-dead-internet-theory|curious-world"
+  "why-google-bard-is-named-bard|curious-world"
+)
+
 # The spam post found on staging and live on 2026-10-27.
 SPAM_POST_SLUG="kms-activator-office-2016"
 
@@ -167,6 +173,49 @@ case "$TASK" in
         echo "Created: $slug ($name)"
       fi
     done
+    ;;
+
+  map-pillars)
+    # Pillar archives already include their mapped categories through the
+    # theme (thrivingstudio_pillar_archive_tax_query), so categories are never
+    # reparented and their URLs stay the same. Only posts are changed here.
+    for pillar in "${PILLARS[@]}"; do
+      slug="${pillar%%|*}"
+      if ! wpc term get category "$slug" --by=slug --field=term_id >/dev/null 2>&1; then
+        echo "Pillar missing, run create-pillar-categories first: $slug" >&2
+        exit 1
+      fi
+    done
+    echo "== Uncategorized posts moved into a pillar"
+    for entry in "${UNCATEGORIZED_MOVES[@]}"; do
+      post_slug="${entry%%|*}"
+      pillar="${entry#*|}"
+      post_id="$(wpc post list --post_type=post --post_status=any --name="$post_slug" --field=ID)"
+      if [ -z "$post_id" ]; then
+        echo "Not present: $post_slug"
+        continue
+      fi
+      wpc post term add "$post_id" category "$pillar" >/dev/null
+      wpc post term remove "$post_id" category uncategorized >/dev/null 2>&1 || true
+      echo "Moved to $pillar: $post_id $post_slug"
+    done
+    ;;
+
+  restore-category-parents)
+    # Undoes the reparenting done by an earlier version of map-pillars, using
+    # the original parent it saved in term meta.
+    restored=0
+    for term_id in $(wpc term list category --field=term_id --hide_empty=0); do
+      original="$(wpc term meta get "$term_id" _thrivingstudio_original_parent 2>/dev/null || true)"
+      if [ -z "$original" ]; then
+        continue
+      fi
+      wpc term update category "$term_id" --parent="$original" >/dev/null
+      wpc term meta delete "$term_id" _thrivingstudio_original_parent >/dev/null
+      echo "Restored: $(wpc term get category "$term_id" --field=slug) (parent $original)"
+      restored=$((restored + 1))
+    done
+    echo "Categories restored: $restored"
     ;;
 
   clear-hero-text)
