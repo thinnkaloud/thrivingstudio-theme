@@ -47,6 +47,15 @@ UNCATEGORIZED_MOVES=(
 # The spam post found on staging and live on 2026-10-27.
 SPAM_POST_SLUG="kms-activator-office-2016"
 
+# Posts that also belong in a pillar their categories don't map to
+# ("post-slug|pillar-slug"). Uncategorized is removed from them too, unless
+# permalinks include %category%, where that would change the post's URL.
+PILLAR_ADDITIONS=(
+  "detoxify-your-mind-in-7-simple-steps|inner-strength"
+  "the-habit-loop-explained-why-you-stay-stuck-and-how-to-break-it|inner-strength"
+  "if-you-are-ambitious-but-lazy-this-is-what-you-should-do|discipline"
+)
+
 # Posts that do not fit the three pillars, switched to draft on 2026-10-28.
 OFF_BRAND_POSTS=(
   crack-the-instagram-code-organic-growth-strategies-for-2024-and-beyond-2
@@ -206,6 +215,26 @@ case "$TASK" in
       wpc post term add "$post_id" category "$pillar" >/dev/null
       wpc post term remove "$post_id" category uncategorized >/dev/null 2>&1 || true
       echo "Moved to $pillar: $post_id $post_slug"
+    done
+    echo
+    echo "== Posts added to a second pillar"
+    keep_uncategorized=no
+    if [[ "$(wpc option get permalink_structure)" == *"%category%"* ]]; then
+      keep_uncategorized=yes
+    fi
+    for entry in "${PILLAR_ADDITIONS[@]}"; do
+      post_slug="${entry%%|*}"
+      pillar="${entry#*|}"
+      post_id="$(wpc post list --post_type=post --post_status=any --name="$post_slug" --field=ID)"
+      if [ -z "$post_id" ]; then
+        echo "Not present: $post_slug"
+        continue
+      fi
+      wpc post term add "$post_id" category "$pillar" >/dev/null
+      if [ "$keep_uncategorized" = no ]; then
+        wpc post term remove "$post_id" category uncategorized >/dev/null 2>&1 || true
+      fi
+      echo "Added to $pillar: $post_id $post_slug"
     done
     ;;
 
@@ -407,7 +436,7 @@ foreach (get_pages(['post_status' => 'publish,draft,pending,private']) as $page)
 }
 
 echo "\n== Reading settings\n";
-foreach (['show_on_front', 'page_on_front', 'page_for_posts', 'posts_per_page'] as $option) {
+foreach (['show_on_front', 'page_on_front', 'page_for_posts', 'posts_per_page', 'permalink_structure'] as $option) {
     printf("  %s = %s\n", $option, get_option($option));
 }
 PHP
