@@ -47,6 +47,14 @@ UNCATEGORIZED_MOVES=(
 # The spam post found on staging and live on 2026-10-27.
 SPAM_POST_SLUG="kms-activator-office-2016"
 
+# Posts that do not fit the three pillars, switched to draft on 2026-10-28.
+OFF_BRAND_POSTS=(
+  crack-the-instagram-code-organic-growth-strategies-for-2024-and-beyond-2
+  from-idea-to-reality-your-step-by-step-guide-to-launching-your-first-blog
+  unleash-your-pups-inner-genius-expert-tips-for-a-mentally-stimulated-and-well-behaved-dog
+  how-anora-redefined-the-modern-cinderella-story
+)
+
 # Leftovers from the paused TFM publishing app (removed 2026-10-27).
 TFM_CATEGORY_SLUGS=(api-posts bridge-tests ops-hub)
 TFM_PLUGINS=(thriving-studio-article-import tfm-connector)
@@ -322,6 +330,86 @@ case "$TASK" in
     remove_tfm_integrations
     echo
     remove_old_accounts
+    ;;
+
+  draft-off-brand-posts)
+    for slug in "${OFF_BRAND_POSTS[@]}"; do
+      post_id="$(wpc post list --post_type=post --post_status=publish --name="$slug" --field=ID)"
+      if [ -z "$post_id" ]; then
+        echo "Not published, left unchanged: $slug"
+        continue
+      fi
+      wpc post update "$post_id" --post_status=draft >/dev/null
+      echo "Switched to draft: $post_id $slug"
+    done
+    ;;
+
+  content-audit)
+    # Read-only. Pillar mapping comes from the deployed theme, so this report
+    # always matches what the pillar pages show.
+    PILLAR_FILE="$THEME_PATH/inc/theme/site-copy.php" wpc eval-file - <<'PHP'
+<?php
+require_once getenv('PILLAR_FILE');
+
+$pillar_of = [];
+foreach (thrivingstudio_pillar_definitions() as $pillar => $definition) {
+    $pillar_of[$pillar] = $pillar;
+    foreach ($definition['categories'] as $slug) {
+        $pillar_of[$slug] = $pillar;
+    }
+}
+
+// A category's pillar, following its parents for unmapped children.
+$category_pillar = function ($term) use (&$category_pillar, $pillar_of) {
+    if (isset($pillar_of[$term->slug])) {
+        return $pillar_of[$term->slug];
+    }
+    return $term->parent ? $category_pillar(get_term($term->parent, 'category')) : '';
+};
+
+echo "== Posts by status\n";
+foreach ((array) wp_count_posts('post') as $status => $count) {
+    if ($count) {
+        echo "  $status: $count\n";
+    }
+}
+
+$groups = [];
+foreach (get_posts(['post_type' => 'post', 'post_status' => 'publish', 'numberposts' => -1, 'orderby' => 'date', 'order' => 'DESC']) as $post) {
+    $categories = get_the_category($post->ID);
+    $pillars = array_unique(array_filter(array_map($category_pillar, $categories)));
+    $line = sprintf('  %d  %s  %s  [%s]', $post->ID, substr($post->post_date, 0, 10), $post->post_title, implode(', ', wp_list_pluck($categories, 'slug')));
+    $groups[$pillars ? implode(' + ', $pillars) : 'no pillar'][] = $line;
+}
+ksort($groups);
+foreach ($groups as $group => $lines) {
+    printf("\n== Published posts: %s (%d)\n%s\n", $group, count($lines), implode("\n", $lines));
+}
+
+echo "\n== Categories (published posts / pillar)\n";
+foreach (get_categories(['hide_empty' => false]) as $term) {
+    printf("  %-45s %4d  %s\n", $term->slug, $term->count, $category_pillar($term) ?: '-');
+}
+
+echo "\n== Menus\n";
+$locations = array_flip(array_filter((array) get_nav_menu_locations()));
+foreach (wp_get_nav_menus() as $menu) {
+    printf("  %s%s\n", $menu->name, isset($locations[$menu->term_id]) ? ' (location: ' . $locations[$menu->term_id] . ')' : '');
+    foreach ((array) wp_get_nav_menu_items($menu->term_id) as $item) {
+        printf("    %s%s -> %s\n", $item->menu_item_parent ? '  ' : '', $item->title, $item->url);
+    }
+}
+
+echo "\n== Pages\n";
+foreach (get_pages(['post_status' => 'publish,draft,pending,private']) as $page) {
+    printf("  %d  %-8s %-30s %s\n", $page->ID, $page->post_status, $page->post_name, get_page_template_slug($page->ID) ?: 'default');
+}
+
+echo "\n== Reading settings\n";
+foreach (['show_on_front', 'page_on_front', 'page_for_posts', 'posts_per_page'] as $option) {
+    printf("  %s = %s\n", $option, get_option($option));
+}
+PHP
     ;;
 
   inspect-files)
