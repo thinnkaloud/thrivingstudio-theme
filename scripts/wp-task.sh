@@ -550,6 +550,75 @@ PHP
       | grep -oiE '<(script|iframe)[^>]*>' | cut -c1-200 | cat -v || echo "None."
     ;;
 
+  spam-trace)
+    # Read-only. Finds where the activator spam page still comes from: the
+    # database in every status and post type (including trash and types that
+    # plugins register), old-slug redirects, options, and files on disk.
+    echo "== Database rows mentioning activator (every post type and status)"
+    wpc eval-file - <<'PHP'
+<?php
+global $wpdb;
+$like = '%' . $wpdb->esc_like('activator') . '%';
+$rows = $wpdb->get_results($wpdb->prepare(
+    "SELECT ID, post_type, post_status, post_name, post_author, post_date, post_modified, LEFT(post_title, 80) AS title
+     FROM {$wpdb->posts}
+     WHERE post_name LIKE %s OR post_title LIKE %s OR post_content LIKE %s
+     ORDER BY ID",
+    $like, $like, $like
+));
+if (!$rows) {
+    echo "  None.\n";
+}
+foreach ($rows as $row) {
+    printf("  %d  %s  %s  %s  author %d  created %s  modified %s  %s\n",
+        $row->ID, $row->post_type, $row->post_status, $row->post_name,
+        $row->post_author, $row->post_date, $row->post_modified, $row->title);
+}
+
+echo "\n== Post meta mentioning activator (old slugs, redirects)\n";
+$meta = $wpdb->get_results($wpdb->prepare(
+    "SELECT post_id, meta_key, LEFT(meta_value, 120) AS value FROM {$wpdb->postmeta} WHERE meta_value LIKE %s LIMIT 50",
+    $like
+));
+if (!$meta) {
+    echo "  None.\n";
+}
+foreach ($meta as $row) {
+    printf("  post %d  %s = %s\n", $row->post_id, $row->meta_key, $row->value);
+}
+
+echo "\n== Options mentioning activator (names only)\n";
+$options = $wpdb->get_col($wpdb->prepare(
+    "SELECT option_name FROM {$wpdb->options} WHERE option_value LIKE %s LIMIT 50",
+    $like
+));
+echo $options ? '  ' . implode("\n  ", $options) . "\n" : "  None.\n";
+PHP
+    echo
+    echo "== What WordPress maps /$SPAM_POST_SLUG/ to (plugins loaded)"
+    wp --path="$WP_ROOT" --skip-themes eval "printf(\"  url_to_postid: %d\n\", url_to_postid(home_url('/$SPAM_POST_SLUG/')));" 2>/dev/null \
+      || echo "  Could not load WordPress with plugins."
+    echo
+    echo "== Live response for /$SPAM_POST_SLUG/"
+    site_url="$(wpc option get home)"
+    curl -sS -m 30 -D - -o /dev/null "${site_url%/}/$SPAM_POST_SLUG/" \
+      | tr -d '\r' | grep -iE '^(HTTP/|(location|server|x-litespeed-cache|cf-cache-status|age|last-modified|link):)' | sed 's/^/  /' || true
+    printf '  <title>: '
+    curl -sS -m 30 "${site_url%/}/$SPAM_POST_SLUG/" | grep -oiE '<title>[^<]*' | head -n 1 | cut -c8-200 || echo
+    echo
+    echo "== Files under the site root mentioning activator (first 50; logs and caches skipped)"
+    grep -rliI --exclude=error_log --exclude='*.log' --exclude-dir=node_modules \
+      --exclude-dir=cache --exclude-dir=litespeed 'activator' "$WP_ROOT" 2>/dev/null \
+      | first_lines 50 || true
+    echo
+    echo "== Is the FOXY SEO crawler redirect still in .htaccess?"
+    if grep -q '^# FOXY SEO' "$WP_ROOT/.htaccess"; then
+      echo "  Yes: crawlers are still sent to /amp.php."
+    else
+      echo "  No."
+    fi
+    ;;
+
   *)
     echo "Unknown task: $TASK" >&2
     exit 1
