@@ -44,16 +44,31 @@ function thrivingstudio_pillar_archive_tax_query($query) {
     $definitions = thrivingstudio_pillar_definitions();
 
     foreach ($query->tax_query->queries as $index => $clause) {
-        if (!is_array($clause) || ($clause['taxonomy'] ?? '') !== 'category' || ($clause['field'] ?? '') !== 'slug') {
+        if (!is_array($clause) || ($clause['taxonomy'] ?? '') !== 'category') {
             continue;
         }
 
         $terms = (array) ($clause['terms'] ?? []);
-        if (count($terms) !== 1 || !isset($definitions[$terms[0]]['categories'])) {
+        if (count($terms) !== 1) {
             continue;
         }
 
-        $query->tax_query->queries[$index]['terms'] = array_merge($terms, $definitions[$terms[0]]['categories']);
+        // Plain permalinks (?cat=123) address the category by ID.
+        $field = $clause['field'] ?? 'term_id';
+        $slug = $terms[0];
+        if ($field === 'term_id') {
+            $category = get_term((int) $slug, 'category');
+            $slug = ($category && !is_wp_error($category)) ? $category->slug : '';
+        } elseif ($field !== 'slug') {
+            continue;
+        }
+
+        if (!isset($definitions[$slug]['categories'])) {
+            continue;
+        }
+
+        $query->tax_query->queries[$index]['terms'] = array_merge([$slug], $definitions[$slug]['categories']);
+        $query->tax_query->queries[$index]['field'] = 'slug';
         $query->tax_query->queries[$index]['include_children'] = true;
     }
 }
