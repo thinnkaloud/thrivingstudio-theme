@@ -9,24 +9,25 @@
 /**
  * The three pillars, in display order. Each maps to a category by slug, and
  * its archive also lists posts from the existing categories in 'categories'.
- * Those categories are not reparented, so their URLs never change.
+ * Those categories are not reparented, so their URLs never change. Live and
+ * staging name some categories differently, so both spellings are listed.
  */
 function thrivingstudio_pillar_definitions() {
     return [
         'inner-strength' => [
             'name' => __('Inner Strength', 'thrivingstudio'),
             'description' => __('Emotional strength, awareness, and how the mind and human behaviour really work.', 'thrivingstudio'),
-            'categories' => ['psychology', 'mental-health', 'consciousness', 'personal-growth-mindset', 'yoga-spirituality'],
+            'categories' => ['psychology', 'mental-health', 'consciousness', 'personal-growth-mindset', 'personal-growth', 'yoga-spirituality', 'emotional-strength', 'emotional-strength-2', 'clarity-over-noise', 'reflective-practice', 'journaling', 'journaling-personal-growth'],
         ],
         'discipline' => [
             'name' => __('Discipline', 'thrivingstudio'),
             'description' => __('Habits, focus, fitness, and practical tools for growing steadily in life.', 'thrivingstudio'),
-            'categories' => ['discipline-and-design', 'health-and-fitness', 'nutrition', 'nutrition-health-and-fitness', 'wellness', 'physical-health'],
+            'categories' => ['discipline-and-design', 'health-and-fitness', 'health-and-wellness', 'nutrition', 'nutrition-health-and-fitness', 'wellness', 'physical-health'],
         ],
         'curious-world' => [
             'name' => __('Curious World', 'thrivingstudio'),
             'description' => __('Science and technology explained simply, and good news from around the world.', 'thrivingstudio'),
-            'categories' => ['signals-of-progress', 'innovation', 'artificial-intelligence-and-tools', 'research-brief', 'human-biology', 'brain-biology', 'inspiring', 'the-good-thread', 'true-hero-files', 'wildlife', 'art-creativity'],
+            'categories' => ['signals-of-progress', 'innovation', 'artificial-intelligence-and-tools', 'research-brief', 'research-briefs', 'human-biology', 'brain-biology', 'inspiring', 'the-good-thread', 'true-hero-files', 'wildlife', 'art-creativity'],
         ],
     ];
 }
