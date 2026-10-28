@@ -16,7 +16,7 @@ on:
           - staging
           - live
       task:
-        description: "info, security-scan, inspect-files, and content-audit are read-only. The others change the site."
+        description: "info, security-scan, inspect-files, content-audit, and crawler-check are read-only. The others change the site."
         required: true
         default: info
         type: choice
@@ -36,6 +36,7 @@ on:
           - quarantine-files
           - draft-off-brand-posts
           - content-audit
+          - crawler-check
       confirm:
         description: Type RUN to allow a change on live. Not needed for read-only tasks or staging.
         required: false
@@ -63,7 +64,7 @@ jobs:
           CONFIRM_INPUT: ${{ inputs.confirm }}
         run: |
           case "$TASK" in
-            info|create-pillar-categories|map-pillars|restore-category-parents|clear-hero-text|purge-cache|security-scan|trash-spam-post|remove-tfm-integrations|remove-old-accounts|cleanup|inspect-files|quarantine-files|draft-off-brand-posts|content-audit) ;;
+            info|create-pillar-categories|map-pillars|restore-category-parents|clear-hero-text|purge-cache|security-scan|trash-spam-post|remove-tfm-integrations|remove-old-accounts|cleanup|inspect-files|quarantine-files|draft-off-brand-posts|content-audit|crawler-check) ;;
             *) echo "Unknown task: $TASK" >&2; exit 1 ;;
           esac
           if [ "$TARGET" = "live" ]; then
@@ -72,7 +73,7 @@ jobs:
               exit 1
             fi
             case "$TASK" in
-              info|security-scan|inspect-files|content-audit) READ_ONLY=yes ;;
+              info|security-scan|inspect-files|content-audit|crawler-check) READ_ONLY=yes ;;
               *) READ_ONLY=no ;;
             esac
             if [ "$READ_ONLY" = no ] && [ "$CONFIRM_INPUT" != "RUN" ]; then

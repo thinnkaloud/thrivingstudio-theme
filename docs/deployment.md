@@ -108,8 +108,9 @@ Rolling back to a commit older than `a92ed36` (the 1.3.0 cleanup) puts deleted b
 | `quarantine-files` | Moves `testo.php` and `amp.php` out of the web root into a private `quarantine-<timestamp>` folder next to it. Undo by moving them back. |
 | `draft-off-brand-posts` | Switches the published posts listed in `OFF_BRAND_POSTS` (Instagram growth, launching a blog, dog training, ANORA) to draft. Undo by publishing them again. |
 | `content-audit` | Read-only. Post counts by status, every published post grouped by pillar (using the theme's own mapping), categories with their pillar, menus and their items, pages with status and template, and reading settings. |
+| `crawler-check` | Read-only. Requests the homepage, post 2365, the old spam post URL, and `robots.txt` as a normal browser and as Googlebot, then compares status codes and bodies to catch content shown only to search engines. Also lists crawler and redirect rules in `.htaccess` files, files in the site root changed in the last 30 days, and the script and iframe tags in post 2365. |
 
-Live runs must start from `main`, and any task other than `info`, `security-scan`, `inspect-files`, or `content-audit` needs `confirm=RUN`. Every run is logged under Actions. The tasks live in `scripts/wp-task.sh`; adding a task means adding it there and to the workflow's task list.
+Live runs must start from `main`, and any task other than `info`, `security-scan`, `inspect-files`, `content-audit`, or `crawler-check` needs `confirm=RUN`. Every run is logged under Actions. The tasks live in `scripts/wp-task.sh`; adding a task means adding it there and to the workflow's task list.
 
 ## GitHub settings
 
