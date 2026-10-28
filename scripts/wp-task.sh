@@ -498,16 +498,28 @@ PHP
     echo "== Responses ($site_url)"
     for path in "${check_paths[@]}"; do
       echo "-- $path"
+      fetched=yes
       for agent in browser googlebot; do
         ua="$browser_ua"
         [ "$agent" = googlebot ] && ua="$googlebot_ua"
-        curl -sS -m 30 -A "$ua" -H 'Cache-Control: no-cache' \
+        # Clear the previous page's output so a failed request is never
+        # compared or scanned as if it were this page.
+        rm -f "$tmp_dir/$agent.html" "$tmp_dir/$agent.headers"
+        if ! curl -sS -m 30 -A "$ua" -H 'Cache-Control: no-cache' \
           -o "$tmp_dir/$agent.html" -D "$tmp_dir/$agent.headers" \
           -w "   $agent: %{http_code}, %{size_download} bytes, final URL %{url_effective}\n" \
-          -L --max-redirs 5 "${site_url%/}$path" || echo "   $agent: request failed"
+          -L --max-redirs 5 "${site_url%/}$path"; then
+          echo "   $agent: request failed"
+          fetched=no
+          continue
+        fi
         grep -iE '^(location|x-litespeed-cache|x-litespeed-vary|server):' "$tmp_dir/$agent.headers" 2>/dev/null \
           | tr -d '\r' | sed 's/^/      /' || true
       done
+      if [ "$fetched" = no ]; then
+        echo "   Skipped the comparison: at least one request failed."
+        continue
+      fi
       if cmp -s "$tmp_dir/browser.html" "$tmp_dir/googlebot.html"; then
         echo "   Same body for both."
       else
