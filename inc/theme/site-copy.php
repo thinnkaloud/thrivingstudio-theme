@@ -44,7 +44,8 @@ function thrivingstudio_pillar_archive_tax_query($query) {
     $definitions = thrivingstudio_pillar_definitions();
 
     foreach ($query->tax_query->queries as $index => $clause) {
-        if (!is_array($clause) || ($clause['taxonomy'] ?? '') !== 'category') {
+        // Only widen inclusion clauses; excluding a pillar (cat=-123) stays as is.
+        if (!is_array($clause) || ($clause['taxonomy'] ?? '') !== 'category' || strtoupper($clause['operator'] ?? 'IN') !== 'IN') {
             continue;
         }
 
