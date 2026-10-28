@@ -38,6 +38,7 @@ on:
           - content-audit
           - crawler-check
           - spam-trace
+          - fix-sitemap
       confirm:
         description: Type RUN to allow a change on live. Not needed for read-only tasks or staging.
         required: false
@@ -65,7 +66,7 @@ jobs:
           CONFIRM_INPUT: ${{ inputs.confirm }}
         run: |
           case "$TASK" in
-            info|create-pillar-categories|map-pillars|restore-category-parents|clear-hero-text|purge-cache|security-scan|trash-spam-post|remove-tfm-integrations|remove-old-accounts|cleanup|inspect-files|quarantine-files|draft-off-brand-posts|content-audit|crawler-check|spam-trace) ;;
+            info|create-pillar-categories|map-pillars|restore-category-parents|clear-hero-text|purge-cache|security-scan|trash-spam-post|remove-tfm-integrations|remove-old-accounts|cleanup|inspect-files|quarantine-files|draft-off-brand-posts|content-audit|crawler-check|spam-trace|fix-sitemap) ;;
             *) echo "Unknown task: $TASK" >&2; exit 1 ;;
           esac
           if [ "$TARGET" = "live" ]; then

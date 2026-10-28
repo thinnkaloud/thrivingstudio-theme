@@ -619,6 +619,78 @@ PHP
     fi
     ;;
 
+  fix-sitemap)
+    # Turns on Rank Math's sitemap module (posts and pages included), rebuilds
+    # the rewrite rules so /sitemap_index.xml resolves, clears Rank Math's
+    # cached sitemap files and the page cache, then checks the live sitemap.
+    # Plugins are loaded on purpose: the sitemap rules come from Rank Math.
+    echo "== Rank Math sitemap module and settings"
+    wp --path="$WP_ROOT" --skip-themes eval-file - <<'PHP'
+<?php
+if (!defined('RANK_MATH_VERSION')) {
+    fwrite(STDERR, "Rank Math is not active; nothing changed.\n");
+    exit(1);
+}
+
+$modules = (array) get_option('rank_math_modules', []);
+if (in_array('sitemap', $modules, true)) {
+    echo "  Sitemap module: already on.\n";
+} else {
+    $modules[] = 'sitemap';
+    update_option('rank_math_modules', array_values(array_unique($modules)));
+    echo "  Sitemap module: switched on (it was off).\n";
+}
+
+$settings = (array) get_option('rank-math-options-sitemap', []);
+$changed = false;
+foreach (['pt_post_sitemap' => 'Posts', 'pt_page_sitemap' => 'Pages'] as $key => $label) {
+    $before = $settings[$key] ?? '(not set)';
+    if ($before !== 'on') {
+        $settings[$key] = 'on';
+        $changed = true;
+        printf("  %s in sitemap: switched on (was %s).\n", $label, $before);
+    } else {
+        printf("  %s in sitemap: already on.\n", $label);
+    }
+}
+if ($changed) {
+    update_option('rank-math-options-sitemap', $settings);
+}
+PHP
+    echo
+    echo "== Rebuilding rewrite rules (a fresh process, so Rank Math registers the sitemap rules)"
+    wp --path="$WP_ROOT" --skip-themes rewrite flush
+    echo
+    echo "== Clearing Rank Math's cached sitemap files"
+    cache_dir="$WP_ROOT/wp-content/uploads/rank-math"
+    if [ -d "$cache_dir" ]; then
+      find "$cache_dir" -maxdepth 1 -type f -name 'rank_math_*.xml' -print -delete | sed 's/^/  removed /'
+    else
+      echo "  No cache folder."
+    fi
+    wp --path="$WP_ROOT" --skip-themes eval 'if (class_exists("\\RankMath\\Sitemap\\Cache")) { \RankMath\Sitemap\Cache::invalidate_storage(); echo "  Rank Math sitemap cache invalidated.\n"; }' 2>/dev/null || true
+    echo
+    echo "== Purging the page cache"
+    if wp --path="$WP_ROOT" litespeed-purge all 2>/dev/null; then
+      echo "LiteSpeed Cache purged."
+    else
+      wp --path="$WP_ROOT" cache flush
+    fi
+    echo
+    echo "== Live check"
+    site_url="$(wpc option get home)"
+    for path in /sitemap_index.xml /post-sitemap.xml /page-sitemap.xml; do
+      body="$(curl -sS -m 30 -L -w '\n%{http_code}' "${site_url%/}$path" || printf '\n000')"
+      code="${body##*$'\n'}"
+      body="${body%$'\n'*}"
+      printf '  %-20s %s, %s URLs listed' "$path" "$code" "$(printf '%s' "$body" | grep -o '<loc>' | wc -l)"
+      if printf '%s' "$body" | grep -qi 'activator'; then
+        printf ', MENTIONS ACTIVATOR'
+      fi
+      echo
+    done
+    ;;
+
   *)
     echo "Unknown task: $TASK" >&2
     exit 1
