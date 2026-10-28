@@ -485,6 +485,71 @@ PHP
     done
     ;;
 
+  crawler-check)
+    # Read-only. Requests pages as a normal browser and as Googlebot and
+    # compares the answers, to catch hacks that show search engines different
+    # content (cloaking). Also looks for rewrite rules aimed at crawlers.
+    site_url="$(wpc option get home)"
+    browser_ua='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36'
+    googlebot_ua='Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)'
+    check_paths=(/ "/$(wpc post get 2365 --field=post_name 2>/dev/null || echo remote-robotic-surgery)/" "/$SPAM_POST_SLUG/" /robots.txt)
+    tmp_dir="$(mktemp -d)"
+    trap 'rm -rf "$tmp_dir"' EXIT
+    echo "== Responses ($site_url)"
+    for path in "${check_paths[@]}"; do
+      echo "-- $path"
+      fetched=yes
+      for agent in browser googlebot; do
+        ua="$browser_ua"
+        [ "$agent" = googlebot ] && ua="$googlebot_ua"
+        # Clear the previous page's output so a failed request is never
+        # compared or scanned as if it were this page.
+        rm -f "$tmp_dir/$agent.html" "$tmp_dir/$agent.headers"
+        if ! curl -sS -m 30 -A "$ua" -H 'Cache-Control: no-cache' \
+          -o "$tmp_dir/$agent.html" -D "$tmp_dir/$agent.headers" \
+          -w "   $agent: %{http_code}, %{size_download} bytes, final URL %{url_effective}\n" \
+          -L --max-redirs 5 "${site_url%/}$path"; then
+          echo "   $agent: request failed"
+          fetched=no
+          continue
+        fi
+        grep -iE '^(location|x-litespeed-cache|x-litespeed-vary|server):' "$tmp_dir/$agent.headers" 2>/dev/null \
+          | tr -d '\r' | sed 's/^/      /' || true
+      done
+      if [ "$fetched" = no ]; then
+        echo "   Skipped the comparison: at least one request failed."
+        continue
+      fi
+      if cmp -s "$tmp_dir/browser.html" "$tmp_dir/googlebot.html"; then
+        echo "   Same body for both."
+      else
+        echo "   Bodies differ. External script and link hosts only in the Googlebot copy:"
+        grep -oiE '(src|href)="https?://[^/"]+' "$tmp_dir/googlebot.html" | sed -E 's/.*:\/\///' | sort -u > "$tmp_dir/g.hosts" || true
+        grep -oiE '(src|href)="https?://[^/"]+' "$tmp_dir/browser.html" | sed -E 's/.*:\/\///' | sort -u > "$tmp_dir/b.hosts" || true
+        comm -13 "$tmp_dir/b.hosts" "$tmp_dir/g.hosts" | sed 's/^/      /'
+      fi
+      spam_terms="$(grep -oiE 'activator|keygen|crack|casino|betting|viagra' "$tmp_dir/googlebot.html" | sort | uniq -c | tr -s ' ' | tr '\n' ';' || true)"
+      echo "   Spam terms in the Googlebot copy: ${spam_terms:-none}"
+    done
+    echo
+    echo "== Crawler and redirect rules in .htaccess files (site root and wp-content)"
+    find "$WP_ROOT" -maxdepth 3 -name .htaccess -not -path '*/node_modules/*' -print0 \
+      | while IFS= read -r -d '' file; do
+          hits="$(grep -nEi 'googlebot|bot|crawler|HTTP_USER_AGENT|HTTP_REFERER|ErrorDocument|RewriteRule .*https?://' "$file" | cut -c1-200 | cat -v || true)"
+          if [ -n "$hits" ]; then
+            echo "-- $file"
+            echo "$hits"
+          fi
+        done
+    echo
+    echo "== Files in the site root changed in the last 30 days"
+    find "$WP_ROOT" -maxdepth 1 -type f -mtime -30 -printf '%TY-%Tm-%Td %TH:%TM  %8s  %f\n' | sort
+    echo
+    echo "== Script and iframe lines in post 2365"
+    wpc post get 2365 --field=post_content 2>/dev/null \
+      | grep -oiE '<(script|iframe)[^>]*>' | cut -c1-200 | cat -v || echo "None."
+    ;;
+
   *)
     echo "Unknown task: $TASK" >&2
     exit 1

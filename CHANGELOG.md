@@ -5,6 +5,7 @@ All notable changes to the Thriving Studio theme will be documented in this file
 ## [Unreleased]
 
 ### Added
+- **`crawler-check` task** (read-only): compares what a browser and Googlebot get for key pages, and lists crawler rules in `.htaccess` and recently changed files in the site root. Added after Google flagged the site for deceptive pages on 2026-10-28.
 - **Pillar mapping covers live's category names** (`health-and-wellness`, `personal-growth`, `emotional-strength-2`, `clarity-over-noise`, `reflective-practice`, `journaling-personal-growth`, `research-briefs`, and two empty ones), so no published post on live sits outside a pillar. `map-pillars` also adds two mind-focused wellness posts to Inner Strength and takes Uncategorized off a Discipline post.
 - **`content-audit` task** (read-only): published posts grouped by pillar, categories, menus, pages, and reading settings. **`draft-off-brand-posts`** switches four posts that don't fit the pillars to draft.
 - **Content pillars**: Inner Strength, Discipline, and Curious World, matched to categories by slug (`inner-strength`, `discipline`, `curious-world`). The homepage, Foundations page, and pillar category pages use them.
